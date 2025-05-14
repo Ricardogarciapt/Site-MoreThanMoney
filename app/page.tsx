@@ -1,7 +1,6 @@
 import LandingPage from "@/components/landing-page"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import BackgroundInstructions from "@/components/background-instructions"
 
 export default function Page() {
   return (
@@ -14,7 +13,6 @@ export default function Page() {
         </Link>
       </div>
       <LandingPage />
-      <BackgroundInstructions />
     </main>
   )
 }
