@@ -5,12 +5,13 @@ import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/login-form"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User } from "lucide-react"
+import { LogOut, User, BookOpen, BarChart2 } from "lucide-react"
 import Scanners from "@/components/scanners"
+import MoreThanMoneyCourses from "@/components/morethanmoney-courses"
 
 export default function MemberArea() {
   const { user, isAuthenticated, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState("profile")
+  const [activeTab, setActiveTab] = useState("courses")
 
   if (!isAuthenticated) {
     return (
@@ -53,29 +54,28 @@ export default function MemberArea() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-8 bg-black/50 border border-gold-500/30">
+          <TabsList className="grid grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
+            <TabsTrigger value="courses" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              <BookOpen size={16} className="mr-2" />
+              Cursos MoreThanMoney
+            </TabsTrigger>
+            <TabsTrigger value="scanners" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              <BarChart2 size={16} className="mr-2" />
+              Scanner
+            </TabsTrigger>
             <TabsTrigger value="profile" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <User size={16} className="mr-2" />
               Perfil
             </TabsTrigger>
-            <TabsTrigger value="scanners" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-2"
-              >
-                <path d="M2 9h20M9 18h12M4 4h16M4 14h4" />
-              </svg>
-              Scanners
-            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="courses" className="mt-0">
+            <MoreThanMoneyCourses />
+          </TabsContent>
+
+          <TabsContent value="scanners" className="mt-0">
+            <Scanners />
+          </TabsContent>
 
           <TabsContent value="profile" className="mt-0">
             <div className="bg-black/50 border border-gold-500/30 rounded-lg p-6">
@@ -95,10 +95,6 @@ export default function MemberArea() {
                 </div>
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="scanners" className="mt-0">
-            <Scanners />
           </TabsContent>
         </Tabs>
       </div>
