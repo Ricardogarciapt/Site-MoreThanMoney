@@ -51,7 +51,7 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
+              <Link href="/copytrading/setup" className="w-full">
                 <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
                   Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -91,7 +91,7 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
+              <Link href="/copytrading/setup" className="w-full">
                 <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
                   Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -130,7 +130,7 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
+              <Link href="/copytrading/setup" className="w-full">
                 <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
                   Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
