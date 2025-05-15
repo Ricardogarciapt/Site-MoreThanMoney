@@ -48,6 +48,205 @@ export default function JifuEducationPath() {
               ></iframe>
             </div>
 
+            {/* Planos de Educação JIFU */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-bold text-center mb-8">Planos de Educação JIFU</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-black/70 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+                  <div className="text-center mb-4">
+                    <h4 className="text-2xl font-bold">GO</h4>
+                    <div className="flex flex-col items-center mt-2">
+                      <span className="text-3xl font-bold text-gold-500">€299,99</span>
+                      <span className="text-sm text-gray-400">+ €169,99/mês</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-grow mb-6">
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>JIFU Travel Portal Access (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso a JIFU Live All Educational Courses* (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>50 Free Trial Passes por mês</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso ao JIFU Compensation Plan</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>1 Complimentary Vacation Voucher</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>$50 First Order Bonus to the Sponsor</span>
+                    </li>
+                  </ul>
+                  <Button onClick={handleRegisterClick} className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                    Selecionar GO
+                  </Button>
+                </div>
+
+                <div className="bg-black/70 border border-gold-500/30 rounded-lg p-6 flex flex-col relative">
+                  <div className="absolute top-0 right-0 bg-gold-500 text-black px-3 py-1 text-sm font-bold rounded-bl-lg rounded-tr-lg">
+                    POPULAR
+                  </div>
+                  <div className="text-center mb-4">
+                    <h4 className="text-2xl font-bold">GROW</h4>
+                    <div className="flex flex-col items-center mt-2">
+                      <span className="text-3xl font-bold text-gold-500">€1.000</span>
+                      <span className="text-sm text-gray-400">+ €169,99/mês</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-grow mb-6">
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>JIFU Travel Portal Access (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso a JIFU Live All Educational Courses* & FX Global Ideas* for (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>100 Free Trial Passes por mês</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso ao JIFU Compensation Plan</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>2 Complimentary Vacation Vouchers</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>$200 First Order Bonus to the Sponsor</span>
+                    </li>
+                  </ul>
+                  <Button onClick={handleRegisterClick} className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                    Selecionar GROW
+                  </Button>
+                </div>
+
+                <div className="bg-black/70 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+                  <div className="text-center mb-4">
+                    <h4 className="text-2xl font-bold">GLOBAL</h4>
+                    <div className="flex flex-col items-center mt-2">
+                      <span className="text-3xl font-bold text-gold-500">€2.500</span>
+                      <span className="text-sm text-gray-400">+ €169,99/mês</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-grow mb-6">
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>JIFU Travel Portal Access (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso a JIFU Live All Educational Courses* & FX Global Ideas* for (4 semanas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Unlimited Free Trial Passes por mês</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Acesso ao JIFU Compensation Plan</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>3 Complimentary Vacation Vouchers</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>$400 First Order Bonus to the Sponsor</span>
+                    </li>
+                  </ul>
+                  <Button onClick={handleRegisterClick} className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                    Selecionar GLOBAL
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 text-center mt-4">
+                *May vary from market to market. Go to your Web Office to see the details
+              </p>
+            </div>
+
+            {/* Instruções de Registro */}
+            <div className="bg-black/70 border border-gold-500/30 rounded-lg p-8 mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-center">Como Registrar-se na JIFU</h3>
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                    <span className="text-gold-500 font-bold">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">Clique em "Registrar Já"</h4>
+                    <p className="text-gray-300">
+                      Clique no botão "Registrar na JIFU" abaixo para ser direcionado ao site oficial da JIFU.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                    <span className="text-gold-500 font-bold">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">Selecione "Começar uma Conta de Cliente"</h4>
+                    <p className="text-gray-300">
+                      Na página de registro da JIFU, escolha a opção "Começar uma Conta de Cliente" para iniciar o
+                      processo.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                    <span className="text-gold-500 font-bold">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">Escolha o Pacote Desejado</h4>
+                    <p className="text-gray-300">
+                      Selecione um dos pacotes disponíveis (GO, GROW ou GLOBAL) de acordo com suas necessidades e
+                      orçamento.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                    <span className="text-gold-500 font-bold">4</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">Preencha seus Dados e Proceda ao Pagamento</h4>
+                    <p className="text-gray-300">
+                      Complete o formulário com suas informações pessoais e realize o pagamento através dos métodos
+                      disponíveis.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                    <span className="text-gold-500 font-bold">5</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">Contato do Patrocinador</h4>
+                    <p className="text-gray-300">
+                      Após finalizar o registro, você será contactado pelo seu patrocinador para iniciar o processo de
+                      início rápido e orientação na plataforma.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Botão de registro sempre visível */}
             <div className="flex justify-center mb-8">
               <Button
