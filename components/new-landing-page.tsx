@@ -32,6 +32,19 @@ export default function NewLandingPage() {
     }
   }, [currentView])
 
+  // Efeito para rolar até a seção da JIFU quando o usuário seleciona "education"
+  useEffect(() => {
+    if (currentView === "education") {
+      // Pequeno timeout para garantir que o componente foi renderizado
+      setTimeout(() => {
+        const jifuSection = document.getElementById("jifu-education")
+        if (jifuSection) {
+          jifuSection.scrollIntoView({ behavior: "smooth" })
+        }
+      }, 100)
+    }
+  }, [currentView])
+
   const handleWatchVideo = () => {
     setVideoPlaying(true)
     // Em uma implementação real, você reproduziria o vídeo e então

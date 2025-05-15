@@ -1,14 +1,25 @@
 "use client"
 
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Check } from "lucide-react"
-import Link from "next/link"
 import Image from "next/image"
 
 export default function JifuEducationPath() {
+  const [videoPlaying, setVideoPlaying] = useState(true)
+  const videoRef = useRef<HTMLIFrameElement>(null)
+
+  const handleRegisterClick = () => {
+    // Parar o vídeo quando o usuário clica para se registrar
+    setVideoPlaying(false)
+
+    // Abrir a página de registro da JIFU em uma nova aba
+    window.open("https://jifu.com", "_blank", "noopener,noreferrer")
+  }
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center">
+    <section className="relative min-h-screen flex items-center justify-center" id="jifu-education">
       <div className="container mx-auto px-4 py-20">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
@@ -22,15 +33,26 @@ export default function JifuEducationPath() {
 
         <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-16">
           <CardContent className="p-8">
-            {/* Prévia da plataforma JIFU */}
-            <div className="rounded-lg overflow-hidden border border-gold-500/30 mb-8">
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura%20de%20ecra%CC%83%202025-05-15%2C%20a%CC%80s%2012.02.39-nLrQHYaDBITdi8yHldaqNrPH2116L1.png"
-                alt="Plataforma JIFU Academy"
-                width={1200}
-                height={600}
-                className="w-full"
-              />
+            {/* Vídeo do YouTube */}
+            <div className="rounded-lg overflow-hidden border border-gold-500/30 mb-8 relative aspect-video">
+              <iframe
+                ref={videoRef}
+                src={`https://www.youtube.com/embed/iV6M9weCnmA?autoplay=1&controls=0&mute=0&loop=0&modestbranding=1&showinfo=0&rel=0&fs=0&playsinline=1${videoPlaying ? "" : "&enablejsapi=1"}`}
+                title="Apresentação JIFU"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                className="absolute top-0 left-0 w-full h-full"
+                frameBorder="0"
+              ></iframe>
+            </div>
+
+            {/* Botão de registro sempre visível */}
+            <div className="flex justify-center mb-8">
+              <Button
+                onClick={handleRegisterClick}
+                className="bg-gold-600 hover:bg-gold-700 text-black px-8 py-6 text-lg animate-pulse"
+              >
+                Registrar na JIFU <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
@@ -63,11 +85,9 @@ export default function JifuEducationPath() {
                   você terá acesso imediato a todo o conteúdo.
                 </p>
                 <div className="pt-4">
-                  <Link href="https://jifu.com" target="_blank" rel="noopener noreferrer">
-                    <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                      Registrar na JIFU <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button onClick={handleRegisterClick} className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                    Registrar na JIFU <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -246,137 +266,11 @@ export default function JifuEducationPath() {
           </CardContent>
         </Card>
 
-        {/* Pacotes de Upgrade JIFU */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h3 className="text-2xl md:text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-            Pacotes de Upgrade JIFU
-          </h3>
-          <p className="text-lg text-gray-300 mb-8">
-            Escolha o pacote que melhor se adapta às suas necessidades e objetivos de aprendizado.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Pacote Básico */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">Pacote Básico</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">€99</span>
-                <span className="text-gray-400 ml-2">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a Jifulive.com</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Scanners e FX Global Ideias e app JIFUCONNECT</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a portal de Viagens</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a criação de Negócio Online</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="https://morethanmoney.jifu.com" className="w-full" target="_blank" rel="noopener noreferrer">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Escolher Pacote Básico</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          {/* Pacote Premium */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-gold-500 text-black px-4 py-1 text-sm font-bold">POPULAR</div>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">Pacote Premium</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">€199</span>
-                <span className="text-gray-400 ml-2">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a todos os cursos</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Todos os scanners disponíveis</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Webinars semanais</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Suporte prioritário</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Mentoria mensal (1 hora)</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="https://jifu.com/premium" className="w-full" target="_blank" rel="noopener noreferrer">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Escolher Pacote Premium</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          {/* Pacote VIP */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">Pacote VIP</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">€299</span>
-                <span className="text-gray-400 ml-2">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a todos os cursos</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Todos os scanners disponíveis</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Webinars exclusivos</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Suporte VIP 24/7</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Mentoria semanal (1 hora)</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso ao grupo VIP de traders</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="https://jifu.com/vip" className="w-full" target="_blank" rel="noopener noreferrer">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Escolher Pacote VIP</Button>
-              </Link>
-            </CardFooter>
-          </Card>
+        {/* Botão de registro fixo no final da página */}
+        <div className="text-center mt-8">
+          <Button onClick={handleRegisterClick} className="bg-gold-600 hover:bg-gold-700 text-black px-8 py-6 text-lg">
+            Registrar na JIFU Agora <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </div>
     </section>
