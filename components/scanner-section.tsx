@@ -15,7 +15,16 @@ export default function ScannerSection() {
             Scanner MoreThanMoney
           </h2>
           <p className="text-gray-300 text-lg">
-            Analisa o mercado 24/7 e envia sinais com lógica algorítmica. Integração completa com TradingView.
+            O Scanner MTM é a nossa ferramenta exclusiva que analisa o mercado por ti — mesmo que não tenhas qualquer experiência em trading.
+
+Com tecnologia baseada em estrutura de mercado e análise de volatilidade (ATR), ele identifica automaticamente os melhores momentos para entrar e sair de uma operação. Em vez de perderes horas a analisar gráficos complicados, o Scanner faz isso por ti em segundos.
+
+✅ Detecta tendências e zonas de reversão com alta precisão
+✅ Usa lógica de mercado profissional sem precisar entender análise técnica
+✅ Atualizado em tempo real no TradingView, pronto a usar com um clique
+✅ Ideal para quem quer investir com clareza, confiança e sem complicações
+
+Não é magia. É inteligência aplicada. Começa hoje com uma vantagem real no mercado.
           </p>
         </div>
 
