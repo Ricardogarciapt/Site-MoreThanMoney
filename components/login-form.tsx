@@ -78,8 +78,12 @@ export default function LoginForm() {
           </Button>
 
           <div className="text-sm text-gray-400 text-center mt-4">
-            <p>Credenciais de teste:</p>
-            <p>Usuário: demo / Senha: password</p>
+            <p>
+              Não tem uma conta?{" "}
+              <a href="/register" className="text-gold-400 hover:underline">
+                Registre-se aqui
+              </a>
+            </p>
           </div>
         </form>
       </CardContent>

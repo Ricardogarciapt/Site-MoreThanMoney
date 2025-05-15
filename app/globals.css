@@ -87,10 +87,33 @@
   }
 }
 
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
 .animate-logo-fade-in {
   animation: logo-fade-in 1.5s ease forwards;
 }
 
 .animate-logo-slide-in {
   animation: logo-slide-in 1s ease-out forwards;
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+.cta-button {
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(249, 178, 8, 0.5);
 }

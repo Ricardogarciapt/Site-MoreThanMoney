@@ -5,12 +5,17 @@ import { createContext, useContext, useState, type ReactNode } from "react"
 interface User {
   username: string
   name: string
+  email?: string
+  phone?: string
+  socialLink?: string
+  package?: string
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<boolean>
+  register: (userData: Omit<User, "package"> & { password: string; package: string }) => Promise<boolean>
   logout: () => void
 }
 
@@ -30,16 +35,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     // Simulação de autenticação - em produção, isso seria uma chamada API
-    // Credenciais de teste: username: "demo", password: "password"
-    if (username === "demo" && password === "password") {
-      const userData = { username, name: "Usuário Demo" }
-      setUser(userData)
+    // Verificar se o usuário existe no localStorage
+    if (typeof window !== "undefined") {
+      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+      const foundUser = registeredUsers.find((u: any) => u.username === username && u.password === password)
 
-      // Salvar no localStorage para persistência
-      localStorage.setItem("user", JSON.stringify(userData))
-      return true
+      if (foundUser) {
+        const userData = {
+          username: foundUser.username,
+          name: foundUser.name,
+          email: foundUser.email,
+          phone: foundUser.phone,
+          socialLink: foundUser.socialLink,
+          package: foundUser.package,
+        }
+        setUser(userData)
+
+        // Salvar no localStorage para persistência
+        localStorage.setItem("user", JSON.stringify(userData))
+        return true
+      }
+
+      // Credenciais de teste para demonstração
+      if (username === "demo" && password === "password") {
+        const userData = { username, name: "Usuário Demo" }
+        setUser(userData)
+        localStorage.setItem("user", JSON.stringify(userData))
+        return true
+      }
     }
     return false
+  }
+
+  const register = async (userData: Omit<User, "package"> & { password: string; package: string }) => {
+    try {
+      // Em produção, isso seria uma chamada API
+      // Simulação de registro
+      if (typeof window !== "undefined") {
+        const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+
+        // Verificar se o usuário já existe
+        if (registeredUsers.some((u: any) => u.username === userData.username)) {
+          return false
+        }
+
+        // Adicionar novo usuário
+        registeredUsers.push(userData)
+        localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers))
+
+        // Fazer login automático após o registro
+        const { password, ...userWithoutPassword } = userData
+        setUser(userWithoutPassword)
+        localStorage.setItem("user", JSON.stringify(userWithoutPassword))
+
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Erro ao registrar:", error)
+      return false
+    }
   }
 
   const logout = () => {
@@ -47,7 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user")
   }
 
-  return <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>{children}</AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

@@ -5,15 +5,17 @@ import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/login-form"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User, BookOpen, BarChart2 } from "lucide-react"
+import { LogOut, User, BookOpen, BarChart2, UserPlus } from "lucide-react"
 import Scanners from "@/components/scanners"
 import MoreThanMoneyCourses from "@/components/morethanmoney-courses"
+import MemberRegistration from "@/components/member-registration"
 
 export default function MemberArea() {
   const { user, isAuthenticated, logout } = useAuth()
   const [activeTab, setActiveTab] = useState("courses")
+  const [showRegistration, setShowRegistration] = useState(false)
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !showRegistration) {
     return (
       <section id="member-area" className="py-20 bg-black relative">
         <div className="container mx-auto px-4">
@@ -26,10 +28,29 @@ export default function MemberArea() {
             </p>
           </div>
 
+          <div className="flex flex-col md:flex-row gap-6 justify-center mb-12">
+            <Button
+              onClick={() => setShowRegistration(false)}
+              className={`bg-gold-600 hover:bg-gold-700 text-black px-8 py-3 ${!showRegistration ? "border-2 border-white" : ""}`}
+            >
+              Login
+            </Button>
+            <Button
+              onClick={() => setShowRegistration(true)}
+              className={`bg-gold-600 hover:bg-gold-700 text-black px-8 py-3 ${showRegistration ? "border-2 border-white" : ""}`}
+            >
+              <UserPlus className="mr-2 h-4 w-4" /> Registrar
+            </Button>
+          </div>
+
           <LoginForm />
         </div>
       </section>
     )
+  }
+
+  if (!isAuthenticated && showRegistration) {
+    return <MemberRegistration />
   }
 
   return (

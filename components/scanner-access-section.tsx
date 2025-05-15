@@ -6,21 +6,11 @@ import Link from "next/link"
 
 export default function ScannerAccessSection() {
   const handleRequestAccess = () => {
-    const subject = "Solicitação de Acesso ao Scanner MTM"
-    const body = "Olá,\n\nGostaria de solicitar acesso ao Scanner MTM MoreThanMoney.\n\nObrigado."
-    window.open(
-      `mailto:ricardogarciapt@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-      "_blank",
-    )
+    window.open("https://wa.link/08k5so", "_blank")
   }
 
   return (
     <section className="relative bg-black text-white overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <Image src="/background.jpg" alt="MoreThanMoney Background" fill priority className="object-cover opacity-30" />
-      </div>
-
       {/* Overlay para garantir a legibilidade do texto */}
       <div className="absolute inset-0 bg-black/60 z-10"></div>
 
@@ -31,17 +21,19 @@ export default function ScannerAccessSection() {
           <Image src="/logo.png" alt="MoreThanMoney Logo" width={200} height={80} className="mx-auto" />
         </div>
 
-        <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gold-gradient">Scanner MoreThanMoneyTM – Acesso Exclusivo</h2>
+        <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gold-gradient">
+          Scanner MoreThanMoneyTM – Acesso Exclusivo
+        </h2>
 
         <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-          Visualiza uma prévia do mercado ao vivo com EUR/USD e solicita acesso ao nosso Scanner MoreThanMoney
-          exclusivo, que identifica estruturas de mercado e níveis chave automaticamente.
+          Solicita acesso ao nosso Scanner MoreThanMoney exclusivo, que identifica estruturas de mercado e níveis chave
+          automaticamente.
         </p>
 
         <div className="mb-2">
           <Button
             onClick={handleRequestAccess}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 text-lg rounded-md"
+            className="bg-gold-600 hover:bg-gold-700 text-black font-bold px-8 py-3 text-lg rounded-md transform transition-transform duration-300 hover:scale-105"
           >
             Pedir Acesso ao Scanner
           </Button>
@@ -59,19 +51,13 @@ export default function ScannerAccessSection() {
         </div>
 
         <div className="rounded-lg overflow-hidden border border-gold-500/30 shadow-lg shadow-gold-500/10">
-          {/* Substituindo o iframe pelo screenshot do Scanner MTM */}
-          <div className="relative">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xqhsTkunXOZGdcBsEBg0ANgZqd50v5.png"
-              alt="Scanner MTM Preview"
-              width={1200}
-              height={600}
-              className="w-full"
-            />
+          {/* Animação ou vídeo relacionado ao tema */}
+          <div className="relative aspect-video">
+            <Image src="/trading-animation.png" alt="Trading Animation" width={1200} height={600} className="w-full" />
             <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-1 rounded-md text-xs">
-              <span className="text-gold-400">Scanner MoreThanMoneyTM</span>
+              <span className="text-gold-400">MoreThanMoneyTM</span>
               <span className="text-gray-400">|</span>
-              <span className="text-white">EUR/USD</span>
+              <span className="text-white">Trading Intelligence</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Play, BookOpen, TrendingUp } from "lucide-react"
@@ -9,19 +9,37 @@ import JifuEducationPath from "@/components/jifu-education-path"
 import CopytradingPath from "@/components/copytrading-path"
 import ScannerSection from "@/components/scanner-section"
 import AutomationCards from "@/components/automation-cards"
+import MemberRegistration from "@/components/member-registration"
 
 export default function NewLandingPage() {
-  const [currentView, setCurrentView] = useState<"intro" | "pathSelection" | "education" | "automation">("intro")
+  const [currentView, setCurrentView] = useState<
+    "intro" | "pathSelection" | "education" | "automation" | "registration"
+  >("intro")
   const [videoPlaying, setVideoPlaying] = useState(false)
+  const [animateCards, setAnimateCards] = useState(false)
+
+  // Efeito para animar os cards periodicamente
+  useEffect(() => {
+    if (currentView === "pathSelection") {
+      const interval = setInterval(() => {
+        setAnimateCards(true)
+        setTimeout(() => {
+          setAnimateCards(false)
+        }, 1000)
+      }, 5000)
+
+      return () => clearInterval(interval)
+    }
+  }, [currentView])
 
   const handleWatchVideo = () => {
     setVideoPlaying(true)
-    // In a real implementation, you would play the video and then
-    // call setCurrentView("pathSelection") when the video ends
+    // Em uma implementação real, você reproduziria o vídeo e então
+    // chamaria setCurrentView("pathSelection") quando o vídeo terminar
     setTimeout(() => {
       setVideoPlaying(false)
       setCurrentView("pathSelection")
-    }, 1000) // Simulating video end after 1 second
+    }, 1000) // Simulando o fim do vídeo após 1 segundo
   }
 
   const handleSelectEducation = () => {
@@ -30,6 +48,10 @@ export default function NewLandingPage() {
 
   const handleSelectAutomation = () => {
     setCurrentView("automation")
+  }
+
+  const handleSelectRegistration = () => {
+    setCurrentView("registration")
   }
 
   return (
@@ -74,9 +96,11 @@ export default function NewLandingPage() {
               <p className="text-xl text-gray-300 mb-12">O que você deseja fazer hoje?</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               <Card
-                className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 cursor-pointer"
+                className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 cursor-pointer ${
+                  animateCards ? "animate-wiggle" : ""
+                }`}
                 onClick={handleSelectEducation}
               >
                 <CardContent className="p-8 flex flex-col items-center text-center">
@@ -95,7 +119,9 @@ export default function NewLandingPage() {
               </Card>
 
               <Card
-                className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 cursor-pointer"
+                className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 cursor-pointer ${
+                  animateCards ? "animate-wiggle" : ""
+                }`}
                 onClick={handleSelectAutomation}
               >
                 <CardContent className="p-8 flex flex-col items-center text-center">
@@ -112,6 +138,43 @@ export default function NewLandingPage() {
                   </Button>
                 </CardContent>
               </Card>
+
+              <Card
+                className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 cursor-pointer ${
+                  animateCards ? "animate-wiggle" : ""
+                }`}
+                onClick={handleSelectRegistration}
+              >
+                <CardContent className="p-8 flex flex-col items-center text-center">
+                  <div className="h-20 w-20 rounded-full bg-gold-500/20 flex items-center justify-center mb-6">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-gold-500"
+                    >
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Quero Ser Membro</h3>
+                  <p className="text-gray-300 mb-6">
+                    Torne-se um membro MoreThanMoney e tenha acesso a conteúdos exclusivos, suporte personalizado e
+                    ferramentas avançadas.
+                  </p>
+                  <Button className="bg-gold-600 hover:bg-gold-700 text-black mt-auto">
+                    Registrar Agora <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -125,6 +188,8 @@ export default function NewLandingPage() {
           <CopytradingPath />
         </>
       )}
+
+      {currentView === "registration" && <MemberRegistration />}
 
       <ScannerSection />
     </>

@@ -15,7 +15,7 @@ export default function JifuEducationPath() {
             Formação JIFU
           </h2>
           <p className="text-xl text-gray-300 mb-12">
-            Acede a  cursos especializados em trading, investimentos, e-commerce, IA e muito mais através da plataforma
+            Acede a cursos especializados em trading, investimentos, e-commerce, IA e muito mais através da plataforma
             JIFU.
           </p>
         </div>
@@ -262,7 +262,7 @@ export default function JifuEducationPath() {
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Pacote Básico</CardTitle>
               <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">€299</span>
+                <span className="text-4xl font-bold text-gold-500">€99</span>
                 <span className="text-gray-400 ml-2">/mês</span>
               </div>
             </CardHeader>
@@ -282,7 +282,7 @@ export default function JifuEducationPath() {
                 </li>
                 <li className="flex items-start">
                   <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a criaçao de Negócio Online</span>
+                  <span>Acesso a criação de Negócio Online</span>
                 </li>
               </ul>
             </CardContent>
@@ -299,7 +299,7 @@ export default function JifuEducationPath() {
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Pacote Premium</CardTitle>
               <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">€</span>
+                <span className="text-4xl font-bold text-gold-500">€199</span>
                 <span className="text-gray-400 ml-2">/mês</span>
               </div>
             </CardHeader>
