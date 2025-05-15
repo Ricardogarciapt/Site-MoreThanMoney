@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Play, BookOpen, TrendingUp } from "lucide-react"
@@ -102,6 +103,9 @@ export default function NewLandingPage() {
       {currentView === "pathSelection" && (
         <section className="relative min-h-screen flex items-center justify-center">
           <div className="container mx-auto px-4 py-20">
+            <div className="text-center mb-8">
+              <Image src="/logo-new.png" alt="MoreThanMoney Logo" width={220} height={180} className="mx-auto" />
+            </div>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
                 Escolha Seu Caminho

@@ -18,7 +18,7 @@ export default function ScannerAccessSection() {
       <div className="relative z-20 max-w-6xl mx-auto px-4 py-20 text-center">
         {/* Logo */}
         <div className="mb-8">
-          <Image src="/logo.png" alt="MoreThanMoney Logo" width={200} height={80} className="mx-auto" />
+          <Image src="/logo-new.png" alt="MoreThanMoney Logo" width={220} height={180} className="mx-auto" />
         </div>
 
         <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gold-gradient">

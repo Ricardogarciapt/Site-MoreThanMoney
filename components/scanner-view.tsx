@@ -12,11 +12,6 @@ export default function ScannerView() {
   const { user, isAuthenticated, logout } = useAuth()
   const [showInfo, setShowInfo] = useState(false)
 
-  // URL do TradingView com o script PineScript incorporado
-  // Nota: O script real seria incorporado via ID do script no TradingView
-  const tradingViewUrl =
-    "https://s.tradingview.com/widgetembed/?symbol=FX:EURUSD&interval=60&theme=dark&style=1&timezone=exchange&studies=%5B%7B%22id%22%3A%22MoreThanMoney%20-%20Scanner%20V3.4%22%7D%5D&withdateranges=1&showpopupbutton=1&width=100%25&height=100%25"
-
   if (!isAuthenticated) {
     return (
       <section className="py-20 bg-black relative">
@@ -76,7 +71,15 @@ export default function ScannerView() {
       </div>
 
       <div className="fixed top-14 left-0 right-0 bottom-0">
-        <iframe src={tradingViewUrl} style={{ width: "100%", height: "100%", border: "none" }} allowFullScreen></iframe>
+        <iframe
+          src="https://www.tradingview.com/chart/SP3yDryX/?symbol=OANDA:XAUUSD"
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          allowFullScreen
+          style={{ border: "none" }}
+          title="Scanner MTM"
+        ></iframe>
       </div>
 
       {showInfo && <ScannerInfo onClose={() => setShowInfo(false)} />}

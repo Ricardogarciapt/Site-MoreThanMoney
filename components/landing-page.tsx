@@ -37,10 +37,10 @@ export default function LandingPage() {
       <div className="absolute top-4 left-4 z-30">
         <div className="animate-logo-fade-in">
           <Image
-            src="/logo.png"
+            src="/logo-new.png"
             alt="MoreThanMoney Logo"
-            width={200}
-            height={80}
+            width={220}
+            height={180}
             className="object-contain animate-logo-slide-in"
           />
         </div>
