@@ -1,91 +1,186 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Check,
-  Pencil,
-  Save,
-  X,
-  LogOut,
-  Lock,
-  Home,
-  ImageIcon,
-  Layout,
-  FileText,
-  LinkIcon,
-  BookOpen,
-  Users,
-} from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { RefreshCw, AlertCircle, CheckCircle, XCircle, Lock, Home, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Define os tipos para configurações do site
-interface SiteConfig {
-  name: string
-  logoUrl: string
-  primaryColor: string
-  secondaryColor: string
-  navigation: Array<{ name: string; href: string }>
-  sections: Array<{ id: string; title: string; visible: boolean }>
+// Mock do contexto de autenticação
+const useAuth = () => {
+  // Simulação de um usuário autenticado como admin
+  return {
+    user: {
+      id: 1,
+      name: "Admin",
+      email: "admin@example.com",
+      role: "admin",
+    },
+    isAuthenticated: true,
+    isAdmin: true,
+    logout: () => console.log("Logout"),
+  }
 }
 
-// Configuração inicial do site
-const defaultConfig: SiteConfig = {
-  name: "MoreThanMoney",
-  logoUrl: "/logo-new.png",
-  primaryColor: "#f9b208",
-  secondaryColor: "#000000",
-  navigation: [
-    { name: "Início", href: "/" },
-    { name: "Scanner", href: "/scanner" },
-    { name: "Copytrading", href: "/copytrading" },
-    { name: "Educação", href: "/education" },
-    { name: "Área de Membros", href: "/member-area" },
-  ],
-  sections: [
-    { id: "hero", title: "Seção de Destaque", visible: true },
-    { id: "scanner", title: "Scanner MTM", visible: true },
-    { id: "copytrading", title: "Copytrading", visible: true },
-    { id: "education", title: "Educação JIFU", visible: true },
-    { id: "membership", title: "Área de Membros", visible: true },
-  ],
-}
+// Dados simulados de usuários com copytrading
+const copytradingUsers = [
+  {
+    id: 1,
+    name: "João Silva",
+    email: "joao@example.com",
+    plan: "Premium",
+    broker: "XM",
+    accountId: "12345678",
+    status: "active",
+    lastSync: "2023-05-14T10:30:00",
+    traders: 3,
+  },
+  {
+    id: 2,
+    name: "Maria Oliveira",
+    email: "maria@example.com",
+    plan: "VIP",
+    broker: "IC Markets",
+    accountId: "87654321",
+    status: "active",
+    lastSync: "2023-05-14T11:45:00",
+    traders: 5,
+  },
+  {
+    id: 3,
+    name: "Pedro Santos",
+    email: "pedro@example.com",
+    plan: "Basic",
+    broker: "Exness",
+    accountId: "23456789",
+    status: "error",
+    lastSync: "2023-05-13T09:15:00",
+    traders: 1,
+  },
+  {
+    id: 4,
+    name: "Ana Costa",
+    email: "ana@example.com",
+    plan: "Premium",
+    broker: "FBS",
+    accountId: "34567890",
+    status: "pending",
+    lastSync: "2023-05-14T08:00:00",
+    traders: 2,
+  },
+  {
+    id: 5,
+    name: "Carlos Ferreira",
+    email: "carlos@example.com",
+    plan: "VIP",
+    broker: "Hotforex",
+    accountId: "45678901",
+    status: "active",
+    lastSync: "2023-05-14T14:20:00",
+    traders: 7,
+  },
+]
 
 export default function AdminPage() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const router = useRouter()
-  const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig)
-  const [editingNav, setEditingNav] = useState<number | null>(null)
-  const [newNavItem, setNewNavItem] = useState({ name: "", href: "" })
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState("")
+  const [activeTab, setActiveTab] = useState("dashboard")
+  const [users, setUsers] = useState(copytradingUsers)
+  const [syncingAll, setSyncingAll] = useState(false)
+  const [syncingUser, setSyncingUser] = useState<number | null>(null)
 
-  // Ao carregar, verificar se há configuração salva
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedConfig = localStorage.getItem("siteConfig")
-      if (savedConfig) {
-        setSiteConfig(JSON.parse(savedConfig))
-      }
+  // Simula a sincronização de um usuário específico
+  const handleSyncUser = (userId: number) => {
+    setSyncingUser(userId)
+
+    setTimeout(() => {
+      setUsers(
+        users.map((user) => {
+          if (user.id === userId) {
+            return {
+              ...user,
+              status: "active",
+              lastSync: new Date().toISOString(),
+            }
+          }
+          return user
+        }),
+      )
+      setSyncingUser(null)
+    }, 1500)
+  }
+
+  // Simula a sincronização de todos os usuários
+  const handleSyncAll = () => {
+    setSyncingAll(true)
+
+    setTimeout(() => {
+      setUsers(
+        users.map((user) => ({
+          ...user,
+          status: "active",
+          lastSync: new Date().toISOString(),
+        })),
+      )
+      setSyncingAll(false)
+    }, 2000)
+  }
+
+  // Simula o reset de uma conexão com erro
+  const handleResetConnection = (userId: number) => {
+    setUsers(
+      users.map((user) => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            status: "pending",
+            lastSync: new Date().toISOString(),
+          }
+        }
+        return user
+      }),
+    )
+  }
+
+  // Renderiza o status do usuário com o ícone apropriado
+  const renderStatus = (status: string) => {
+    switch (status) {
+      case "active":
+        return (
+          <Badge className="bg-green-600">
+            <CheckCircle className="h-3.5 w-3.5 mr-1" />
+            Ativo
+          </Badge>
+        )
+      case "error":
+        return (
+          <Badge className="bg-red-600">
+            <XCircle className="h-3.5 w-3.5 mr-1" />
+            Erro
+          </Badge>
+        )
+      case "pending":
+        return (
+          <Badge className="bg-yellow-600">
+            <AlertCircle className="h-3.5 w-3.5 mr-1" />
+            Pendente
+          </Badge>
+        )
+      default:
+        return <Badge className="bg-gray-600">Desconhecido</Badge>
     }
-  }, [])
+  }
 
-  // Redirecionar se não for autenticado ou admin
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/")
-    } else if (!isAdmin) {
-      router.push("/member-area")
-    }
-  }, [isAuthenticated, isAdmin, router])
+  // Formata a data para exibição
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString()
+  }
 
-  // Se não for admin, não mostrar conteúdo
   if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -97,80 +192,16 @@ export default function AdminPage() {
           <CardContent className="flex justify-center">
             <Lock className="h-16 w-16 text-gold-500" />
           </CardContent>
-          <CardFooter className="flex justify-center">
+          <CardContent className="flex justify-center">
             <Link href="/">
               <Button variant="default" className="bg-gold-600 hover:bg-gold-700 text-black">
                 Voltar para o Início
               </Button>
             </Link>
-          </CardFooter>
+          </CardContent>
         </Card>
       </div>
     )
-  }
-
-  // Função para salvar configurações
-  const saveConfig = () => {
-    setIsSaving(true)
-    // Simulação de salvamento - em produção seria uma API
-    setTimeout(() => {
-      localStorage.setItem("siteConfig", JSON.stringify(siteConfig))
-      setSaveMessage("Configurações salvas com sucesso!")
-      setIsSaving(false)
-
-      // Limpar mensagem após 3 segundos
-      setTimeout(() => {
-        setSaveMessage("")
-      }, 3000)
-    }, 1000)
-  }
-
-  // Funções para editar navegação
-  const startEditingNav = (index: number) => {
-    setEditingNav(index)
-  }
-
-  const cancelEditingNav = () => {
-    setEditingNav(null)
-  }
-
-  const saveNavItem = (index: number, item: { name: string; href: string }) => {
-    const updatedNav = [...siteConfig.navigation]
-    updatedNav[index] = item
-    setSiteConfig({
-      ...siteConfig,
-      navigation: updatedNav,
-    })
-    setEditingNav(null)
-  }
-
-  const addNavItem = () => {
-    if (newNavItem.name && newNavItem.href) {
-      setSiteConfig({
-        ...siteConfig,
-        navigation: [...siteConfig.navigation, newNavItem],
-      })
-      setNewNavItem({ name: "", href: "" })
-    }
-  }
-
-  const removeNavItem = (index: number) => {
-    const updatedNav = [...siteConfig.navigation]
-    updatedNav.splice(index, 1)
-    setSiteConfig({
-      ...siteConfig,
-      navigation: updatedNav,
-    })
-  }
-
-  // Função para alternar visibilidade das seções
-  const toggleSectionVisibility = (index: number) => {
-    const updatedSections = [...siteConfig.sections]
-    updatedSections[index].visible = !updatedSections[index].visible
-    setSiteConfig({
-      ...siteConfig,
-      sections: updatedSections,
-    })
   }
 
   return (
@@ -199,272 +230,291 @@ export default function AdminPage() {
           <p className="text-gray-400">Aqui você pode gerenciar as configurações e conteúdo do site MoreThanMoney.</p>
         </div>
 
-        {saveMessage && (
-          <div className="mb-6 p-3 bg-green-500/20 border border-green-500/30 rounded-md flex items-center">
-            <Check className="h-5 w-5 text-green-500 mr-2" />
-            <span className="text-green-400">{saveMessage}</span>
-          </div>
-        )}
-
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
-            <TabsTrigger value="general" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-              Geral
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              Dashboard
             </TabsTrigger>
-            <TabsTrigger value="navigation" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-              Navegação
+            <TabsTrigger value="users" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              Usuários
             </TabsTrigger>
-            <TabsTrigger value="content" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-              Conteúdo
+            <TabsTrigger value="copytrading" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              Copytrading
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+              Configurações
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general" className="space-y-6">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+          <TabsContent value="dashboard">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-black/50 border-gold-500/30">
+                <CardHeader>
+                  <CardTitle>Usuários</CardTitle>
+                  <CardDescription>Total de usuários registrados</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">125</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/50 border-gold-500/30">
+                <CardHeader>
+                  <CardTitle>Assinaturas Ativas</CardTitle>
+                  <CardDescription>Usuários com planos ativos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">87</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/50 border-gold-500/30">
+                <CardHeader>
+                  <CardTitle>Receita Mensal</CardTitle>
+                  <CardDescription>Receita total do mês atual</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">R$ 15.430</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-black/50 border-gold-500/30">
               <CardHeader>
-                <CardTitle>Configurações Gerais</CardTitle>
-                <CardDescription>Personalize as configurações básicas do site.</CardDescription>
+                <CardTitle>Atividade Recente</CardTitle>
+                <CardDescription>Últimas ações no sistema</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="site-name">Nome do Site</Label>
-                  <Input
-                    id="site-name"
-                    value={siteConfig.name}
-                    onChange={(e) => setSiteConfig({ ...siteConfig, name: e.target.value })}
-                    className="bg-gray-800/50 border-white/10 text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="logo-url">URL do Logo</Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      id="logo-url"
-                      value={siteConfig.logoUrl}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, logoUrl: e.target.value })}
-                      className="bg-gray-800/50 border-white/10 text-white"
-                    />
-                    <div className="h-10 w-10 bg-white rounded flex items-center justify-center overflow-hidden">
-                      <img
-                        src={siteConfig.logoUrl || "/placeholder.svg"}
-                        alt="Logo Preview"
-                        className="max-h-full max-w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="primary-color">Cor Primária</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="primary-color"
-                        type="text"
-                        value={siteConfig.primaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, primaryColor: e.target.value })}
-                        className="bg-gray-800/50 border-white/10 text-white"
-                      />
-                      <input
-                        type="color"
-                        value={siteConfig.primaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, primaryColor: e.target.value })}
-                        className="h-10 w-10 rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="secondary-color">Cor Secundária</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="secondary-color"
-                        type="text"
-                        value={siteConfig.secondaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, secondaryColor: e.target.value })}
-                        className="bg-gray-800/50 border-white/10 text-white"
-                      />
-                      <input
-                        type="color"
-                        value={siteConfig.secondaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, secondaryColor: e.target.value })}
-                        className="h-10 w-10 rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gold-500/30">
+                      <TableHead className="text-gold-400">Usuário</TableHead>
+                      <TableHead className="text-gold-400">Ação</TableHead>
+                      <TableHead className="text-gold-400">Data</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow className="border-gold-500/30">
+                      <TableCell>João Silva</TableCell>
+                      <TableCell>Assinatura do plano Premium</TableCell>
+                      <TableCell>14/05/2023 10:30</TableCell>
+                    </TableRow>
+                    <TableRow className="border-gold-500/30">
+                      <TableCell>Maria Oliveira</TableCell>
+                      <TableCell>Configuração de copytrading</TableCell>
+                      <TableCell>14/05/2023 11:45</TableCell>
+                    </TableRow>
+                    <TableRow className="border-gold-500/30">
+                      <TableCell>Pedro Santos</TableCell>
+                      <TableCell>Novo registro</TableCell>
+                      <TableCell>13/05/2023 09:15</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={saveConfig} disabled={isSaving} className="bg-gold-600 hover:bg-gold-700 text-black">
-                  {isSaving ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-              </CardFooter>
             </Card>
           </TabsContent>
 
-          <TabsContent value="navigation" className="space-y-6">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+          <TabsContent value="users">
+            <Card className="bg-black/50 border-gold-500/30">
               <CardHeader>
-                <CardTitle>Navegação do Site</CardTitle>
-                <CardDescription>Gerencie os links de navegação do site.</CardDescription>
+                <CardTitle>Gerenciamento de Usuários</CardTitle>
+                <CardDescription>Lista de todos os usuários registrados</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  {siteConfig.navigation.map((item, index) => (
-                    <div
-                      key={index}
-                      className="p-3 border border-gray-700 rounded-md flex items-center justify-between"
-                    >
-                      {editingNav === index ? (
-                        <div className="flex-1 flex items-center gap-2">
-                          <Input
-                            value={item.name}
-                            onChange={(e) => {
-                              const updatedNav = [...siteConfig.navigation]
-                              updatedNav[index].name = e.target.value
-                              setSiteConfig({ ...siteConfig, navigation: updatedNav })
-                            }}
-                            className="bg-gray-800/50 border-white/10 text-white"
-                            placeholder="Nome do Link"
-                          />
-                          <Input
-                            value={item.href}
-                            onChange={(e) => {
-                              const updatedNav = [...siteConfig.navigation]
-                              updatedNav[index].href = e.target.value
-                              setSiteConfig({ ...siteConfig, navigation: updatedNav })
-                            }}
-                            className="bg-gray-800/50 border-white/10 text-white"
-                            placeholder="URL"
-                          />
-                          <div className="flex gap-2">
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gold-500/30">
+                      <TableHead className="text-gold-400">Nome</TableHead>
+                      <TableHead className="text-gold-400">Email</TableHead>
+                      <TableHead className="text-gold-400">Plano</TableHead>
+                      <TableHead className="text-gold-400">Data de Registro</TableHead>
+                      <TableHead className="text-gold-400">Status</TableHead>
+                      <TableHead className="text-gold-400">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id} className="border-gold-500/30">
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.plan}</TableCell>
+                        <TableCell>14/05/2023</TableCell>
+                        <TableCell>{renderStatus(user.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
                             <Button
-                              size="icon"
                               variant="outline"
-                              onClick={() => saveNavItem(index, item)}
-                              className="border-green-500 text-green-400 hover:bg-green-500/10"
-                            >
-                              <Save className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={cancelEditingNav}
-                              className="border-red-500 text-red-400 hover:bg-red-500/10"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex-1">
-                            <span className="font-medium">{item.name}</span>
-                            <div className="text-sm text-gray-400 flex items-center">
-                              <LinkIcon className="h-3 w-3 mr-1" />
-                              {item.href}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={() => startEditingNav(index)}
+                              size="sm"
                               className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
                             >
-                              <Pencil className="h-4 w-4" />
+                              Editar
                             </Button>
                             <Button
-                              size="icon"
                               variant="outline"
-                              onClick={() => removeNavItem(index)}
+                              size="sm"
                               className="border-red-500 text-red-400 hover:bg-red-500/10"
                             >
-                              <X className="h-4 w-4" />
+                              Excluir
                             </Button>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 p-4 border border-dashed border-gray-700 rounded-md">
-                  <h3 className="text-lg font-medium mb-2">Adicionar Novo Link</h3>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newNavItem.name}
-                      onChange={(e) => setNewNavItem({ ...newNavItem, name: e.target.value })}
-                      className="bg-gray-800/50 border-white/10 text-white"
-                      placeholder="Nome do Link"
-                    />
-                    <Input
-                      value={newNavItem.href}
-                      onChange={(e) => setNewNavItem({ ...newNavItem, href: e.target.value })}
-                      className="bg-gray-800/50 border-white/10 text-white"
-                      placeholder="URL"
-                    />
-                    <Button onClick={addNavItem} className="bg-gold-600 hover:bg-gold-700 text-black">
-                      Adicionar
-                    </Button>
-                  </div>
-                </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={saveConfig} disabled={isSaving} className="bg-gold-600 hover:bg-gold-700 text-black">
-                  {isSaving ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-              </CardFooter>
             </Card>
           </TabsContent>
 
-          <TabsContent value="content" className="space-y-6">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Gerenciamento de Conteúdo</CardTitle>
-                <CardDescription>Controle quais seções estão visíveis no site.</CardDescription>
+          <TabsContent value="copytrading">
+            <Card className="bg-black/50 border-gold-500/30">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Gerenciamento de Copytrading</CardTitle>
+                  <CardDescription>Monitoramento e controle das conexões de copytrading</CardDescription>
+                </div>
+                <Button
+                  className="bg-gold-600 hover:bg-gold-700 text-black"
+                  onClick={handleSyncAll}
+                  disabled={syncingAll}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${syncingAll ? "animate-spin" : ""}`} />
+                  {syncingAll ? "Sincronizando..." : "Sincronizar Todos"}
+                </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  {siteConfig.sections.map((section, index) => (
-                    <div
-                      key={index}
-                      className="p-3 border border-gray-700 rounded-md flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium flex items-center">
-                          {section.id === "hero" && <Layout className="h-4 w-4 mr-2" />}
-                          {section.id === "scanner" && <ImageIcon className="h-4 w-4 mr-2" />}
-                          {section.id === "copytrading" && <FileText className="h-4 w-4 mr-2" />}
-                          {section.id === "education" && <BookOpen className="h-4 w-4 mr-2" />}
-                          {section.id === "membership" && <Users className="h-4 w-4 mr-2" />}
-                          {section.title}
-                        </div>
-                        <div className="text-sm text-gray-400">ID: {section.id}</div>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gold-500/30">
+                      <TableHead className="text-gold-400">Usuário</TableHead>
+                      <TableHead className="text-gold-400">Plano</TableHead>
+                      <TableHead className="text-gold-400">Corretora</TableHead>
+                      <TableHead className="text-gold-400">Conta</TableHead>
+                      <TableHead className="text-gold-400">Traders</TableHead>
+                      <TableHead className="text-gold-400">Status</TableHead>
+                      <TableHead className="text-gold-400">Última Sincronização</TableHead>
+                      <TableHead className="text-gold-400">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id} className="border-gold-500/30">
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.plan}</TableCell>
+                        <TableCell>{user.broker}</TableCell>
+                        <TableCell>{user.accountId}</TableCell>
+                        <TableCell>{user.traders}</TableCell>
+                        <TableCell>{renderStatus(user.status)}</TableCell>
+                        <TableCell>{formatDate(user.lastSync)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+                              onClick={() => handleSyncUser(user.id)}
+                              disabled={syncingUser === user.id}
+                            >
+                              <RefreshCw className={`h-3 w-3 mr-1 ${syncingUser === user.id ? "animate-spin" : ""}`} />
+                              {syncingUser === user.id ? "Sincronizando..." : "Sincronizar"}
+                            </Button>
+
+                            {user.status === "error" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-500 text-red-400 hover:bg-red-500/10"
+                                onClick={() => handleResetConnection(user.id)}
+                              >
+                                Resetar
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="bg-black/50 border-gold-500/30">
+              <CardHeader>
+                <CardTitle>Configurações do Sistema</CardTitle>
+                <CardDescription>Configurações gerais da plataforma</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">Configurações de Copytrading</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="auto-sync" className="rounded border-gray-300" defaultChecked />
+                        <label htmlFor="auto-sync">Ativar sincronização automática</label>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={section.visible ? "text-green-400" : "text-gray-500"}>
-                          {section.visible ? "Visível" : "Oculto"}
-                        </span>
-                        <div
-                          onClick={() => toggleSectionVisibility(index)}
-                          className={`w-12 h-6 flex items-center ${section.visible ? "bg-green-500/20 justify-end" : "bg-gray-700 justify-start"} rounded-full p-1 cursor-pointer`}
-                        >
-                          <div
-                            className={`h-4 w-4 rounded-full ${section.visible ? "bg-green-500" : "bg-gray-400"}`}
-                          ></div>
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="notify-users" className="rounded border-gray-300" defaultChecked />
+                        <label htmlFor="notify-users">Notificar usuários sobre problemas de conexão</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="log-history" className="rounded border-gray-300" defaultChecked />
+                        <label htmlFor="log-history">Registrar histórico de operações</label>
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">Configurações de Email</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="smtp-server" className="block mb-1">
+                          Servidor SMTP
+                        </label>
+                        <input
+                          id="smtp-server"
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-800/50 border-white/10 text-white"
+                          defaultValue="smtp.example.com"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="smtp-port" className="block mb-1">
+                          Porta
+                        </label>
+                        <input
+                          id="smtp-port"
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-800/50 border-white/10 text-white"
+                          defaultValue="587"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="smtp-email" className="block mb-1">
+                          Email de Envio
+                        </label>
+                        <input
+                          id="smtp-email"
+                          type="email"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-800/50 border-white/10 text-white"
+                          defaultValue="noreply@jifu.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <Button className="bg-gold-600 hover:bg-gold-700 text-black">Salvar Configurações</Button>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={saveConfig} disabled={isSaving} className="bg-gold-600 hover:bg-gold-700 text-black">
-                  {isSaving ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-              </CardFooter>
             </Card>
           </TabsContent>
         </Tabs>

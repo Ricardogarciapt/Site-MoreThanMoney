@@ -1,144 +1,147 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Check } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { LoginModal } from "./login-modal"
 
-export default function CopytradingPlans() {
+const plans = [
+  {
+    id: "basic",
+    name: "Básico",
+    price: "R$ 97/mês",
+    description: "Ideal para iniciantes que desejam começar no copytrading",
+    features: [
+      "Copie até 2 traders profissionais",
+      "Acesso a traders com rentabilidade de até 5% ao mês",
+      "Suporte por email",
+      "Relatórios mensais de desempenho",
+    ],
+    recommended: false,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: "R$ 197/mês",
+    description: "Para traders que buscam resultados consistentes",
+    features: [
+      "Copie até 5 traders profissionais",
+      "Acesso a traders com rentabilidade de até 10% ao mês",
+      "Suporte prioritário",
+      "Relatórios semanais de desempenho",
+      "Webinars exclusivos mensais",
+    ],
+    recommended: true,
+  },
+  {
+    id: "vip",
+    name: "VIP",
+    price: "R$ 497/mês",
+    description: "Para traders experientes que buscam máxima rentabilidade",
+    features: [
+      "Copie até 10 traders profissionais",
+      "Acesso a traders com rentabilidade acima de 15% ao mês",
+      "Suporte VIP 24/7",
+      "Relatórios diários de desempenho",
+      "Webinars exclusivos semanais",
+      "Consultoria individual mensal",
+      "Acesso antecipado a novos traders",
+    ],
+    recommended: false,
+  },
+]
+
+export function CopytradingPlans() {
+  const router = useRouter()
+  const { user, isAuthenticated } = useAuth()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+
+  const handlePlanSelection = (planId: string) => {
+    if (!isAuthenticated) {
+      setIsLoginModalOpen(true)
+      return
+    }
+
+    // Se autenticado, redireciona para a área de membro com a aba de copytrading selecionada
+    router.push("/member-area?tab=copytrading&plan=" + planId)
+  }
+
   return (
-    <section className="py-20 bg-black relative">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-            Planos de Copytrading MTM
-          </h2>
-          <p className="text-xl text-gray-300 mb-12">
-            Escolha o plano que melhor se adapta às suas necessidades e comece a copiar nossas operações
-            automaticamente.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Plano Básico */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl font-bold text-center">Plano Básico</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">5%</span>
-                <span className="text-gray-400 ml-2">/mensal</span>
-              </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {plans.map((plan) => (
+          <Card
+            key={plan.id}
+            className={`border ${
+              plan.recommended
+                ? "border-purple-500 bg-gradient-to-b from-gray-800 to-gray-900"
+                : "border-gray-700 bg-gray-800"
+            } text-white hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300`}
+          >
+            {plan.recommended && (
+              <div className="bg-purple-600 text-white text-center py-1 text-sm font-medium">RECOMENDADO</div>
+            )}
+            <CardHeader>
+              <CardTitle className="text-2xl">{plan.name}</CardTitle>
+              <CardDescription className="text-gray-300">{plan.description}</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-300 mb-4">Ideal para quem está começando no mundo do copytrading</p>
+            <CardContent>
+              <div className="text-3xl font-bold mb-6">{plan.price}</div>
               <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Copytrading automático 24/7</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso ao sistema Tap to Trade</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Suporte técnico básico</span>
-                </li>
-                <li className="flex items-start font-semibold text-gold-400">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Depósito mínimo: 500€</span>
-                </li>
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
+                    <span className="text-gray-300">{feature}</span>
+                  </li>
+                ))}
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <button
+                onClick={() => handlePlanSelection(plan.id)}
+                className={`w-full py-2 rounded-md font-medium transition-colors ${
+                  plan.recommended
+                    ? "bg-purple-600 hover:bg-purple-700 text-white"
+                    : "bg-gray-700 hover:bg-gray-600 text-white"
+                }`}
+              >
+                Selecionar Plano
+              </button>
             </CardFooter>
           </Card>
+        ))}
+      </div>
 
-          {/* Plano Premium */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-gold-500 text-black px-4 py-1 text-sm font-bold">POPULAR</div>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl font-bold text-center">Plano Premium</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">30%</span>
-                <span className="text-gray-400 ml-2">/mensal</span>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-300 mb-4">Nossa opção mais popular com o melhor custo-benefício</p>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Todas as vantagens do plano básico</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Gestão de risco personalizada</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Acesso a estratégias avançadas</span>
-                </li>
-                <li className="flex items-start font-semibold text-gold-400">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Depósito mínimo: 350€</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          {/* Plano VIP */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl font-bold text-center">Plano VIP</CardTitle>
-              <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-gold-500">VIP</span>
-                <span className="text-gray-400 ml-2">/customizado</span>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-300 mb-4">Experiência exclusiva com atendimento VIP personalizado</p>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Todas as vantagens dos outros planos</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Mentoria individual mensal</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Estratégias exclusivas de alto retorno</span>
-                </li>
-                <li className="flex items-start font-semibold text-gold-400">
-                  <Check className="h-5 w-5 text-gold-500 mr-2 shrink-0 mt-0.5" />
-                  <span>Depósito mínimo: 1000€</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+      <div className="text-center mb-16">
+        <h2 className="text-2xl font-bold mb-4">Como funciona o Copytrading?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <div className="text-purple-500 text-4xl font-bold mb-4">01</div>
+            <h3 className="text-xl font-semibold mb-2">Escolha seu plano</h3>
+            <p className="text-gray-300">
+              Selecione o plano que melhor se adapta às suas necessidades e objetivos financeiros.
+            </p>
+          </div>
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <div className="text-purple-500 text-4xl font-bold mb-4">02</div>
+            <h3 className="text-xl font-semibold mb-2">Configure sua conta</h3>
+            <p className="text-gray-300">
+              Conecte sua conta de corretora e configure os parâmetros de risco de acordo com seu perfil.
+            </p>
+          </div>
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <div className="text-purple-500 text-4xl font-bold mb-4">03</div>
+            <h3 className="text-xl font-semibold mb-2">Lucre automaticamente</h3>
+            <p className="text-gray-300">
+              Relaxe enquanto nossos traders profissionais operam e suas operações são copiadas automaticamente.
+            </p>
+          </div>
         </div>
       </div>
-    </section>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+    </>
   )
 }
