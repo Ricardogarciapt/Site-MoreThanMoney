@@ -8,7 +8,7 @@ import ParticleBackground from "@/components/particle-background"
 import JifuEducationPath from "@/components/jifu-education-path"
 import CopytradingPath from "@/components/copytrading-path"
 import ScannerSection from "@/components/scanner-section"
-import Link from "next/link"
+import AutomationCards from "@/components/automation-cards"
 
 export default function NewLandingPage() {
   const [currentView, setCurrentView] = useState<"intro" | "pathSelection" | "education" | "automation">("intro")
@@ -34,14 +34,6 @@ export default function NewLandingPage() {
 
   return (
     <>
-      <div className="fixed top-4 right-4 z-50">
-        <Link href="/">
-          <Button variant="outline" className="border-gold-500 text-gold-400 hover:bg-gold-500/10">
-            Voltar ao Site Original
-          </Button>
-        </Link>
-      </div>
-
       <ParticleBackground />
 
       {currentView === "intro" && (
@@ -93,7 +85,7 @@ export default function NewLandingPage() {
                   </div>
                   <h3 className="text-2xl font-bold mb-4">Quero Aprender</h3>
                   <p className="text-gray-300 mb-6">
-                    Acesse formação especializada em trading, investimentos, e-commerce, IA e muito mais através da
+                    Acede a formação especializada em trading, investimentos, e-commerce, IA e muito mais através da
                     plataforma Jifu.
                   </p>
                   <Button className="bg-gold-600 hover:bg-gold-700 text-black mt-auto">
@@ -112,7 +104,7 @@ export default function NewLandingPage() {
                   </div>
                   <h3 className="text-2xl font-bold mb-4">Quero Automatizar</h3>
                   <p className="text-gray-300 mb-6">
-                    Automatize seus investimentos com nosso serviço de copytrading e tenha acesso ao Scanner MTM com
+                    Automatiza os teus investimentos com nosso serviço de copytrading e tem acesso ao Scanner MTM com
                     inteligência artificial.
                   </p>
                   <Button className="bg-gold-600 hover:bg-gold-700 text-black mt-auto">
@@ -127,7 +119,12 @@ export default function NewLandingPage() {
 
       {currentView === "education" && <JifuEducationPath />}
 
-      {currentView === "automation" && <CopytradingPath />}
+      {currentView === "automation" && (
+        <>
+          <AutomationCards />
+          <CopytradingPath />
+        </>
+      )}
 
       <ScannerSection />
     </>

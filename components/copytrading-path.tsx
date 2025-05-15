@@ -3,332 +3,373 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Check, Download, ExternalLink, Play } from "lucide-react"
+import { ArrowRight, TrendingUp, Shield, Clock, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Slider } from "@/components/ui/slider"
+import { useAuth } from "@/contexts/auth-context"
+import LoginForm from "@/components/login-form"
 
 export default function CopytradingPath() {
-  const [step, setStep] = useState<"intro" | "account" | "confirmation" | "setup">("intro")
-  const [accountNumber, setAccountNumber] = useState("")
+  const { isAuthenticated } = useAuth()
+  const [riskPercentage, setRiskPercentage] = useState(1)
+  const [activeTab, setActiveTab] = useState("setup")
 
-  const handleContinue = () => {
-    if (step === "intro") {
-      setStep("account")
-    } else if (step === "account") {
-      setStep("confirmation")
-    } else if (step === "confirmation") {
-      setStep("setup")
-    }
+  if (!isAuthenticated) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center">
+        <div className="container mx-auto px-4 py-20">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+              Copytrading MTM
+            </h2>
+            <p className="text-xl text-gray-300 mb-12">
+              Faça login para configurar o serviço de copytrading e começar a copiar as operações dos nossos traders
+              profissionais.
+            </p>
+          </div>
+
+          <LoginForm />
+        </div>
+      </section>
+    )
   }
 
   return (
-    <section className="relative min-h-screen py-20">
-      <div className="container mx-auto px-4">
+    <section className="relative min-h-screen flex items-center justify-center">
+      <div className="container mx-auto px-4 py-20">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-            Copytrading MoreThanMoney
+            Copytrading MTM
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Automatize seus investimentos com nossas estratégias comprovadas.
+          <p className="text-xl text-gray-300 mb-12">
+            Automatize seus investimentos copiando as operações dos nossos traders profissionais.
           </p>
         </div>
 
-        {step === "intro" && (
-          <div className="max-w-4xl mx-auto">
-            <div className="aspect-video bg-black/50 border border-gold-500/30 rounded-xl overflow-hidden mb-8">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-                    <Play className="h-8 w-8 text-gold-500" />
-                  </div>
-                  <p className="text-gray-400">Vídeo de Apresentação do Copytrading</p>
-                </div>
-              </div>
-            </div>
-
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-8">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-6">Estratégias Disponíveis</h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gray-800/50 p-6 rounded-xl border border-white/5">
-                    <h4 className="text-xl font-bold mb-2">Conservador</h4>
-                    <p className="text-gray-300 mb-4">Estratégia de baixo risco com foco em consistência.</p>
-                    <div className="text-2xl font-bold text-gold-400 mb-2">5% mensal</div>
-                    <p className="text-sm text-gray-400">Depósito mínimo: 100€</p>
-                  </div>
-
-                  <div className="bg-gray-800/50 p-6 rounded-xl border border-white/5">
-                    <h4 className="text-xl font-bold mb-2">Agressivo</h4>
-                    <p className="text-gray-300 mb-4">Estratégia de alto risco com foco em retornos expressivos.</p>
-                    <div className="text-2xl font-bold text-gold-400 mb-2">30% mensal</div>
-                    <p className="text-sm text-gray-400">Depósito mínimo: 100€</p>
-                  </div>
-
-                  <div className="bg-gray-800/50 p-6 rounded-xl border border-white/5">
-                    <h4 className="text-xl font-bold mb-2">VIP Manual</h4>
-                    <p className="text-gray-300 mb-4">Gestão personalizada adaptada ao seu perfil.</p>
-                    <div className="text-2xl font-bold text-gold-400 mb-2">10-15% mensal</div>
-                    <p className="text-sm text-gray-400">Depósito mínimo: 1000€</p>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <h4 className="text-xl font-bold mb-4">Performance Fee</h4>
-                  <ul className="space-y-2 text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                      <span>30% (padrão)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                      <span>10-15% para fundadores ou clientes com packs Jifu</span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="text-center">
-              <Button
-                onClick={handleContinue}
-                className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg"
-              >
-                Quero Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === "account" && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-8">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-6 text-center">Criar Conta de Negociação</h3>
-
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">1</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Acesse a corretora parceira</h4>
-                      <p className="text-gray-300 mb-2">
-                        Clique no botão abaixo para acessar o site da corretora parceira e criar sua conta.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">2</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Preencha o formulário de registro</h4>
-                      <p className="text-gray-300 mb-2">
-                        Complete o formulário com seus dados pessoais e informações de contato.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">3</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Verifique sua identidade</h4>
-                      <p className="text-gray-300 mb-2">
-                        Complete o processo de verificação KYC (Conheça Seu Cliente) enviando os documentos solicitados.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">4</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Realize o depósito mínimo</h4>
-                      <p className="text-gray-300 mb-2">
-                        Faça um depósito mínimo de 100€ (ou 1000€ para a estratégia VIP) em sua conta.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">5</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Anote seu número de conta</h4>
-                      <p className="text-gray-300 mb-2">
-                        Após a criação da conta, anote o número da sua conta para o próximo passo.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 text-center">
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                    <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg">
-                      Criar Conta na Corretora <ExternalLink className="ml-2 h-5 w-5" />
-                    </Button>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-8">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-bold mb-4">Já criou sua conta?</h3>
-                <p className="text-gray-300 mb-6">
-                  Insira o número da sua conta abaixo e clique em continuar para prosseguir com a configuração do
-                  copytrading.
-                </p>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="account-number">Número da Conta</Label>
-                    <Input
-                      id="account-number"
-                      placeholder="Ex: 12345678"
-                      value={accountNumber}
-                      onChange={(e) => setAccountNumber(e.target.value)}
-                      className="bg-gray-800/50 border-white/10 text-white"
-                    />
-                  </div>
-
-                  <Button
-                    onClick={handleContinue}
-                    className="w-full bg-gold-600 hover:bg-gold-700 text-black"
-                    disabled={!accountNumber}
-                  >
-                    Continuar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {step === "confirmation" && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-8">
-              <CardContent className="p-8 text-center">
-                <div className="h-20 w-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
-                  <Check className="h-10 w-10 text-green-500" />
-                </div>
-
-                <h3 className="text-2xl font-bold mb-4">Conta Verificada</h3>
-                <p className="text-gray-300 mb-8">
-                  Sua conta número <span className="text-gold-400 font-bold">{accountNumber}</span> foi verificada com
-                  sucesso. Agora vamos configurar o copytrading.
-                </p>
-
-                <Button
-                  onClick={handleContinue}
-                  className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg"
+        <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
+                <TabsTrigger value="setup" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+                  Configuração
+                </TabsTrigger>
+                <TabsTrigger
+                  value="portfolios"
+                  className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
                 >
-                  Configurar Copytrading <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                  Portfólios
+                </TabsTrigger>
+                <TabsTrigger value="ideas" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+                  Ideias dos Educadores
+                </TabsTrigger>
+              </TabsList>
 
-        {step === "setup" && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-8">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-6 text-center">Configuração do Copytrading</h3>
+              <TabsContent value="setup" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-bold">Vantagens do Copytrading</h3>
 
-                <div className="aspect-video bg-black/50 border border-gold-500/30 rounded-xl overflow-hidden mb-8">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-                        <Play className="h-8 w-8 text-gold-500" />
+                    <div className="flex items-start space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0">
+                        <TrendingUp className="h-5 w-5 text-gold-500" />
                       </div>
-                      <p className="text-gray-400">Vídeo de Configuração do Copytrading</p>
+                      <div>
+                        <h4 className="font-bold">Resultados Consistentes</h4>
+                        <p className="text-gray-300">
+                          Copie as operações de traders com histórico comprovado de resultados.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0">
+                        <Shield className="h-5 w-5 text-gold-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold">Gestão de Risco</h4>
+                        <p className="text-gray-300">Sistemas com controle de risco e proteção do seu capital.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5 text-gold-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold">Automatizado 24/7</h4>
+                        <p className="text-gray-300">
+                          Opere nos mercados 24 horas por dia sem precisar acompanhar os gráficos.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 p-4 bg-gold-500/10 border border-gold-500/30 rounded-lg">
+                      <h4 className="font-bold mb-2">Sistema Tap to Trade</h4>
+                      <p className="text-gray-300 mb-4">
+                        Nosso sistema Tap to Trade envia sinais diretamente para seu dispositivo. Você tem 2 minutos
+                        para aceitar cada sinal, garantindo que você esteja sempre no controle das suas operações.
+                      </p>
+                      <div className="flex items-center">
+                        <Check className="h-5 w-5 text-green-500 mr-2" />
+                        <span>Notificações em tempo real</span>
+                      </div>
+                      <div className="flex items-center mt-1">
+                        <Check className="h-5 w-5 text-green-500 mr-2" />
+                        <span>Prazo de 2 minutos para aceitar cada sinal</span>
+                      </div>
+                      <div className="flex items-center mt-1">
+                        <Check className="h-5 w-5 text-green-500 mr-2" />
+                        <span>Controle total sobre suas operações</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">1</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Baixe o manual de configuração</h4>
-                      <p className="text-gray-300 mb-2">
-                        Clique no botão abaixo para baixar o PDF com instruções detalhadas sobre como configurar o
-                        copytrading na IXSocial.
-                      </p>
-                      <Button variant="outline" className="mt-2 border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                        <Download className="mr-2 h-4 w-4" /> Baixar Manual PDF
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-bold">Configure sua Conta</h3>
+                    <p className="text-gray-300">
+                      Preencha os dados abaixo para configurar sua conta de copytrading e começar a copiar nossas
+                      operações automaticamente.
+                    </p>
+
+                    <form className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="platform">Plataforma</Label>
+                        <select
+                          id="platform"
+                          className="w-full h-10 px-3 py-2 bg-gray-800/50 border border-white/10 rounded-md text-white"
+                        >
+                          <option value="mt4">MetaTrader 4</option>
+                          <option value="mt5">MetaTrader 5</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="broker">Corretora</Label>
+                        <Input
+                          id="broker"
+                          placeholder="Nome da sua corretora"
+                          className="bg-gray-800/50 border-white/10 text-white"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="account">Número da Conta</Label>
+                        <Input
+                          id="account"
+                          placeholder="Seu número de conta"
+                          className="bg-gray-800/50 border-white/10 text-white"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Senha do Investidor</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="Senha de acesso somente leitura"
+                          className="bg-gray-800/50 border-white/10 text-white"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="master-password">Senha Mestre</Label>
+                        <Input
+                          id="master-password"
+                          type="password"
+                          placeholder="Senha mestre para execução de ordens"
+                          className="bg-gray-800/50 border-white/10 text-white"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <Label htmlFor="risk">Nível de Risco: {riskPercentage}%</Label>
+                          <span className="text-sm text-gray-400">(0.1% - 10%)</span>
+                        </div>
+                        <Slider
+                          id="risk"
+                          min={0.1}
+                          max={10}
+                          step={0.1}
+                          value={[riskPercentage]}
+                          onValueChange={(value) => setRiskPercentage(value[0])}
+                          className="py-4"
+                        />
+                        <div className="flex justify-between text-xs text-gray-400">
+                          <span>Conservador</span>
+                          <span>Moderado</span>
+                          <span>Agressivo</span>
+                        </div>
+                      </div>
+
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full mt-4">
+                        Configurar Copytrading <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
-                    </div>
+                    </form>
                   </div>
+                </div>
+              </TabsContent>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">2</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Acesse a plataforma IXSocial</h4>
-                      <p className="text-gray-300 mb-2">
-                        Faça login na plataforma IXSocial com as credenciais da sua conta.
+              <TabsContent value="portfolios" className="mt-0">
+                <div className="space-y-8">
+                  <h3 className="text-2xl font-bold">Portfólios Recomendados</h3>
+                  <p className="text-gray-300">
+                    Explore nossos portfólios diversificados criados por especialistas para diferentes perfis de
+                    investidor.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Portfólio 1 */}
+                    <div className="bg-black/50 border border-gold-500/30 rounded-lg p-5">
+                      <h4 className="text-xl font-bold mb-2">Portfólio Cripto</h4>
+                      <p className="text-gray-300 mb-4">
+                        Diversificação em criptomoedas de alta capitalização e projetos promissores.
                       </p>
-                      <Button variant="outline" className="mt-2 border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                        <ExternalLink className="mr-2 h-4 w-4" /> Acessar IXSocial
-                      </Button>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between">
+                          <span>Bitcoin (BTC)</span>
+                          <span className="text-gold-400">40%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Ethereum (ETH)</span>
+                          <span className="text-gold-400">30%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Solana (SOL)</span>
+                          <span className="text-gold-400">15%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Outros</span>
+                          <span className="text-gold-400">15%</span>
+                        </div>
+                      </div>
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Copiar Portfólio</Button>
                     </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">3</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Configure as permissões</h4>
-                      <p className="text-gray-300 mb-2">
-                        Siga as instruções do vídeo e do PDF para configurar as permissões de copytrading.
+                    {/* Portfólio 2 */}
+                    <div className="bg-black/50 border border-gold-500/30 rounded-lg p-5">
+                      <h4 className="text-xl font-bold mb-2">Portfólio ETFs</h4>
+                      <p className="text-gray-300 mb-4">
+                        Diversificação global através de ETFs de diferentes setores e regiões.
                       </p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between">
+                          <span>S&P 500 (SPY)</span>
+                          <span className="text-gold-400">35%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tecnologia (QQQ)</span>
+                          <span className="text-gold-400">25%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Mercados Emergentes</span>
+                          <span className="text-gold-400">20%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Outros</span>
+                          <span className="text-gold-400">20%</span>
+                        </div>
+                      </div>
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Copiar Portfólio</Button>
                     </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">4</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Selecione sua estratégia</h4>
-                      <p className="text-gray-300 mb-2">
-                        Escolha entre as estratégias Conservadora, Agressiva ou VIP Manual de acordo com seu perfil de
-                        risco.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-gold-500 font-bold">5</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium mb-2">Ative o copytrading</h4>
-                      <p className="text-gray-300 mb-2">Finalize a configuração ativando o copytrading em sua conta.</p>
+                    {/* Portfólio 3 */}
+                    <div className="bg-black/50 border border-gold-500/30 rounded-lg p-5">
+                      <h4 className="text-xl font-bold mb-2">Portfólio CFDs</h4>
+                      <p className="text-gray-300 mb-4">Exposição a diferentes classes de ativos através de CFDs.</p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between">
+                          <span>Forex</span>
+                          <span className="text-gold-400">40%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Índices</span>
+                          <span className="text-gold-400">30%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Commodities</span>
+                          <span className="text-gold-400">20%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Ações</span>
+                          <span className="text-gold-400">10%</span>
+                        </div>
+                      </div>
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Copiar Portfólio</Button>
                     </div>
                   </div>
                 </div>
+              </TabsContent>
 
-                <div className="mt-8 text-center">
-                  <p className="text-gray-300 mb-4">Precisa de ajuda? Entre em contato com nosso suporte.</p>
-                  <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium">Contatar Suporte</Button>
+              <TabsContent value="ideas" className="mt-0">
+                <div className="space-y-8">
+                  <h3 className="text-2xl font-bold">Ideias dos Educadores</h3>
+                  <p className="text-gray-300">
+                    Acompanhe as análises e ideias de trading dos nossos educadores e especialistas de mercado.
+                  </p>
+
+                  <div className="space-y-6">
+                    {/* Ideia 1 */}
+                    <div className="bg-black/50 border border-gold-500/30 rounded-lg p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="text-xl font-bold">EUR/USD: Oportunidade de Compra</h4>
+                          <p className="text-sm text-gray-400">Por Ricardo Garcia • 15 de Maio, 2025</p>
+                        </div>
+                        <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-sm">Compra</span>
+                      </div>
+                      <p className="text-gray-300 mb-4">
+                        O par EUR/USD formou uma estrutura de mercado de alta após romper a resistência em 1.1208.
+                        Espero um movimento para 1.1300 nas próximas semanas.
+                      </p>
+                      <div className="flex justify-between text-sm mb-4">
+                        <div>
+                          <span className="text-gray-400">Entrada:</span> <span>1.1208</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Stop:</span> <span className="text-red-400">1.1169</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Alvo:</span> <span className="text-green-400">1.1300</span>
+                        </div>
+                      </div>
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Copiar Operação</Button>
+                    </div>
+
+                    {/* Ideia 2 */}
+                    <div className="bg-black/50 border border-gold-500/30 rounded-lg p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="text-xl font-bold">BTC/USD: Correção de Curto Prazo</h4>
+                          <p className="text-sm text-gray-400">Por Ana Silva • 14 de Maio, 2025</p>
+                        </div>
+                        <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded text-sm">Venda</span>
+                      </div>
+                      <p className="text-gray-300 mb-4">
+                        Bitcoin está sobrecomprado no curto prazo e deve corrigir antes de continuar sua tendência de
+                        alta. Oportunidade para operação de venda com alvo na média móvel de 50 períodos.
+                      </p>
+                      <div className="flex justify-between text-sm mb-4">
+                        <div>
+                          <span className="text-gray-400">Entrada:</span> <span>102,000</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Stop:</span> <span className="text-red-400">104,500</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Alvo:</span> <span className="text-green-400">96,000</span>
+                        </div>
+                      </div>
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">Copiar Operação</Button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </section>
   )

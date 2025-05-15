@@ -1,8 +1,17 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useEffect, useRef } from "react"
 
-const ParticleBackground = () => {
+interface Particle {
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  color: string
+}
+
+export default function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -12,108 +21,82 @@ const ParticleBackground = () => {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    let particlesArray: { x: number; y: number; size: number; speedX: number; speedY: number; color: string }[] = []
-    const numberOfParticles = 100
-
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-
-    class Particle {
-      x: number
-      y: number
-      size: number
-      speedX: number
-      speedY: number
-      color: string
-
-      constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
-        this.size = Math.random() * 2.5 + 1
-        this.speedX = Math.random() * 1 - 0.5
-        this.speedY = Math.random() * 1 - 0.5
-        this.color = "rgba(255,209,31,0.3)"
-      }
-      draw() {
-        ctx.fillStyle = this.color
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-        ctx.closePath()
-        ctx.fill()
-      }
-      update() {
-        this.x += this.speedX
-        this.y += this.speedY
-        if (this.x < 0 || this.x > canvas.width) {
-          this.speedX = -this.speedX
-        }
-        if (this.y < 0 || this.y > canvas.height) {
-          this.speedY = -this.speedY
-        }
-        this.draw()
-      }
+    // Configurar o canvas para ocupar toda a tela
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
     }
 
-    function init() {
-      particlesArray = []
-      for (let i = 0; i < numberOfParticles; i++) {
-        const x = Math.random() * canvas.width
-        const y = Math.random() * canvas.height
-        particlesArray.push(new Particle(x, y))
-      }
+    resizeCanvas()
+    window.addEventListener("resize", resizeCanvas)
+
+    // Criar partículas
+    const particles: Particle[] = []
+    const particleCount = 50
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        color: `rgba(249, 178, 8, ${Math.random() * 0.5 + 0.1})`, // Cor dourada com opacidade variável
+      })
     }
 
-    function animate() {
+    // Função para animar as partículas
+    const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update()
-      }
-      connect()
-      requestAnimationFrame(animate)
-    }
 
-    function connect() {
-      let opacityValue = 1
-      for (let a = 0; a < particlesArray.length; a++) {
-        for (let b = a; b < particlesArray.length; b++) {
-          const distance = Math.sqrt(
-            (particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x) +
-              (particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y),
-          )
+      particles.forEach((particle) => {
+        // Mover partícula
+        particle.x += particle.speedX
+        particle.y += particle.speedY
+
+        // Verificar limites da tela
+        if (particle.x < 0 || particle.x > canvas.width) {
+          particle.speedX = -particle.speedX
+        }
+
+        if (particle.y < 0 || particle.y > canvas.height) {
+          particle.speedY = -particle.speedY
+        }
+
+        // Desenhar partícula
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+        ctx.fillStyle = particle.color
+        ctx.fill()
+      })
+
+      // Conectar partículas próximas
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
           if (distance < 100) {
-            opacityValue = 1 - distance / 100
-            ctx.strokeStyle = "rgba(255,209,31," + opacityValue + ")"
-            ctx.lineWidth = 1
             ctx.beginPath()
-            ctx.moveTo(particlesArray[a].x, particlesArray[a].y)
-            ctx.lineTo(particlesArray[b].x, particlesArray[b].y)
+            ctx.strokeStyle = `rgba(249, 178, 8, ${0.1 * (1 - distance / 100)})`
+            ctx.lineWidth = 0.5
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
             ctx.stroke()
           }
         }
       }
+
+      requestAnimationFrame(animate)
     }
 
-    window.addEventListener("resize", () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      init()
-    })
-
-    init()
     animate()
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas)
+    }
   }, [])
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: -1,
-      }}
-    />
-  )
+  return <canvas ref={canvasRef} className="fixed inset-0 z-0 bg-transparent pointer-events-none" />
 }
-
-export default ParticleBackground

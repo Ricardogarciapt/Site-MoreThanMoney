@@ -68,3 +68,29 @@
     background-position: 200% center;
   }
 }
+
+@keyframes logo-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes logo-slide-in {
+  0% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-logo-fade-in {
+  animation: logo-fade-in 1.5s ease forwards;
+}
+
+.animate-logo-slide-in {
+  animation: logo-slide-in 1s ease-out forwards;
+}

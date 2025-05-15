@@ -1,139 +1,87 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Brain, Check, ExternalLink, Zap } from "lucide-react"
+import { ArrowRight, BarChart2 } from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
+import ScannerPricing from "@/components/scanner-pricing"
 
 export default function ScannerSection() {
   return (
-    <section id="scanner" className="py-20 bg-black relative">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <Badge className="mb-4 bg-gold-500/20 text-gold-400 hover:bg-gold-500/20 border-gold-500/50">
-            Scanner IA
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-            Scanner MoreThanMoney
-          </h2>
-          <p className="text-gray-300 text-lg">
-            O Scanner MTM é a nossa ferramenta exclusiva que analisa o mercado por ti — mesmo que não tenhas qualquer experiência em trading.
-
-Com tecnologia baseada em estrutura de mercado e análise de volatilidade (ATR), ele identifica automaticamente os melhores momentos para entrar e sair de uma operação. Em vez de perderes horas a analisar gráficos complicados, o Scanner faz isso por ti em segundos.
-
-✅ Detecta tendências e zonas de reversão com alta precisão
-✅ Usa lógica de mercado profissional sem precisar entender análise técnica
-✅ Atualizado em tempo real no TradingView, pronto a usar com um clique
-✅ Ideal para quem quer investir com clareza, confiança e sem complicações
-
-Não é magia. É inteligência aplicada. Começa hoje com uma vantagem real no mercado.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-            <CardContent className="p-8">
-              <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mb-6">
-                <Brain className="h-8 w-8 text-gold-500" />
-              </div>
-
-              <h3 className="text-2xl font-bold mb-4">Licença Anual</h3>
-              <div className="text-4xl font-bold text-gold-400 mb-6">€200</div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Análise de mercado 24/7</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Integração com TradingView</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Aulas de configuração</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Comunidade de suporte</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Atualizações durante 1 ano</span>
-                </li>
-              </ul>
-
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                  Comprar Licença Anual <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-            <CardContent className="p-8">
-              <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mb-6">
-                <Zap className="h-8 w-8 text-gold-500" />
-              </div>
-
-              <h3 className="text-2xl font-bold mb-4">Licença Vitalícia</h3>
-              <div className="text-4xl font-bold text-gold-400 mb-6">€1000</div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Análise de mercado 24/7</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Integração com TradingView</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Aulas de configuração avançada</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Suporte prioritário</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Atualizações vitalícias</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-gold-500 shrink-0 mt-0.5" />
-                  <span className="text-gray-300">Acesso a recursos exclusivos</span>
-                </li>
-              </ul>
-
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                  Comprar Licença Vitalícia <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="max-w-4xl mx-auto mt-12 bg-black/50 border border-gold-500/30 rounded-xl p-6 backdrop-blur-sm">
-          <div className="flex items-start gap-4">
-            <div className="h-10 w-10 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mt-1">
-              <Brain className="h-5 w-5 text-gold-500" />
-            </div>
-            <div>
-              <h4 className="text-lg font-medium mb-2">Sobre o Scanner MTM</h4>
-              <p className="text-gray-300 mb-4">
-                O Scanner MTM é uma ferramenta exclusiva desenvolvida pela MoreThanMoney que utiliza inteligência
-                artificial para analisar o mercado 24/7 e identificar oportunidades de trading com alta probabilidade de
-                sucesso.
-              </p>
-              <p className="text-gray-300">
-                Com o Scanner MTM, você terá acesso a sinais precisos, análises detalhadas e alertas em tempo real, tudo
-                integrado diretamente ao TradingView para facilitar sua operação.
-              </p>
-            </div>
+    <>
+      <section className="relative py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+              Scanner MTM
+            </h2>
+            <p className="text-xl text-gray-300 mb-12">
+              Acesso ao nosso scanner exclusivo com tecnologia de inteligência artificial para identificar as melhores
+              oportunidades de mercado.
+            </p>
           </div>
+
+          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm max-w-4xl mx-auto">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="md:w-1/2">
+                  <div className="h-20 w-20 rounded-full bg-gold-500/20 flex items-center justify-center mb-6 mx-auto md:mx-0">
+                    <BarChart2 className="h-10 w-10 text-gold-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-center md:text-left">Scanner MTM V3.4</h3>
+                  <p className="text-gray-300 mb-6">
+                    O Nosso scanner proprietário identifica estruturas de mercado e pontos de entrada com alta
+                    probabilidade de sucesso. Ideal para traders de todos os níveis.
+                  </p>
+                  <ul className="space-y-2 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Análise em tempo real de múltiplos pares</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Identificação automática de padrões</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gold-500 mr-2">•</span>
+                      <span>Alertas de oportunidades de entrada com sinais Visuais</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="md:w-1/2 space-y-6">
+                  <div className="rounded-lg overflow-hidden border border-gold-500/30">
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xqhsTkunXOZGdcBsEBg0ANgZqd50v5.png"
+                      alt="Scanner MTM Preview"
+                      width={600}
+                      height={400}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-4">
+                    <Link href="/scanner">
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                        Acessar Scanner <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+
+                    <Link href="/scanner-access">
+                      <Button variant="outline" className="border-gold-500 text-gold-400 hover:bg-gold-500/10 w-full">
+                        Solicitar Acesso <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <ScannerPricing />
+    </>
   )
 }

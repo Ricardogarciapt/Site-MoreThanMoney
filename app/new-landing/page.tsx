@@ -1,9 +1,12 @@
 import NewLandingPage from "@/components/new-landing-page"
+import { AuthProvider } from "@/contexts/auth-context"
 
 export default function NewLanding() {
   return (
-    <main className="relative min-h-screen bg-black text-white">
-      <NewLandingPage />
-    </main>
+    <AuthProvider>
+      <main className="relative min-h-screen bg-black text-white">
+        <NewLandingPage />
+      </main>
+    </AuthProvider>
   )
 }
