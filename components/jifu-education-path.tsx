@@ -413,7 +413,7 @@ export default function JifuEducationPath() {
             {/* Prévia das notícias e dados de mercado JIFU */}
             <div className="rounded-lg overflow-hidden border border-gold-500/30 mb-8">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6596-FZ7ucuMoNg4UR1on99cdvhniXZ02vc.jpeg"
+                src="/jifu-news-market-data.png"
                 alt="Planos de Educação JIFU"
                 width={1200}
                 height={600}
