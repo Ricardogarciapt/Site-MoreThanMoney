@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut, ArrowLeft, HelpCircle, Home } from "lucide-react"
 import Link from "next/link"
 import ScannerInfo from "@/components/scanner-info"
+import TradingViewWidget from "./trading-view-widget"
 
 export default function ScannerView() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -71,15 +72,7 @@ export default function ScannerView() {
       </div>
 
       <div className="fixed top-14 left-0 right-0 bottom-0">
-        <iframe
-          src="https://www.tradingview.com/chart/SP3yDryX/?symbol=OANDA:XAUUSD"
-          width="100%"
-          height="100%"
-          frameBorder="0"
-          allowFullScreen
-          style={{ border: "none" }}
-          title="Scanner MTM"
-        ></iframe>
+        <TradingViewWidget />
       </div>
 
       {showInfo && <ScannerInfo onClose={() => setShowInfo(false)} />}

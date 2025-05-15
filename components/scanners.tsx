@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
+import TradingViewWidget from "./trading-view-widget"
 
 export default function Scanners() {
   return (
@@ -16,16 +17,8 @@ export default function Scanners() {
           </p>
         </div>
 
-        <div className="mt-8 rounded-lg overflow-hidden border border-gold-500/30" style={{ height: "600px" }}>
-          <iframe
-            src="https://www.tradingview.com/chart/SP3yDryX/?symbol=BYBIT%3ASOLUSDT"
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allowFullScreen
-            style={{ border: "none" }}
-            title="Scanner MTM"
-          ></iframe>
+        <div className="mt-8 rounded-lg overflow-hidden border border-gold-500/30">
+          <TradingViewWidget />
         </div>
       </CardContent>
     </Card>

@@ -8,14 +8,17 @@ interface User {
   email?: string
   phone?: string
   socialLink?: string
+  jifuId?: string
   package?: string
+  isAdmin?: boolean
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
+  isAdmin: boolean
   login: (username: string, password: string) => Promise<boolean>
-  register: (userData: Omit<User, "package"> & { password: string; package: string }) => Promise<boolean>
+  register: (userData: Omit<User, "isAdmin"> & { password: string }) => Promise<boolean>
   logout: () => void
 }
 
@@ -32,8 +35,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const isAuthenticated = !!user
+  const isAdmin = !!user?.isAdmin
 
   const login = async (username: string, password: string) => {
+    // Admin login
+    if (username === "admin" && password === "Superacao2022#") {
+      const adminUser = {
+        username: "admin",
+        name: "Administrador",
+        isAdmin: true,
+      }
+      setUser(adminUser)
+      localStorage.setItem("user", JSON.stringify(adminUser))
+      return true
+    }
+
     // Simulação de autenticação - em produção, isso seria uma chamada API
     // Verificar se o usuário existe no localStorage
     if (typeof window !== "undefined") {
@@ -47,7 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: foundUser.email,
           phone: foundUser.phone,
           socialLink: foundUser.socialLink,
+          jifuId: foundUser.jifuId,
           package: foundUser.package,
+          isAdmin: false,
         }
         setUser(userData)
 
@@ -58,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Credenciais de teste para demonstração
       if (username === "demo" && password === "password") {
-        const userData = { username, name: "Usuário Demo" }
+        const userData = { username, name: "Usuário Demo", isAdmin: false }
         setUser(userData)
         localStorage.setItem("user", JSON.stringify(userData))
         return true
@@ -67,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false
   }
 
-  const register = async (userData: Omit<User, "package"> & { password: string; package: string }) => {
+  const register = async (userData: Omit<User, "isAdmin"> & { password: string }) => {
     try {
       // Em produção, isso seria uma chamada API
       // Simulação de registro
@@ -85,8 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Fazer login automático após o registro
         const { password, ...userWithoutPassword } = userData
-        setUser(userWithoutPassword)
-        localStorage.setItem("user", JSON.stringify(userWithoutPassword))
+        const userWithAdmin = { ...userWithoutPassword, isAdmin: false }
+        setUser(userWithAdmin)
+        localStorage.setItem("user", JSON.stringify(userWithAdmin))
 
         return true
       }
@@ -103,7 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
 

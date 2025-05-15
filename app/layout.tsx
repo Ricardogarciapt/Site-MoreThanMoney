@@ -2,7 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import HomeButton from "@/components/home-button"
+import Navbar from "@/components/navbar"
+import { AuthProvider } from "@/contexts/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="pt">
       <body className={inter.className}>
-        <HomeButton />
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

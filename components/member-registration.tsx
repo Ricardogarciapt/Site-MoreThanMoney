@@ -25,13 +25,15 @@ export default function MemberRegistration() {
     username: "",
     password: "",
     confirmPassword: "",
+    jifuId: "",
     selectedPackage: "basic",
+    paymentOption: "annual", // ou "lifetime" para o pacote Scanner
     acceptTerms: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
   const [passwordError, setPasswordError] = useState("")
+  const [success, setSuccess] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -51,6 +53,10 @@ export default function MemberRegistration() {
     setFormData((prev) => ({ ...prev, selectedPackage: value }))
   }
 
+  const handlePaymentOptionSelect = (value: string) => {
+    setFormData((prev) => ({ ...prev, paymentOption: value }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -61,6 +67,13 @@ export default function MemberRegistration() {
     // Validação básica
     if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password) {
       setError("Por favor, preencha todos os campos obrigatórios.")
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validação para o pacote Premium
+    if (formData.selectedPackage === "premium" && !formData.jifuId) {
+      setError("O número de ID JIFU é obrigatório para o Pacote Premium.")
       setIsSubmitting(false)
       return
     }
@@ -93,7 +106,8 @@ export default function MemberRegistration() {
         email: formData.email,
         phone: formData.phone,
         socialLink: formData.socialLink,
-        package: formData.selectedPackage,
+        jifuId: formData.jifuId,
+        package: `${formData.selectedPackage}${formData.selectedPackage === "scanner" ? `-${formData.paymentOption}` : ""}`,
       })
 
       if (success) {
@@ -109,6 +123,17 @@ export default function MemberRegistration() {
       setError("Ocorreu um erro ao processar seu registro. Por favor, tente novamente.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  // Função para obter o preço com base no pacote e opção selecionados
+  const getPackagePrice = () => {
+    if (formData.selectedPackage === "basic") {
+      return "€50"
+    } else if (formData.selectedPackage === "scanner") {
+      return formData.paymentOption === "annual" ? "€200/ano" : "€1000/vitalício"
+    } else {
+      return "Verificação de ID JIFU"
     }
   }
 
@@ -142,8 +167,10 @@ export default function MemberRegistration() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Pacotes */}
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
+            {/* Pacote Básico */}
+            <Card
+              className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 ${formData.selectedPackage === "basic" ? "ring-2 ring-gold-500" : ""}`}
+            >
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">Pacote Básico</CardTitle>
                 <div className="text-center mt-4">
@@ -177,11 +204,42 @@ export default function MemberRegistration() {
               </CardFooter>
             </Card>
 
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 relative overflow-hidden">
+            {/* Pacote Scanner */}
+            <Card
+              className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 relative overflow-hidden ${formData.selectedPackage === "scanner" ? "ring-2 ring-gold-500" : ""}`}
+            >
               <div className="absolute top-0 right-0 bg-gold-500 text-black px-4 py-1 text-sm font-bold">POPULAR</div>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">Pacote Scanner</CardTitle>
                 <div className="text-center mt-4">
+                  {formData.selectedPackage === "scanner" && (
+                    <div className="flex justify-center gap-4 mb-4">
+                      <Button
+                        variant={formData.paymentOption === "annual" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePaymentOptionSelect("annual")}
+                        className={
+                          formData.paymentOption === "annual"
+                            ? "bg-gold-600 text-black"
+                            : "border-gold-500 text-gold-400"
+                        }
+                      >
+                        Anual - €200
+                      </Button>
+                      <Button
+                        variant={formData.paymentOption === "lifetime" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePaymentOptionSelect("lifetime")}
+                        className={
+                          formData.paymentOption === "lifetime"
+                            ? "bg-gold-600 text-black"
+                            : "border-gold-500 text-gold-400"
+                        }
+                      >
+                        Vitalício - €1000
+                      </Button>
+                    </div>
+                  )}
                   <span className="text-4xl font-bold text-gold-500">+</span>
                   <span className="text-gray-400 ml-2">Licença Scanner</span>
                 </div>
@@ -207,9 +265,6 @@ export default function MemberRegistration() {
                   <li className="flex items-start text-sm text-gray-400">
                     <span>* Requer compra de qualquer licença Scanner</span>
                   </li>
-                  <li className="flex items-start text-sm text-gray-400">
-                    <span>* Depósito mínimo de €350 na corretora para copytrading</span>
-                  </li>
                 </ul>
               </CardContent>
               <CardFooter>
@@ -222,12 +277,15 @@ export default function MemberRegistration() {
               </CardFooter>
             </Card>
 
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
+            {/* Pacote Premium */}
+            <Card
+              className={`bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 ${formData.selectedPackage === "premium" ? "ring-2 ring-gold-500" : ""}`}
+            >
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">Pacote Premium</CardTitle>
                 <div className="text-center mt-4">
                   <span className="text-4xl font-bold text-gold-500">+</span>
-                  <span className="text-gray-400 ml-2">Upgrade JIFU</span>
+                  <span className="text-gray-400 ml-2">Verificação JIFU</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -245,10 +303,7 @@ export default function MemberRegistration() {
                     <span>Acesso a todos os produtos MoreThanMoney</span>
                   </li>
                   <li className="flex items-start text-sm text-gray-400">
-                    <span>* Requer pacotes de upgrade JIFU</span>
-                  </li>
-                  <li className="flex items-start text-sm text-gray-400">
-                    <span>* Ou depósito de €1000 na corretora para copytrading</span>
+                    <span>* Requer verificação do ID JIFU</span>
                   </li>
                 </ul>
               </CardContent>
@@ -328,6 +383,21 @@ export default function MemberRegistration() {
                   />
                 </div>
 
+                {formData.selectedPackage === "premium" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="jifuId">Número de ID JIFU *</Label>
+                    <Input
+                      id="jifuId"
+                      name="jifuId"
+                      value={formData.jifuId}
+                      onChange={handleChange}
+                      required={formData.selectedPackage === "premium"}
+                      className="bg-gray-800/50 border-white/10 text-white"
+                    />
+                    <p className="text-xs text-gray-400">Necessário para verificação do status de fundador JIFU.</p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="username">Nome de Usuário *</Label>
                   <Input
@@ -372,41 +442,19 @@ export default function MemberRegistration() {
                 <div className="pt-4">
                   <p className="font-medium mb-2">Pacote Selecionado:</p>
                   <div className="bg-gray-800/50 p-3 rounded-md">
-                    {formData.selectedPackage === "basic" && (
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center mr-3">
-                          <Check className="h-4 w-4 text-gold-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Pacote Básico</p>
-                          <p className="text-sm text-gray-400">€50 - Acesso ao Bootcamp e Portfólio MTM</p>
-                        </div>
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center mr-3">
+                        <Check className="h-4 w-4 text-gold-500" />
                       </div>
-                    )}
-
-                    {formData.selectedPackage === "scanner" && (
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center mr-3">
-                          <Check className="h-4 w-4 text-gold-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Pacote Scanner</p>
-                          <p className="text-sm text-gray-400">Requer compra de licença Scanner + depósito de €350</p>
-                        </div>
+                      <div>
+                        <p className="font-medium">
+                          {formData.selectedPackage === "basic" && "Pacote Básico"}
+                          {formData.selectedPackage === "scanner" && "Pacote Scanner"}
+                          {formData.selectedPackage === "premium" && "Pacote Premium"}
+                        </p>
+                        <p className="text-sm text-gray-400">{getPackagePrice()}</p>
                       </div>
-                    )}
-
-                    {formData.selectedPackage === "premium" && (
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center mr-3">
-                          <Check className="h-4 w-4 text-gold-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Pacote Premium</p>
-                          <p className="text-sm text-gray-400">Requer upgrade JIFU ou depósito de €1000</p>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
 
