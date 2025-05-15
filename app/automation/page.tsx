@@ -1,13 +1,13 @@
-import ScannerView from "@/components/scanner-view"
+import AutomationCards from "@/components/automation-cards"
 import { AuthProvider } from "@/contexts/auth-context"
 import Breadcrumbs from "@/components/breadcrumbs"
 
-export default function ScannerPage() {
+export default function AutomationPage() {
   return (
     <AuthProvider>
       <Breadcrumbs />
-      <main className="min-h-screen bg-black text-white">
-        <ScannerView />
+      <main className="relative min-h-screen bg-black text-white">
+        <AutomationCards />
       </main>
     </AuthProvider>
   )

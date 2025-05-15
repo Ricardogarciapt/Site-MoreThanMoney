@@ -10,12 +10,12 @@ export default function ScannerAccessSection() {
   }
 
   return (
-    <section className="relative bg-black text-white overflow-hidden">
+    <section className="relative bg-black text-white overflow-hidden py-20">
       {/* Overlay para garantir a legibilidade do texto */}
       <div className="absolute inset-0 bg-black/60 z-10"></div>
 
       {/* Conteúdo */}
-      <div className="relative z-20 max-w-6xl mx-auto px-4 py-20 text-center">
+      <div className="relative z-20 max-w-6xl mx-auto px-4 text-center">
         {/* Logo */}
         <div className="mb-8">
           <Image src="/logo-new.png" alt="MoreThanMoney Logo" width={220} height={180} className="mx-auto" />
@@ -48,18 +48,6 @@ export default function ScannerAccessSection() {
           >
             Indicador disponível apenas por aquisição de licença
           </Link>
-        </div>
-
-        <div className="rounded-lg overflow-hidden border border-gold-500/30 shadow-lg shadow-gold-500/10">
-          {/* Animação ou vídeo relacionado ao tema */}
-          <div className="relative aspect-video">
-            <Image src="/trading-animation.png" alt="Trading Animation" width={1200} height={600} className="w-full" />
-            <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-1 rounded-md text-xs">
-              <span className="text-gold-400">MoreThanMoneyTM</span>
-              <span className="text-gray-400">|</span>
-              <span className="text-white">Trading Intelligence</span>
-            </div>
-          </div>
         </div>
 
         <div className="mt-8 text-gray-300">
