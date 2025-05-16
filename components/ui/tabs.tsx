@@ -22,10 +22,14 @@ const TabsList = React.forwardRef<
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 
+// Adicionar um comentário acima do TabsTrigger para documentar que este componente deve ser usado em áreas restritas a membros
+// Modificar o TabsTrigger para incluir um comentário sobre restrição de acesso
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
+  // NOTA: Este componente deve ser usado apenas em áreas restritas a membros
+  // A verificação de acesso deve ser implementada no componente pai
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
