@@ -29,16 +29,10 @@ export default function MemberArea() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 justify-center mb-12">
-            <Button
-              onClick={() => setShowRegistration(false)}
-              className={`bg-gold-600 hover:bg-gold-700 text-black px-8 py-3 ${!showRegistration ? "border-2 border-white" : ""}`}
-            >
-              Login
-            </Button>
+          <div className="flex justify-center mb-12">
             <Button
               onClick={() => setShowRegistration(true)}
-              className={`bg-gold-600 hover:bg-gold-700 text-black px-8 py-3 ${showRegistration ? "border-2 border-white" : ""}`}
+              className="bg-gold-600 hover:bg-gold-700 text-black px-8 py-3"
             >
               <UserPlus className="mr-2 h-4 w-4" /> Registrar
             </Button>

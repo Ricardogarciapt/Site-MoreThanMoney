@@ -1,12 +1,11 @@
 "use client"
 
-import Link from "next/link"
+import type React from "react"
 
-import { useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 // Define os tipos para configurações do site
 interface SiteConfig {
@@ -117,33 +116,92 @@ const defaultConfig: SiteConfig = {
   },
 }
 
-// Redirecionar para a página de configurações existente
-export default function SiteSettingsRedirect() {
-  const router = useRouter()
+// Componente para editar as configurações do site
+export default function SiteSettingsPage() {
+  const [config, setConfig] = useState<SiteConfig>(defaultConfig)
 
-  useEffect(() => {
-    router.push("/admin-dashboard/site-settings")
-  }, [router])
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+
+    // Lidar com campos aninhados como ownerInfo.name
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".")
+      setConfig((prevConfig) => ({
+        ...prevConfig,
+        [parent]: {
+          ...prevConfig[parent as keyof SiteConfig],
+          [child]: value,
+        },
+      }))
+    } else {
+      setConfig((prevConfig) => ({
+        ...prevConfig,
+        [name]: value,
+      }))
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <Card className="w-[350px] bg-black/50 border-gold-500/30">
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-5">Configurações do Site</h1>
+
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl text-center">Redirecionando...</CardTitle>
-          <CardDescription className="text-center">
-            Aguarde enquanto redirecionamos você para as configurações do site.
-          </CardDescription>
+          <CardTitle>Informações Gerais</CardTitle>
+          <CardDescription>Defina as informações básicas do seu site.</CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center">
-          <Loader2 className="h-16 w-16 text-gold-500 animate-spin" />
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Nome do Site</Label>
+            <Input id="name" name="name" value={config.name} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="logoUrl">URL do Logo</Label>
+            <Input id="logoUrl" name="logoUrl" value={config.logoUrl} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="footerText">Texto do Rodapé</Label>
+            <Input id="footerText" name="footerText" value={config.footerText} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="contactEmail">Email de Contato</Label>
+            <Input id="contactEmail" name="contactEmail" value={config.contactEmail} onChange={handleChange} />
+          </div>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link href="/admin-dashboard">
-            <Button variant="outline" className="border-gold-500 text-gold-400 hover:bg-gold-500/10">
-              Voltar para o Painel
-            </Button>
-          </Link>
-        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações do Proprietário</CardTitle>
+          <CardDescription>Informações de contato do proprietário do site.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="ownerInfo.name">Nome do Proprietário</Label>
+            <Input id="ownerInfo.name" name="ownerInfo.name" value={config.ownerInfo.name} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ownerInfo.email">Email do Proprietário</Label>
+            <Input id="ownerInfo.email" name="ownerInfo.email" value={config.ownerInfo.email} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ownerInfo.phone">Telefone do Proprietário</Label>
+            <Input id="ownerInfo.phone" name="ownerInfo.phone" value={config.ownerInfo.phone} onChange={handleChange} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ownerInfo.address">Endereço do Proprietário</Label>
+            <Input
+              id="ownerInfo.address"
+              name="ownerInfo.address"
+              value={config.ownerInfo.address}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ownerInfo.taxId">ID Fiscal do Proprietário</Label>
+            <Input id="ownerInfo.taxId" name="ownerInfo.taxId" value={config.ownerInfo.taxId} onChange={handleChange} />
+          </div>
+        </CardContent>
       </Card>
     </div>
   )
