@@ -5,6 +5,7 @@ import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { AuthProvider } from "@/contexts/auth-context"
+import { CartProvider } from "@/components/shopping-cart"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,12 +21,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt">
+    <html lang="pt-PT">
       <body className={inter.className}>
         <AuthProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            {children}
+            <Footer />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

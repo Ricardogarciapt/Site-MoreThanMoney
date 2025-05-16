@@ -1,9 +1,7 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { Check } from "lucide-react"
+import { BuyButton } from "@/components/buy-button"
 
 export default function CopytradingPlans() {
   return (
@@ -51,11 +49,13 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <BuyButton
+                productType="copytrading"
+                productName="Copytrading - Plano Básico"
+                productPrice={100}
+                duration="Mensal"
+                className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+              />
             </CardFooter>
           </Card>
 
@@ -91,11 +91,13 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <BuyButton
+                productType="copytrading"
+                productName="Copytrading - Plano Avançado"
+                productPrice={200}
+                duration="Mensal"
+                className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+              />
             </CardFooter>
           </Card>
 
@@ -130,11 +132,13 @@ export default function CopytradingPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/copytrading" className="w-full">
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Escolher Plano <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <BuyButton
+                productType="copytrading"
+                productName="Copytrading - Plano Profissional"
+                productPrice={500}
+                duration="Mensal"
+                className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+              />
             </CardFooter>
           </Card>
         </div>

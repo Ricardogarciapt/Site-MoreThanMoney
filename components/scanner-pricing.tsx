@@ -1,9 +1,7 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { Check } from "lucide-react"
+import { BuyButton } from "@/components/buy-button"
 
 export default function ScannerPricing() {
   return (
@@ -54,16 +52,13 @@ export default function ScannerPricing() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link
-                href="https://checkout.example.com/scanner-annual"
-                className="w-full"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Adquirir Licença Anual <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <BuyButton
+                productType="scanner"
+                productName="Scanner MTM - Licença Anual"
+                productPrice={200}
+                duration="Anual"
+                className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+              />
             </CardFooter>
           </Card>
 
@@ -106,16 +101,13 @@ export default function ScannerPricing() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link
-                href="https://checkout.example.com/scanner-lifetime"
-                className="w-full"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Adquirir Licença Vitalícia <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <BuyButton
+                productType="scanner"
+                productName="Scanner MTM - Licença Vitalícia"
+                productPrice={1000}
+                duration="Vitalícia"
+                className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+              />
             </CardFooter>
           </Card>
         </div>

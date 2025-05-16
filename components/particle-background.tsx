@@ -32,7 +32,7 @@ export default function ParticleBackground() {
 
     // Criar partículas
     const particles: Particle[] = []
-    const particleCount = 50
+    const particleCount = 75 // Aumentado em 50% (de 50 para 75)
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({

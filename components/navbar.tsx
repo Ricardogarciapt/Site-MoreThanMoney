@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/auth-context"
 import UserDropdown from "@/components/user-dropdown"
 import LoginModal from "@/components/login-modal"
 import { Menu, X, ChevronDown } from "lucide-react"
+import { ShoppingCart } from "@/components/shopping-cart"
+import { LanguageSelector } from "@/components/language-selector"
 
 export default function Navbar() {
   const { isAuthenticated } = useAuth()
@@ -114,6 +116,15 @@ export default function Navbar() {
 
           {/* Login/User Area */}
           <div className="hidden md:flex md:items-center md:space-x-4">
+            {/* Seletor de Idioma */}
+            <div className="ml-2">
+              <LanguageSelector />
+            </div>
+
+            {/* Carrinho de Compras */}
+            <div className="ml-2">
+              <ShoppingCart />
+            </div>
             {isAuthenticated ? (
               <UserDropdown />
             ) : (

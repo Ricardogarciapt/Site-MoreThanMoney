@@ -19,6 +19,13 @@ interface SiteConfig {
   logoUrl: string
   footerText: string
   contactEmail: string
+  ownerInfo: {
+    name: string
+    email: string
+    phone: string
+    address: string
+    taxId: string
+  }
   socialLinks: {
     platform: string
     url: string
@@ -45,6 +52,12 @@ interface SiteConfig {
     name: string
     enabled: boolean
   }[]
+  display: {
+    showIdeas: boolean
+    showPortfolios: boolean
+    showTapToTrade: boolean
+    showScanner: boolean
+  }
 }
 
 // Configuração inicial do site
@@ -53,6 +66,13 @@ const defaultConfig: SiteConfig = {
   logoUrl: "/logo-new.png",
   footerText: "© 2023 MoreThanMoney. Todos os direitos reservados.",
   contactEmail: "suporte@morethanmoney.com",
+  ownerInfo: {
+    name: "Ricardo Garcia",
+    email: "info@morethanmoney.com",
+    phone: "+351 912 345 678",
+    address: "Rua Principal 123, 1000-000 Lisboa, Portugal",
+    taxId: "PT123456789",
+  },
   socialLinks: [
     {
       platform: "Instagram",
@@ -94,6 +114,12 @@ const defaultConfig: SiteConfig = {
     { id: "affiliate", name: "Sistema de Afiliados", enabled: true },
     { id: "ideas", name: "Ideias de Trading", enabled: true },
   ],
+  display: {
+    showIdeas: true,
+    showPortfolios: true,
+    showTapToTrade: true,
+    showScanner: true,
+  },
 }
 
 export default function SiteSettingsPage() {
@@ -201,6 +227,8 @@ export default function SiteSettingsPage() {
           <Tabs defaultValue="general" className="space-y-4">
             <TabsList>
               <TabsTrigger value="general">Geral</TabsTrigger>
+              <TabsTrigger value="owner">Proprietário</TabsTrigger>
+              <TabsTrigger value="display">Exibição</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="colors">Cores</TabsTrigger>
@@ -229,6 +257,147 @@ export default function SiteSettingsPage() {
                     value={config.contactEmail}
                     onChange={handleChange}
                   />
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="owner" className="space-y-4">
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="ownerInfo.name">Nome do Proprietário</Label>
+                  <Input
+                    type="text"
+                    id="ownerInfo.name"
+                    name="ownerInfo.name"
+                    value={config.ownerInfo.name}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ownerInfo.email">Email de Contato</Label>
+                  <Input
+                    type="email"
+                    id="ownerInfo.email"
+                    name="ownerInfo.email"
+                    value={config.ownerInfo.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ownerInfo.phone">Telefone</Label>
+                  <Input
+                    type="text"
+                    id="ownerInfo.phone"
+                    name="ownerInfo.phone"
+                    value={config.ownerInfo.phone}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ownerInfo.address">Endereço</Label>
+                  <Textarea
+                    id="ownerInfo.address"
+                    name="ownerInfo.address"
+                    value={config.ownerInfo.address}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ownerInfo.taxId">Número de Identificação Fiscal</Label>
+                  <Input
+                    type="text"
+                    id="ownerInfo.taxId"
+                    name="ownerInfo.taxId"
+                    value={config.ownerInfo.taxId}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="display" className="space-y-4">
+              <div className="grid gap-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="display.showIdeas">Mostrar Ideias de Trading</Label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="display.showIdeas"
+                      checked={config.display.showIdeas}
+                      onChange={(e) => {
+                        setConfig((prev) => ({
+                          ...prev,
+                          display: {
+                            ...prev.display,
+                            showIdeas: e.target.checked,
+                          },
+                        }))
+                      }}
+                      className="mr-2"
+                    />
+                    <span>{config.display.showIdeas ? "Ativado" : "Desativado"}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="display.showPortfolios">Mostrar Portefólios</Label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="display.showPortfolios"
+                      checked={config.display.showPortfolios}
+                      onChange={(e) => {
+                        setConfig((prev) => ({
+                          ...prev,
+                          display: {
+                            ...prev.display,
+                            showPortfolios: e.target.checked,
+                          },
+                        }))
+                      }}
+                      className="mr-2"
+                    />
+                    <span>{config.display.showPortfolios ? "Ativado" : "Desativado"}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="display.showTapToTrade">Mostrar Tap to Trade</Label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="display.showTapToTrade"
+                      checked={config.display.showTapToTrade}
+                      onChange={(e) => {
+                        setConfig((prev) => ({
+                          ...prev,
+                          display: {
+                            ...prev.display,
+                            showTapToTrade: e.target.checked,
+                          },
+                        }))
+                      }}
+                      className="mr-2"
+                    />
+                    <span>{config.display.showTapToTrade ? "Ativado" : "Desativado"}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="display.showScanner">Mostrar Scanner</Label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="display.showScanner"
+                      checked={config.display.showScanner}
+                      onChange={(e) => {
+                        setConfig((prev) => ({
+                          ...prev,
+                          display: {
+                            ...prev.display,
+                            showScanner: e.target.checked,
+                          },
+                        }))
+                      }}
+                      className="mr-2"
+                    />
+                    <span>{config.display.showScanner ? "Ativado" : "Desativado"}</span>
+                  </div>
                 </div>
               </div>
             </TabsContent>
