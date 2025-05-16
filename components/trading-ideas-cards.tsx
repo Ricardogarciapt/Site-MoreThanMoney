@@ -161,7 +161,7 @@ Compra na quebra confirmada acima de $2,000 ou em reteste do suporte em $1,900, 
 ]
 
 export default function TradingIdeasCards() {
-  const { user, isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [activeTab, setActiveTab] = useState("all")
   const [selectedIdea, setSelectedIdea] = useState<TradingIdea | null>(null)
   const [ideas, setIdeas] = useState<TradingIdea[]>(sampleIdeas)
