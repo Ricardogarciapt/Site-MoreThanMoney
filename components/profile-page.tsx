@@ -127,6 +127,11 @@ export default function ProfilePage() {
                   </div>
                   <h3 className="text-xl font-bold">{user?.name}</h3>
                   <p className="text-sm text-gray-400">{user?.email || user?.username}</p>
+                  {user?.role && (
+                    <span className="mt-2 text-xs px-2 py-1 rounded-full bg-gold-500/20 text-gold-400">
+                      {user.role}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-6 space-y-2">

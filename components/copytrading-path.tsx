@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, TrendingUp, Shield, Clock, Check } from "lucide-react"
@@ -13,10 +13,86 @@ import LoginForm from "@/components/login-form"
 import CopytradingPlans from "./copytrading-plans"
 
 export default function CopytradingPath() {
+  // Lista de brokers MT4
+  const mt4Brokers = [
+    { id: "xm", name: "XM" },
+    { id: "fxpro", name: "FxPro" },
+    { id: "icmarkets", name: "IC Markets" },
+    { id: "fbs", name: "FBS" },
+    { id: "exness", name: "Exness" },
+    { id: "hotforex", name: "HotForex" },
+    { id: "pepperstone", name: "Pepperstone" },
+    { id: "admiralmarkets", name: "Admiral Markets" },
+    { id: "fxtm", name: "FXTM" },
+    { id: "roboforex", name: "RoboForex" },
+  ]
+
+  // Lista de brokers MT5
+  const mt5Brokers = [
+    { id: "xm", name: "XM" },
+    { id: "fxpro", name: "FxPro" },
+    { id: "icmarkets", name: "IC Markets" },
+    { id: "exness", name: "Exness" },
+    { id: "pepperstone", name: "Pepperstone" },
+    { id: "admiralmarkets", name: "Admiral Markets" },
+    { id: "fxtm", name: "FXTM" },
+    { id: "roboforex", name: "RoboForex" },
+    { id: "tickmill", name: "Tickmill" },
+    { id: "fxcm", name: "FXCM" },
+  ]
+
+  // Servidores por broker (simplificado)
+  const brokerServers = {
+    // MT4 Servers
+    "xm-mt4": ["XM-Real 1", "XM-Real 2", "XM-Real 3", "XM-Demo"],
+    "fxpro-mt4": ["FxPro-Real", "FxPro-Demo"],
+    "icmarkets-mt4": ["IC Markets-Live01", "IC Markets-Live02", "IC Markets-Demo01"],
+    "fbs-mt4": ["FBS-Real", "FBS-Demo"],
+    "exness-mt4": ["Exness-Real", "Exness-Demo"],
+    "hotforex-mt4": ["HotForex-Live", "HotForex-Demo"],
+    "pepperstone-mt4": ["Pepperstone-Live01", "Pepperstone-Live02", "Pepperstone-Demo"],
+    "admiralmarkets-mt4": ["AdmiralMarkets-Live", "AdmiralMarkets-Demo"],
+    "fxtm-mt4": ["FXTM-Live", "FXTM-Demo"],
+    "roboforex-mt4": ["RoboForex-Live", "RoboForex-Demo"],
+
+    // MT5 Servers
+    "xm-mt5": ["XM-MT5-Real", "XM-MT5-Demo"],
+    "fxpro-mt5": ["FxPro-MT5-Real", "FxPro-MT5-Demo"],
+    "icmarkets-mt5": ["IC Markets-MT5-Live01", "IC Markets-MT5-Live02", "IC Markets-MT5-Demo"],
+    "exness-mt5": ["Exness-MT5-Real", "Exness-MT5-Demo"],
+    "pepperstone-mt5": ["Pepperstone-MT5-Live", "Pepperstone-MT5-Demo"],
+    "admiralmarkets-mt5": ["AdmiralMarkets-MT5-Live", "AdmiralMarkets-MT5-Demo"],
+    "fxtm-mt5": ["FXTM-MT5-Live", "FXTM-MT5-Demo"],
+    "roboforex-mt5": ["RoboForex-MT5-Live", "RoboForex-MT5-Demo"],
+    "tickmill-mt5": ["Tickmill-MT5-Live", "Tickmill-MT5-Demo"],
+    "fxcm-mt5": ["FXCM-MT5-Live", "FXCM-MT5-Demo"],
+  }
+
   const { isAuthenticated } = useAuth()
   const [riskPercentage, setRiskPercentage] = useState(1)
   const [activeTab, setActiveTab] = useState("plans")
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const [platform, setPlatform] = useState("mt4")
+  const [selectedBroker, setSelectedBroker] = useState("")
+  const [availableBrokers, setAvailableBrokers] = useState(mt4Brokers)
+  const [availableServers, setAvailableServers] = useState<string[]>([])
+
+  // Atualiza a lista de brokers quando a plataforma muda
+  useEffect(() => {
+    setAvailableBrokers(platform === "mt4" ? mt4Brokers : mt5Brokers)
+    setSelectedBroker("")
+    setAvailableServers([])
+  }, [platform])
+
+  // Atualiza a lista de servidores quando o broker muda
+  useEffect(() => {
+    if (selectedBroker) {
+      const serverKey = `${selectedBroker}-${platform}`
+      setAvailableServers(brokerServers[serverKey] || [])
+    } else {
+      setAvailableServers([])
+    }
+  }, [selectedBroker, platform])
 
   if (!isAuthenticated) {
     return (
@@ -216,6 +292,8 @@ export default function CopytradingPath() {
                           <select
                             id="platform"
                             className="w-full h-10 px-3 py-2 bg-gray-800/50 border border-white/10 rounded-md text-white"
+                            value={platform}
+                            onChange={(e) => setPlatform(e.target.value)}
                           >
                             <option value="mt4">MetaTrader 4</option>
                             <option value="mt5">MetaTrader 5</option>
@@ -224,11 +302,36 @@ export default function CopytradingPath() {
 
                         <div className="space-y-2">
                           <Label htmlFor="broker">Corretora</Label>
-                          <Input
+                          <select
                             id="broker"
-                            placeholder="Nome da sua corretora"
-                            className="bg-gray-800/50 border-white/10 text-white"
-                          />
+                            className="w-full h-10 px-3 py-2 bg-gray-800/50 border border-white/10 rounded-md text-white"
+                            value={selectedBroker}
+                            onChange={(e) => setSelectedBroker(e.target.value)}
+                            disabled={!platform}
+                          >
+                            <option value="">Selecione uma corretora</option>
+                            {availableBrokers.map((broker) => (
+                              <option key={broker.id} value={broker.id}>
+                                {broker.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="server">Servidor</Label>
+                          <select
+                            id="server"
+                            className="w-full h-10 px-3 py-2 bg-gray-800/50 border border-white/10 rounded-md text-white"
+                            disabled={!selectedBroker}
+                          >
+                            <option value="">Selecione um servidor</option>
+                            {availableServers.map((server) => (
+                              <option key={server} value={server}>
+                                {server}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div className="space-y-2">

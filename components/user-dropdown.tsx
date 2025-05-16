@@ -68,7 +68,7 @@ export default function UserDropdown() {
 
             {isAdmin && (
               <Link
-                href="/admin"
+                href="/admin-dashboard"
                 className="block px-4 py-2 text-sm text-gray-300 hover:bg-gold-500/10 hover:text-gold-400 flex items-center gap-2"
                 onClick={() => setIsOpen(false)}
               >

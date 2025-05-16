@@ -128,6 +128,13 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Botão de Acesso Admin (discreto) */}
+        <div className="flex justify-center mt-8">
+          <Link href="/admin-dashboard" className="text-xs text-gray-600 hover:text-gold-400 transition-colors">
+            Acesso Administrativo
+          </Link>
+        </div>
+
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
             © 2025 MoreThanMoney. Todos os direitos reservados. MoreThanMoneyTM é uma marca registrada.

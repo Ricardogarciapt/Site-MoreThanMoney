@@ -11,6 +11,7 @@ interface User {
   jifuId?: string
   package?: string
   isAdmin?: boolean
+  role?: string
 }
 
 interface AuthContextType {
@@ -20,7 +21,14 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>
   register: (userData: Omit<User, "isAdmin"> & { password: string }) => Promise<boolean>
   logout: () => void
+  updateUserRole: (username: string, newRole: string) => boolean
 }
+
+// Lista de administradores com suas credenciais
+const ADMIN_USERS = [
+  { username: "admin", password: "Superacao2022#", name: "Administrador" },
+  { username: "ricardogarciapt", password: "Superacao2022#", name: "Ricardo Garcia" },
+]
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -38,20 +46,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = !!user?.isAdmin
 
   const login = async (username: string, password: string) => {
-    // Admin login
-    if (username === "admin" && password === "Superacao2022#") {
-      const adminUser = {
-        username: "admin",
-        name: "Administrador",
+    // Verificar se é um login de administrador
+    const adminUser = ADMIN_USERS.find((admin) => admin.username === username && admin.password === password)
+
+    if (adminUser) {
+      const adminUserData = {
+        username: adminUser.username,
+        name: adminUser.name,
         isAdmin: true,
       }
-      setUser(adminUser)
-      localStorage.setItem("user", JSON.stringify(adminUser))
+      setUser(adminUserData)
+      localStorage.setItem("user", JSON.stringify(adminUserData))
       return true
     }
 
-    // Simulação de autenticação - em produção, isso seria uma chamada API
-    // Verificar se o usuário existe no localStorage
+    // Simulação de autenticação para usuários normais
     if (typeof window !== "undefined") {
       const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
       const foundUser = registeredUsers.find((u: any) => u.username === username && u.password === password)
@@ -65,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           socialLink: foundUser.socialLink,
           jifuId: foundUser.jifuId,
           package: foundUser.package,
+          role: foundUser.role || "Membro",
           isAdmin: false,
         }
         setUser(userData)
@@ -87,6 +97,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: Omit<User, "isAdmin"> & { password: string }) => {
     try {
+      // Verificar se está tentando registrar um nome de usuário de administrador
+      if (ADMIN_USERS.some((admin) => admin.username === userData.username)) {
+        return false // Não permitir registro com nomes de usuário reservados para admins
+      }
+
       // Em produção, isso seria uma chamada API
       // Simulação de registro
       if (typeof window !== "undefined") {
@@ -103,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Fazer login automático após o registro
         const { password, ...userWithoutPassword } = userData
-        const userWithAdmin = { ...userWithoutPassword, isAdmin: false }
+        const userWithAdmin = { ...userWithoutPassword, isAdmin: false, role: userData.role || "Membro" }
         setUser(userWithAdmin)
         localStorage.setItem("user", JSON.stringify(userWithAdmin))
 
@@ -121,8 +136,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user")
   }
 
+  const updateUserRole = (username: string, newRole: string) => {
+    if (typeof window !== "undefined") {
+      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+
+      // Atualiza o role do usuário no array de usuários registrados
+      const updatedUsers = registeredUsers.map((u: any) => {
+        if (u.username === username) {
+          return { ...u, role: newRole }
+        }
+        return u
+      })
+
+      localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers))
+
+      // Se o usuário atual for o que está sendo atualizado, atualiza também o estado
+      if (user && user.username === username) {
+        const updatedUser = { ...user, role: newRole }
+        setUser(updatedUser)
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+      }
+
+      return true
+    }
+    return false
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, register, logout, updateUserRole }}>
       {children}
     </AuthContext.Provider>
   )
