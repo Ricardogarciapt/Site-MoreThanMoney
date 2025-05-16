@@ -219,10 +219,23 @@ export default function SiteSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 bg-black/50 min-h-screen rounded-lg border border-gold-500/20">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-3xl font-bold">Configurações do Site</h1>
-        <Button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            className="border-gold-500/30 text-gold-400 hover:bg-gold-500/10"
+            onClick={() => window.history.back()}
+          >
+            ← Voltar
+          </Button>
+          <h1 className="text-3xl font-bold">Configurações do Site</h1>
+        </div>
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black"
+        >
           {isSaving ? (
             "Salvando..."
           ) : (
@@ -520,7 +533,11 @@ export default function SiteSettingsPage() {
       </Tabs>
 
       <div className="flex justify-end mt-6">
-        <Button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black"
+        >
           {isSaving ? (
             "Salvando..."
           ) : (

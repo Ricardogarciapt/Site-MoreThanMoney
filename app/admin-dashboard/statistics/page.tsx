@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, ArrowLeft } from "lucide-react"
 import {
   Line,
   LineChart,
@@ -20,6 +20,7 @@ import {
   Cell,
 } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button"
 
 // Dados simulados
 const visitData = [
@@ -65,23 +66,33 @@ export default function StatisticsPage() {
   const [dateRange, setDateRange] = useState("7d")
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Estatísticas da Plataforma</h1>
-          <p className="text-gray-400 mt-1">Acompanhe o desempenho e métricas importantes do seu negócio</p>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="bg-black border border-gray-700 rounded-md px-3 py-2 text-white"
-          >
-            <option value="7d">Últimos 7 dias</option>
-            <option value="30d">Últimos 30 dias</option>
-            <option value="90d">Últimos 90 dias</option>
-            <option value="year">Este ano</option>
-          </select>
+    <div className="container mx-auto py-10 bg-black/50 min-h-screen border border-gold-500/20 rounded-lg">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="outline"
+          className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+          onClick={() => window.history.back()}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full">
+          <div>
+            <h1 className="text-3xl font-bold">Estatísticas da Plataforma</h1>
+            <p className="text-gray-400 mt-1">Acompanhe o desempenho e métricas importantes do seu negócio</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="bg-black border border-gray-700 rounded-md px-3 py-2 text-white"
+            >
+              <option value="7d">Últimos 7 dias</option>
+              <option value="30d">Últimos 30 dias</option>
+              <option value="90d">Últimos 90 dias</option>
+              <option value="year">Este ano</option>
+            </select>
+          </div>
         </div>
       </div>
 
