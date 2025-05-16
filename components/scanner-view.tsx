@@ -1,81 +1,620 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import LoginForm from "@/components/login-form"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { LogOut, ArrowLeft, HelpCircle, Home } from "lucide-react"
-import Link from "next/link"
+import { useAuth } from "@/contexts/auth-context"
 import ScannerInfo from "@/components/scanner-info"
-import TradingViewWidget from "./trading-view-widget"
+import TradingViewWidget from "@/components/trading-view-widget"
+import { ArrowRight, ChevronDown, DollarSign, Lock, Unlock, Zap, CandlestickChart, MessageSquare } from "lucide-react"
+import Link from "next/link"
 
 export default function ScannerView() {
-  const { user, isAuthenticated, logout } = useAuth()
-  const [showInfo, setShowInfo] = useState(false)
+  const { isAuthenticated, user } = useAuth()
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("scanner")
+  const [showDetails, setShowDetails] = useState(false)
 
-  if (!isAuthenticated) {
-    return (
-      <section className="py-20 bg-black relative">
-        <div className="container mx-auto px-4">
-          <div className="absolute top-4 left-4">
-            <Link href="/">
-              <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium flex items-center gap-2">
-                <Home size={16} />
-                Início
-              </Button>
-            </Link>
-          </div>
-
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-              Scanner MTM
-            </h2>
-            <p className="text-gray-300 text-lg mb-8">Faça login para acessar o Scanner MTM.</p>
-          </div>
-
-          <LoginForm />
-        </div>
-      </section>
-    )
-  }
+  // Verificar se o usuário tem acesso ao scanner
+  const hasAccess = isAuthenticated && user?.package && ["Trader", "Pro Trader", "VIP Trader"].includes(user.package)
 
   return (
-    <>
-      <div className="fixed top-0 left-0 right-0 z-10 bg-black py-2 px-4 flex justify-between items-center">
-        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-          Scanner MTM ao Vivo
-        </h2>
-
-        <div className="flex gap-2">
-          <Link href="/">
-            <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium flex items-center gap-2">
-              <ArrowLeft size={16} />
-              Início
-            </Button>
-          </Link>
-
-          <Button
-            className="bg-gold-600 hover:bg-gold-700 text-black font-medium flex items-center gap-2"
-            onClick={() => setShowInfo(true)}
-          >
-            <HelpCircle size={16} />O que é o Scanner MoreThanMoney?
-          </Button>
-
-          <Button
-            onClick={logout}
-            className="bg-gold-600 hover:bg-gold-700 text-black font-medium flex items-center gap-2"
-          >
-            <LogOut size={16} />
-            Sair
-          </Button>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center max-w-4xl mx-auto mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+          Scanner MTM V3.4
+        </h1>
+        <p className="text-xl text-gray-300">
+          Identifique oportunidades de mercado com nosso scanner proprietário que analisa padrões e estruturas de alta
+          probabilidade.
+        </p>
       </div>
 
-      <div className="fixed top-14 left-0 right-0 bottom-0">
-        <TradingViewWidget />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
+          <TabsTrigger value="scanner" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+            Scanner
+          </TabsTrigger>
+          <TabsTrigger value="forex" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+            Ideias Forex
+          </TabsTrigger>
+          <TabsTrigger value="crypto" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+            Ideias Cripto
+          </TabsTrigger>
+        </TabsList>
 
-      {showInfo && <ScannerInfo onClose={() => setShowInfo(false)} />}
-    </>
+        <TabsContent value="scanner">
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full">
+                <CardHeader>
+                  <CardTitle>Scanner Ao Vivo</CardTitle>
+                  <CardDescription>
+                    Visualize e analise os mercados em tempo real com nosso scanner especializado.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {hasAccess ? (
+                    <div className="aspect-video min-h-[400px] w-full">
+                      <TradingViewWidget />
+                    </div>
+                  ) : (
+                    <div className="aspect-video min-h-[400px] w-full bg-black/90 flex flex-col items-center justify-center p-6 text-center">
+                      <Lock className="h-16 w-16 text-gold-500 mb-4" />
+                      <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
+                      <p className="text-gray-300 mb-6 max-w-lg">
+                        O Scanner MTM V3.4 está disponível apenas para membros com pacotes Trader, Pro Trader e VIP
+                        Trader.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <Button
+                          onClick={() => router.push("/scanner-access")}
+                          className="bg-gold-600 hover:bg-gold-700 text-black"
+                        >
+                          Obter Acesso
+                        </Button>
+                        {!isAuthenticated && (
+                          <Button
+                            variant="outline"
+                            onClick={() => router.push("/")}
+                            className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+                          >
+                            Fazer Login
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-between items-center">
+                  <button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="flex items-center text-gold-400 hover:text-gold-500 transition-colors"
+                  >
+                    <span className="mr-1">Informações do Scanner</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+                  </button>
+                  {hasAccess && (
+                    <div className="flex items-center">
+                      <Unlock className="h-4 w-4 mr-1 text-green-500" />
+                      <span className="text-green-500 text-sm">Acesso Ativo</span>
+                    </div>
+                  )}
+                </CardFooter>
+              </Card>
+
+              {showDetails && (
+                <div className="mt-6">
+                  <ScannerInfo />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Zap className="h-5 w-5 text-gold-500 mr-2" />
+                    Benefícios do Scanner
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                        <span className="text-gold-500 text-sm">1</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Identificação de Padrões</span>
+                        <p className="text-sm text-gray-400">
+                          Reconhecimento automático de estruturas de mercado e padrões de alta probabilidade.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                        <span className="text-gold-500 text-sm">2</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Múltiplos Mercados</span>
+                        <p className="text-sm text-gray-400">
+                          Análise simultânea de diversos pares de moedas, criptomoedas e outros ativos financeiros.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                        <span className="text-gold-500 text-sm">3</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Alertas em Tempo Real</span>
+                        <p className="text-sm text-gray-400">
+                          Notificações instantâneas sobre oportunidades de entrada e saída de acordo com sua estratégia.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                        <span className="text-gold-500 text-sm">4</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Gestão de Risco</span>
+                        <p className="text-sm text-gray-400">
+                          Sugestões de stop loss e take profit baseadas em níveis importantes do mercado.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  {!hasAccess && (
+                    <Button
+                      onClick={() => router.push("/scanner-access")}
+                      className="w-full bg-gold-600 hover:bg-gold-700 text-black"
+                    >
+                      Obter Acesso ao Scanner
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MessageSquare className="h-5 w-5 text-gold-500 mr-2" />
+                    Ideias de Trading
+                  </CardTitle>
+                  <CardDescription>Acesse análises e ideias de trading dos nossos especialistas.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
+                          <DollarSign className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <span>Ideias Forex</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setActiveTab("forex")}
+                        className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                      >
+                        Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center mr-3">
+                          <CandlestickChart className="h-4 w-4 text-purple-400" />
+                        </div>
+                        <span>Ideias Cripto</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setActiveTab("crypto")}
+                        className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                      >
+                        Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-teal-500/20 flex items-center justify-center mr-3">
+                          <MessageSquare className="h-4 w-4 text-teal-400" />
+                        </div>
+                        <span>Canal VIP Telegram</span>
+                      </div>
+                      <Link href="/trading-ideas">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                        >
+                          Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Link href="/trading-ideas" className="w-full">
+                    <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
+                      Ver Todas as Ideias de Trading
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="forex">
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">EUR/USD: Zona de Suporte</CardTitle>
+                  <div className="px-2 py-1 bg-blue-500/20 rounded-full text-xs text-blue-400 font-medium">Premium</div>
+                </div>
+                <CardDescription>
+                  Análise técnica mostrando uma potencial reversão em zona de suporte importante
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/placeholder.svg?key=79ymk"
+                    alt="EUR/USD Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Suporte:</span>
+                    <span className="font-medium">1.0850</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Resistência:</span>
+                    <span className="font-medium">1.0980</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Direção:</span>
+                    <span className="text-green-500 font-medium">Compra</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">GBP/JPY: Venda em Resistência</CardTitle>
+                  <div className="px-2 py-1 bg-blue-500/20 rounded-full text-xs text-blue-400 font-medium">Premium</div>
+                </div>
+                <CardDescription>Par atingiu zona de resistência forte e mostra sinais de reversão</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/placeholder.svg?key=iris0"
+                    alt="GBP/JPY Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Resistência:</span>
+                    <span className="font-medium">168.50</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Suporte:</span>
+                    <span className="font-medium">167.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Direção:</span>
+                    <span className="text-red-500 font-medium">Venda</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">USD/CAD: Range Semanal</CardTitle>
+                  <div className="px-2 py-1 bg-green-500/20 rounded-full text-xs text-green-400 font-medium">
+                    Gratuito
+                  </div>
+                </div>
+                <CardDescription>Análise do range semanal e potenciais pontos de entrada</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/placeholder.svg?key=dh1nl"
+                    alt="USD/CAD Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Topo do Range:</span>
+                    <span className="font-medium">1.3650</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Base do Range:</span>
+                    <span className="font-medium">1.3450</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Estratégia:</span>
+                    <span className="text-gray-300 font-medium">Range Trading</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <div className="md:col-span-2 lg:col-span-3">
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Canal MoreThanMoney VIP Telegram</CardTitle>
+                  <CardDescription>
+                    Acesse nosso canal VIP no Telegram para receber sinais e análises em tempo real.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col md:flex-row gap-6 items-center">
+                  <div className="w-full md:w-1/2">
+                    <img
+                      src="/placeholder-n3ehu.png"
+                      alt="Telegram Channel Preview"
+                      className="w-full h-auto rounded-lg border border-gray-700"
+                    />
+                  </div>
+                  <div className="w-full md:w-1/2 space-y-4">
+                    <h3 className="text-xl font-bold">Benefícios do Canal VIP</h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Sinais de trading diários para Forex e Criptomoedas</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Análises técnicas detalhadas com gráficos</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Atualizações em tempo real sobre o mercado</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Acesso a webinars exclusivos e sessões ao vivo</span>
+                      </li>
+                    </ul>
+                    <div className="pt-4">
+                      <Link href="https://t.me/+2XMn1YEjfjYwYTE0" target="_blank" rel="noopener noreferrer">
+                        <Button className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Juntar-se ao Canal VIP
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="crypto">
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">Bitcoin: Consolidação</CardTitle>
+                  <div className="px-2 py-1 bg-purple-500/20 rounded-full text-xs text-purple-400 font-medium">
+                    Premium
+                  </div>
+                </div>
+                <CardDescription>
+                  BTC/USD formando base para possível movimento de alta nos próximos dias
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/bitcoin-chart-analysis.png"
+                    alt="Bitcoin Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Suporte:</span>
+                    <span className="font-medium">$26,800</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Resistência:</span>
+                    <span className="font-medium">$28,500</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Direção:</span>
+                    <span className="text-green-500 font-medium">Compra</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">Ethereum: Próximo Upgrade</CardTitle>
+                  <div className="px-2 py-1 bg-purple-500/20 rounded-full text-xs text-purple-400 font-medium">
+                    Premium
+                  </div>
+                </div>
+                <CardDescription>ETH mostrando força antes do próximo upgrade de rede</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/placeholder-st2bf.png"
+                    alt="Ethereum Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Suporte:</span>
+                    <span className="font-medium">$1,850</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Resistência:</span>
+                    <span className="font-medium">$2,000</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Direção:</span>
+                    <span className="text-green-500 font-medium">Compra</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">Solana: Recuperação</CardTitle>
+                  <div className="px-2 py-1 bg-green-500/20 rounded-full text-xs text-green-400 font-medium">
+                    Gratuito
+                  </div>
+                </div>
+                <CardDescription>SOL mostrando sinais de recuperação após queda recente</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full bg-gray-900 mb-4 rounded-md overflow-hidden">
+                  <img
+                    src="/placeholder-5nvcu.png"
+                    alt="Solana Chart Analysis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Suporte:</span>
+                    <span className="font-medium">$20.50</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Resistência:</span>
+                    <span className="font-medium">$24.80</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-400">Potencial:</span>
+                    <span className="text-green-500 font-medium">+15-20%</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Link href="/trading-ideas" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Ver Análise Completa</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <div className="md:col-span-2 lg:col-span-3">
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Canal MoreThanMoney VIP Telegram</CardTitle>
+                  <CardDescription>
+                    Acesse nosso canal VIP no Telegram para receber sinais e análises em tempo real.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col md:flex-row gap-6 items-center">
+                  <div className="w-full md:w-1/2">
+                    <img
+                      src="/placeholder-qkacd.png"
+                      alt="Telegram Channel Preview"
+                      className="w-full h-auto rounded-lg border border-gray-700"
+                    />
+                  </div>
+                  <div className="w-full md:w-1/2 space-y-4">
+                    <h3 className="text-xl font-bold">Benefícios do Canal VIP</h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Sinais de trading diários para Forex e Criptomoedas</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Análises técnicas detalhadas com gráficos</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Atualizações em tempo real sobre o mercado</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="h-5 w-5 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                          <span className="text-gold-500 text-xs">✓</span>
+                        </div>
+                        <span>Acesso a webinars exclusivos e sessões ao vivo</span>
+                      </li>
+                    </ul>
+                    <div className="pt-4">
+                      <Link href="https://t.me/+2XMn1YEjfjYwYTE0" target="_blank" rel="noopener noreferrer">
+                        <Button className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Juntar-se ao Canal VIP
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

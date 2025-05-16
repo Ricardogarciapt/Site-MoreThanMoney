@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, TrendingUp, BarChart2, Zap } from "lucide-react"
+import { ArrowRight, TrendingUp, BarChart2, Zap, MessageSquare } from "lucide-react"
 import Link from "next/link"
 
 export default function AutomationCards() {
@@ -101,7 +101,8 @@ export default function AutomationCards() {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-gray-300 mb-6">
-                Receba sinais de trading precisos diretamente no seu dispositivo com nossa tecnologia Tap to Trade ou mesmo a area VIP.
+                Receba sinais de trading precisos diretamente no seu dispositivo com nossa tecnologia Tap to Trade ou
+                mesmo a area VIP.
               </p>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-start">
@@ -188,27 +189,7 @@ export default function AutomationCards() {
           <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300">
             <CardHeader>
               <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-gold-500"
-                >
-                  <path d="M12 2v6"></path>
-                  <path d="M12 22v-6"></path>
-                  <path d="M4.93 4.93l4.24 4.24"></path>
-                  <path d="M14.83 14.83l4.24 4.24"></path>
-                  <path d="M2 12h6"></path>
-                  <path d="M22 12h-6"></path>
-                  <path d="M4.93 19.07l4.24-4.24"></path>
-                  <path d="M14.83 9.17l4.24-4.24"></path>
-                </svg>
+                <MessageSquare className="h-8 w-8 text-gold-500" />
               </div>
               <CardTitle className="text-2xl font-bold text-center">Ideias dos Educadores</CardTitle>
             </CardHeader>
@@ -227,12 +208,12 @@ export default function AutomationCards() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-gold-500 mr-2">•</span>
-                  <span>Webinars exclusivos e Eventos Presenciais</span>
+                  <span>Canal Telegram VIP MoreThanMoney</span>
                 </li>
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/educator-ideas" className="w-full">
+              <Link href="/automation/ideas" className="w-full">
                 <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
                   Ver Ideias <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
