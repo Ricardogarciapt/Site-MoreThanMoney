@@ -8,7 +8,19 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import ScannerInfo from "@/components/scanner-info"
 import TradingViewWidget from "@/components/trading-view-widget"
-import { ArrowRight, ChevronDown, DollarSign, Lock, Unlock, Zap, CandlestickChart, MessageSquare } from "lucide-react"
+import { TapToTradeWidget } from "@/components/tap-to-trade-widget"
+import {
+  ArrowRight,
+  ChevronDown,
+  DollarSign,
+  Lock,
+  Unlock,
+  Zap,
+  CandlestickChart,
+  MessageSquare,
+  Timer,
+  CheckCircle2,
+} from "lucide-react"
 import Link from "next/link"
 
 export default function ScannerView() {
@@ -16,9 +28,17 @@ export default function ScannerView() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("scanner")
   const [showDetails, setShowDetails] = useState(false)
+  const [showAcceptedMessage, setShowAcceptedMessage] = useState(false)
 
   // Verificar se o usuário tem acesso ao scanner
   const hasAccess = isAuthenticated && user?.package && ["Trader", "Pro Trader", "VIP Trader"].includes(user.package)
+
+  const handleTradeAccept = () => {
+    setShowAcceptedMessage(true)
+    setTimeout(() => {
+      setShowAcceptedMessage(false)
+    }, 3000)
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -33,7 +53,7 @@ export default function ScannerView() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
           <TabsTrigger value="scanner" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
             Scanner
           </TabsTrigger>
@@ -42,6 +62,9 @@ export default function ScannerView() {
           </TabsTrigger>
           <TabsTrigger value="crypto" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
             Ideias Cripto
+          </TabsTrigger>
+          <TabsTrigger value="taptotrade" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+            TAPTOTRADE
           </TabsTrigger>
         </TabsList>
 
@@ -217,6 +240,22 @@ export default function ScannerView() {
                         size="sm"
                         variant="ghost"
                         onClick={() => setActiveTab("crypto")}
+                        className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                      >
+                        Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center mr-3">
+                          <Timer className="h-4 w-4 text-green-400" />
+                        </div>
+                        <span>TAPTOTRADE</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setActiveTab("taptotrade")}
                         className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
                       >
                         Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
@@ -609,6 +648,142 @@ export default function ScannerView() {
                       </Link>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="taptotrade">
+          <div className="space-y-6">
+            <div className="text-center max-w-3xl mx-auto mb-8">
+              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+                TAPTOTRADE - Sinais em 2 Minutos
+              </h2>
+              <p className="text-lg text-gray-300 mt-2">
+                Aceite sinais de trading específicos em apenas 2 minutos e maximize suas oportunidades de mercado.
+              </p>
+              <div className="flex items-center justify-center mt-4">
+                <Timer className="h-5 w-5 text-gold-500 mr-2" />
+                <span className="text-gold-500 text-sm font-medium">Sinais disponíveis por tempo limitado</span>
+              </div>
+            </div>
+
+            {showAcceptedMessage && (
+              <div className="fixed top-4 right-4 z-50 bg-green-600 text-white p-4 rounded-md shadow-lg flex items-center">
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                Sinal aceito com sucesso! A ordem foi enviada para seu MetaTrader.
+              </div>
+            )}
+
+            <TapToTradeWidget onAccept={handleTradeAccept} />
+
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Como Funciona o TAPTOTRADE?</CardTitle>
+                <CardDescription>
+                  Aceite sinais de trading profissionais com apenas um clique e execute-os diretamente na sua conta.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-full md:w-1/2">
+                  <img
+                    src="/placeholder-jugwm.png"
+                    alt="TAPTOTRADE Workflow"
+                    className="w-full h-auto rounded-lg border border-gray-700"
+                  />
+                </div>
+                <div className="w-full md:w-1/2 space-y-6">
+                  <h3 className="text-xl font-bold">Três Passos Simples</h3>
+                  <ol className="space-y-4">
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500 flex items-center justify-center mr-3 mt-0.5 text-black font-bold">
+                        1
+                      </div>
+                      <div>
+                        <span className="font-medium">Receba o Sinal</span>
+                        <p className="text-sm text-gray-400">
+                          Nossa equipe de analistas profissionais identifica oportunidades de alta probabilidade e envia
+                          alertas em tempo real.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500 flex items-center justify-center mr-3 mt-0.5 text-black font-bold">
+                        2
+                      </div>
+                      <div>
+                        <span className="font-medium">Aceite em 2 Minutos</span>
+                        <p className="text-sm text-gray-400">
+                          Você tem apenas 2 minutos para aceitar o sinal. Isso garante que você entre no mercado no
+                          momento ideal.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-6 w-6 rounded-full bg-gold-500 flex items-center justify-center mr-3 mt-0.5 text-black font-bold">
+                        3
+                      </div>
+                      <div>
+                        <span className="font-medium">Execução Automática</span>
+                        <p className="text-sm text-gray-400">
+                          O sinal é executado automaticamente na sua conta de trading via nossa integração com
+                          MetaTrader.
+                        </p>
+                      </div>
+                    </li>
+                  </ol>
+                  <div className="pt-4">
+                    <Button
+                      className="w-full bg-gold-600 hover:bg-gold-700 text-black"
+                      onClick={() => router.push("/scanner-access")}
+                    >
+                      Ativar TAPTOTRADE na Minha Conta
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CheckCircle2 className="h-5 w-5 text-gold-500 mr-2" />
+                    Taxa de Sucesso
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="text-5xl font-bold text-gold-500 mb-2">72%</div>
+                  <p className="text-gray-400">Taxa média de sucesso dos sinais TAPTOTRADE nos últimos 3 meses.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CandlestickChart className="h-5 w-5 text-gold-500 mr-2" />
+                    Sinais por Semana
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="text-5xl font-bold text-gold-500 mb-2">15-20</div>
+                  <p className="text-gray-400">
+                    Média de sinais TAPTOTRADE enviados semanalmente para nossas contas VIP.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <DollarSign className="h-5 w-5 text-gold-500 mr-2" />
+                    Retorno Médio
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="text-5xl font-bold text-gold-500 mb-2">+8.5%</div>
+                  <p className="text-gray-400">Retorno médio mensal baseado em tamanho de posição padrão de 2%.</p>
                 </CardContent>
               </Card>
             </div>

@@ -5,10 +5,11 @@ import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/login-form"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User, BookOpen, BarChart2, UserPlus } from "lucide-react"
+import { LogOut, User, BookOpen, BarChart2, UserPlus, CreditCard } from "lucide-react"
 import Scanners from "@/components/scanners"
 import MoreThanMoneyCourses from "@/components/morethanmoney-courses"
 import MemberRegistration from "@/components/member-registration"
+import MembershipPackages from "@/components/membership-packages"
 
 export default function MemberArea() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -75,7 +76,7 @@ export default function MemberArea() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-8 bg-black/50 border border-gold-500/30">
+          <TabsList className="grid grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
             <TabsTrigger value="courses" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <BookOpen size={16} className="mr-2" />
               Cursos MoreThanMoney
@@ -83,6 +84,13 @@ export default function MemberArea() {
             <TabsTrigger value="scanners" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <BarChart2 size={16} className="mr-2" />
               Scanner
+            </TabsTrigger>
+            <TabsTrigger
+              value="subscription"
+              className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
+            >
+              <CreditCard size={16} className="mr-2" />
+              Assinatura
             </TabsTrigger>
             <TabsTrigger value="profile" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <User size={16} className="mr-2" />
@@ -96,6 +104,10 @@ export default function MemberArea() {
 
           <TabsContent value="scanners" className="mt-0">
             <Scanners />
+          </TabsContent>
+
+          <TabsContent value="subscription" className="mt-0">
+            <MembershipPackages />
           </TabsContent>
 
           <TabsContent value="profile" className="mt-0">

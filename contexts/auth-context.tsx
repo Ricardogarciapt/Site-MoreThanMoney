@@ -22,6 +22,7 @@ interface AuthContextType {
   register: (userData: Omit<User, "isAdmin"> & { password: string }) => Promise<boolean>
   logout: () => void
   updateUserRole: (username: string, newRole: string) => boolean
+  updateUserPackage: (packageId: string) => Promise<boolean>
 }
 
 // Lista de administradores com suas credenciais
@@ -162,8 +163,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false
   }
 
+  const updateUserPackage = async (packageId: string): Promise<boolean> => {
+    if (!user) return false
+
+    try {
+      // Em produção, isso seria uma chamada API
+      // Simulação de atualização de pacote
+      if (typeof window !== "undefined") {
+        const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+
+        // Atualiza o pacote do usuário no array de usuários registrados
+        const updatedUsers = registeredUsers.map((u: any) => {
+          if (u.username === user.username) {
+            return { ...u, package: packageId }
+          }
+          return u
+        })
+
+        localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers))
+
+        // Atualiza o usuário atual
+        const updatedUser = { ...user, package: packageId }
+        setUser(updatedUser)
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Erro ao atualizar pacote:", error)
+      return false
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, register, logout, updateUserRole }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isAdmin,
+        login,
+        register,
+        logout,
+        updateUserRole,
+        updateUserPackage,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
