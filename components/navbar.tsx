@@ -125,13 +125,7 @@ export default function Navbar() {
             <div className="ml-2">
               <ShoppingCart />
             </div>
-            {isAuthenticated ? (
-              <UserDropdown />
-            ) : (
-              <Button onClick={openLoginModal} className="bg-gold-600 hover:bg-gold-700 text-black font-medium">
-                Área de Membro
-              </Button>
-            )}
+            {isAuthenticated && <UserDropdown />}
           </div>
 
           {/* Mobile menu button */}

@@ -1,8 +1,7 @@
-export const pineScriptScanner = `
 // Este software e código faz parte integrante da propriedade intelectual de RicardoGarciaPT e sua Empresa MoreThanMoney
 
-//@version=5
-indicator("MoreThanMoney - Scanner V3.4 - Market structures and ATR", overlay=true)
+export const pineScriptScanner = `//@version=5
+indicator("MoreThanMoney - Scanner Site", overlay=true)
 
 // Função para calcular a Média Móvel Exponencial Dupla (DEMA)
 dema(src, length) =>
