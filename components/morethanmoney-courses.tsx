@@ -3,11 +3,108 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, BookOpen, Users, Brain, PlayCircle } from "lucide-react"
+import { ArrowRight, BookOpen, Users, Brain, PlayCircle, ExternalLink } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { useAuth } from "@/contexts/auth-context"
+import { useState } from "react"
 
 export default function MoreThanMoneyCourses() {
+  // URL da playlist
+  const playlistUrl = "https://youtube.com/playlist?list=PL6XU0y2YUMZLpIsO63P_E6w4OCY8Y467m&si=Ok6-0Ast2Y8DYU5i"
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(false)
+  const { user } = useAuth()
+
+  // Lista de vídeos da playlist com títulos reais
+  const playlistVideos = [
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 1 - Introdução ao Bootcamp MoreThanMoney",
+      description: "Visão geral do bootcamp e introdução aos conceitos fundamentais de trading.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 1 - Fundamentos do Trading",
+      description: "Conceitos básicos e terminologia essencial para iniciantes no mercado financeiro.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 1 - Análise de Mercado",
+      description: "Métodos e ferramentas para análise de mercados financeiros.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 2 - Estratégias de Entrada",
+      description: "Técnicas para identificar pontos de entrada com alta probabilidade de sucesso.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 2 - Gestão de Risco",
+      description: "Princípios e práticas para gerenciar riscos em operações de trading.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 2 - Psicologia do Trading",
+      description: "Aspectos psicológicos e emocionais que afetam as decisões de trading.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 3 - Scanner MTM: Configuração Básica",
+      description: "Como configurar e utilizar as funcionalidades básicas do Scanner MoreThanMoney.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 3 - Scanner MTM: Funcionalidades Avançadas",
+      description: "Explorando recursos avançados do Scanner para identificar oportunidades de mercado.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 3 - Aplicação Prática do Scanner",
+      description: "Casos de uso reais e exemplos práticos de operações com o Scanner MTM.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 4 - Estratégias de Saída",
+      description: "Técnicas para determinar pontos de saída e maximizar lucros.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 4 - Análise de Resultados",
+      description: "Como analisar e aprender com seus resultados de trading.",
+    },
+    {
+      id: "Wd-Iq9gKZQw",
+      title: "Módulo 4 - Plano de Trading Profissional",
+      description: "Desenvolvimento de um plano de trading completo e personalizado.",
+    },
+  ]
+
+  // Função para inscrever o usuário na lista de e-mails
+  const subscribeToMailingList = () => {
+    // Em produção, aqui seria uma chamada API para salvar o e-mail do usuário
+    // Simulação de inscrição bem-sucedida
+    console.log("Inscrevendo usuário:", user?.email || "Usuário não autenticado")
+
+    // Marcar como inscrito
+    setIsSubscribed(true)
+
+    // Em um ambiente real, você enviaria os dados para seu backend
+    // fetch('/api/subscribe', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ email: user?.email }),
+    //   headers: { 'Content-Type': 'application/json' }
+    // })
+  }
+
   return (
     <div className="space-y-8">
       <Tabs defaultValue="bootcamp" className="w-full">
@@ -43,11 +140,11 @@ export default function MoreThanMoneyCourses() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Módulos:</span>
-                    <span>12</span>
+                    <span>4</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Duração:</span>
-                    <span>24 horas</span>
+                    <span className="text-gray-400">Vídeos:</span>
+                    <span>{playlistVideos.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Nível:</span>
@@ -78,217 +175,48 @@ export default function MoreThanMoneyCourses() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                  Acessar Curso <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href={playlistUrl} target="_blank" className="w-full">
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
+                    Acessar Curso Completo <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
 
-            <div className="space-y-6">
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <PlayCircle size={20} className="mr-2 text-gold-500" />
-                    Aula 1: Introdução ao Trading
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300 mb-2">
-                    Visão geral dos mercados financeiros e como funciona o trading.
-                  </p>
-                  <div className="text-xs text-gray-400 flex justify-between">
-                    <span>Duração: 45 min</span>
-                    <span>Concluído: Sim</span>
-                  </div>
-                </CardContent>
-                <CardFooter>
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Vídeos do Bootcamp</CardTitle>
+                <CardDescription>Clique em um vídeo para assistir diretamente no YouTube</CardDescription>
+              </CardHeader>
+              <CardContent className="max-h-[500px] overflow-y-auto pr-2">
+                <ul className="space-y-3">
+                  {playlistVideos.map((video, index) => (
+                    <li key={index} className="border-b border-gray-700 pb-3 last:border-0">
+                      <Link href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" className="group">
+                        <div className="flex items-start">
+                          <PlayCircle size={20} className="mr-2 mt-1 text-gold-500 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-medium group-hover:text-gold-400 transition-colors">{video.title}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{video.description}</p>
+                          </div>
+                          <ExternalLink
+                            size={16}
+                            className="ml-2 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          />
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Link href={playlistUrl} target="_blank" className="w-full">
                   <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Rever Aula
+                    Ver Playlist Completa
                   </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <PlayCircle size={20} className="mr-2 text-gold-500" />
-                    Aula 2: Estruturas de Mercado
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300 mb-2">
-                    Identificação de estruturas de mercado e pontos de entrada/saída.
-                  </p>
-                  <div className="text-xs text-gray-400 flex justify-between">
-                    <span>Duração: 52 min</span>
-                    <span>Concluído: Em progresso</span>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Continuar Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <PlayCircle size={20} className="mr-2 text-gold-500" />
-                    Aula 3: Análise de Tendências
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300 mb-2">
-                    Como identificar e analisar tendências de mercado para operações mais precisas.
-                  </p>
-                  <div className="text-xs text-gray-400 flex justify-between">
-                    <span>Duração: 48 min</span>
-                    <span>Concluído: Não</span>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Iniciar Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h3 className="text-xl font-bold mb-4">Módulos da Segunda Playlist</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Padrões de Candles
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">
-                    Identificação e interpretação de padrões de candles japoneses.
-                  </p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Suporte e Resistência
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">Como identificar e utilizar níveis de suporte e resistência.</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Fibonacci Retracement
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">Aplicação da sequência de Fibonacci na análise técnica.</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Médias Móveis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">
-                    Estratégias de trading com médias móveis simples e exponenciais.
-                  </p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Gestão de Risco
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">Técnicas de gestão de risco e dimensionamento de posições.</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-md flex items-center">
-                    <PlayCircle size={18} className="mr-2 text-gold-500" />
-                    Psicologia do Trading
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-sm text-gray-300">Aspectos psicológicos e emocionais do trading.</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                  >
-                    Ver Aula
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
+                </Link>
+              </CardFooter>
+            </Card>
           </div>
         </TabsContent>
 
@@ -388,9 +316,15 @@ export default function MoreThanMoneyCourses() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                  Iniciar Nível 1 <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link
+                  href="https://youtube.com/playlist?list=PL6XU0y2YUMZI3mi9RSpEmsO5V90b9lbZS&si=zSLzr9qid4CdQHRd"
+                  target="_blank"
+                  className="w-full"
+                >
+                  <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
+                    Iniciar Nível 1 <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
 
@@ -620,112 +554,118 @@ export default function MoreThanMoneyCourses() {
 
         {/* Inteligência Artificial */}
         <TabsContent value="ai" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-              <CardHeader>
-                <div className="rounded-lg overflow-hidden mb-4 aspect-video relative">
-                  <Image src="/placeholder-1k6bt.png" alt="Inteligência Artificial" fill className="object-cover" />
-                </div>
-                <CardTitle>Educação de Inteligência Artificial</CardTitle>
-                <CardDescription>
-                  Aprenda a utilizar a inteligência artificial para melhorar seus resultados no trading e nos negócios.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Módulos:</span>
-                    <span>10</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Duração:</span>
-                    <span>20 horas</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Nível:</span>
-                    <span>Intermediário</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <h4 className="font-medium">O que você vai aprender:</h4>
-                  <ul className="space-y-1">
-                    <li className="flex items-start">
-                      <span className="text-gold-500 mr-2">•</span>
-                      <span>Fundamentos da inteligência artificial e machine learning</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-gold-500 mr-2">•</span>
-                      <span>Aplicações da IA no trading e análise de mercado</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-gold-500 mr-2">•</span>
-                      <span>Criação de modelos preditivos para trading</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-gold-500 mr-2">•</span>
-                      <span>Automação de processos com IA</span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                  Acessar Curso <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Módulo 1: Introdução à Inteligência Artificial</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300">
-                    Conceitos básicos de IA, machine learning e deep learning aplicados ao mercado financeiro.
+          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+            <CardHeader className="text-center pb-2">
+              <div className="mx-auto mb-6 bg-gold-500/10 border border-gold-500/30 rounded-full px-6 py-2 inline-block">
+                <span className="text-gold-400 font-semibold">EM BREVE</span>
+              </div>
+              <CardTitle className="text-2xl">Inteligência Artificial para Trading</CardTitle>
+              <CardDescription className="text-lg mt-2">
+                Estamos preparando um conteúdo exclusivo sobre como utilizar IA para potencializar seus resultados
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center py-8">
+              <div className="text-center max-w-2xl">
+                <div className="mb-8">
+                  <Brain size={80} className="mx-auto text-gold-500/60 mb-4" />
+                  <p className="text-gray-300">
+                    Aprenda a utilizar as mais avançadas ferramentas de inteligência artificial para análise de mercado,
+                    previsão de tendências e automação de estratégias de trading.
                   </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Continuar Módulo
-                  </Button>
-                </CardFooter>
-              </Card>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="bg-black/30 p-4 rounded-lg border border-gold-500/20">
+                    <h4 className="font-medium text-gold-400 mb-2">Análise Preditiva</h4>
+                    <p className="text-sm text-gray-400">Modelos de IA para prever movimentos de mercado</p>
+                  </div>
+                  <div className="bg-black/30 p-4 rounded-lg border border-gold-500/20">
+                    <h4 className="font-medium text-gold-400 mb-2">Trading Automatizado</h4>
+                    <p className="text-sm text-gray-400">Sistemas inteligentes para execução de operações</p>
+                  </div>
+                  <div className="bg-black/30 p-4 rounded-lg border border-gold-500/20">
+                    <h4 className="font-medium text-gold-400 mb-2">Gestão de Risco</h4>
+                    <p className="text-sm text-gray-400">Algoritmos avançados para otimização de portfolio</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-center pb-8">
+              <Button
+                variant="outline"
+                className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                Receber Notificação de Lançamento
+              </Button>
+            </CardFooter>
 
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Módulo 2: IA na Análise de Mercado</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300">
-                    Como utilizar ferramentas de IA para identificar padrões e tendências no mercado.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Iniciar Módulo
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Módulo 3: Modelos Preditivos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-300">
-                    Desenvolvimento de modelos preditivos para previsão de preços e tendências de mercado.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-400 hover:bg-gold-500/10">
-                    Iniciar Módulo
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
+            {/* Dialog para inscrição na lista de e-mails */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="bg-black/90 border-gold-500/30 text-white">
+                <DialogHeader>
+                  <DialogTitle className="text-gold-400 text-xl">Notificação de Lançamento</DialogTitle>
+                  <DialogDescription className="text-gray-300">
+                    {!isSubscribed ? (
+                      <>
+                        Você será notificado quando o curso de Inteligência Artificial estiver disponível.
+                        {user ? (
+                          <div className="mt-4 p-3 bg-black/50 border border-gold-500/20 rounded-md">
+                            <p className="text-sm">Seus dados de contato:</p>
+                            <p className="font-medium mt-1">{user.name}</p>
+                            <p className="text-gold-400">{user.email || "E-mail não disponível"}</p>
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-amber-400">Você precisa estar logado para receber notificações.</p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="py-4">
+                        <div className="flex items-center justify-center mb-4">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-green-500"
+                          >
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                          </svg>
+                        </div>
+                        <p className="text-center text-lg font-medium">Inscrição realizada com sucesso!</p>
+                        <p className="text-center text-gray-400 mt-2">
+                          Você receberá uma notificação quando o curso estiver disponível.
+                        </p>
+                      </div>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                {!isSubscribed && (
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      className="border-gray-700 text-gray-400 hover:bg-gray-800"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="bg-gold-600 hover:bg-gold-700 text-black"
+                      onClick={subscribeToMailingList}
+                      disabled={!user}
+                    >
+                      Confirmar Inscrição
+                    </Button>
+                  </DialogFooter>
+                )}
+              </DialogContent>
+            </Dialog>
+          </Card>
         </TabsContent>
       </Tabs>
 

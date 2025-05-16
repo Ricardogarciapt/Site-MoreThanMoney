@@ -22,6 +22,7 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import Link from "next/link"
+import MembershipRequired from "@/components/membership-required"
 
 export default function ScannerView() {
   const { isAuthenticated, user } = useAuth()
@@ -30,8 +31,13 @@ export default function ScannerView() {
   const [showDetails, setShowDetails] = useState(false)
   const [showAcceptedMessage, setShowAcceptedMessage] = useState(false)
 
+  // Verificar se o usuário está autenticado
+  if (!isAuthenticated) {
+    return <MembershipRequired />
+  }
+
   // Verificar se o usuário tem acesso ao scanner
-  const hasAccess = isAuthenticated && user?.package && ["Trader", "Pro Trader", "VIP Trader"].includes(user.package)
+  const hasAccess = user?.package && ["Trader", "Pro Trader", "VIP Trader"].includes(user.package)
 
   const handleTradeAccept = () => {
     setShowAcceptedMessage(true)
