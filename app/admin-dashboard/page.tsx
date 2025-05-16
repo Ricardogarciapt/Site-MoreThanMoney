@@ -72,23 +72,6 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link href="/admin">
-            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full hover:border-gold-400 transition-colors cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Settings className="h-5 w-5 mr-2" />
-                  Configurações do Site
-                </CardTitle>
-                <CardDescription>Gerencie as configurações gerais do site</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">
-                  Personalize cores, navegação, seções visíveis e outras configurações do site.
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
           <Link href="/admin-dashboard/user-roles">
             <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full hover:border-gold-400 transition-colors cursor-pointer">
               <CardHeader>
@@ -106,20 +89,39 @@ export default function AdminDashboardPage() {
             </Card>
           </Link>
 
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BarChart className="h-5 w-5 mr-2" />
-                Estatísticas
-              </CardTitle>
-              <CardDescription>Visualize estatísticas da plataforma</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-400">
-                Acompanhe o desempenho da plataforma, usuários ativos e outras métricas importantes.
-              </p>
-            </CardContent>
-          </Card>
+          <div onClick={() => router.push("/admin-dashboard/site-settings")}>
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full hover:border-gold-400 transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Settings className="h-5 w-5 mr-2" />
+                  Configurações do Site
+                </CardTitle>
+                <CardDescription>Gerencie as configurações gerais do site</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-400">
+                  Personalize cores, navegação, seções visíveis e outras configurações do site.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div onClick={() => router.push("/admin-dashboard/statistics")}>
+            <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full hover:border-gold-400 transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart className="h-5 w-5 mr-2" />
+                  Estatísticas
+                </CardTitle>
+                <CardDescription>Visualize estatísticas da plataforma</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-400">
+                  Acompanhe o desempenho da plataforma, usuários ativos e outras métricas importantes.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
           <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full">
             <CardHeader>

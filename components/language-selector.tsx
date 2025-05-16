@@ -2,75 +2,68 @@
 
 import { useState, useEffect } from "react"
 import { Globe } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const languages = [
-  { code: "pt-PT", name: "Português (Portugal)", flag: "🇵🇹" },
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "pt-PT", name: "Português (Portugal)" },
+  { code: "en", name: "English" },
+  { code: "es", name: "Español" },
+  { code: "de", name: "Deutsch" },
+  { code: "fr", name: "Français" },
 ]
 
 export function LanguageSelector() {
+  const [isOpen, setIsOpen] = useState(false)
   const [currentLanguage, setCurrentLanguage] = useState("pt-PT")
 
-  // Detectar idioma do navegador na inicialização
+  // Detectar idioma do navegador ao carregar
   useEffect(() => {
-    const detectLanguage = () => {
-      const browserLang = navigator.language
+    const browserLang = navigator.language
+    const supportedLang = languages.find(
+      (lang) => browserLang.startsWith(lang.code) || (lang.code === "pt-PT" && browserLang.startsWith("pt")),
+    )
 
-      // Verificar se o idioma do navegador está entre os suportados
-      const supportedLang = languages.find(
-        (lang) => browserLang.startsWith(lang.code) || lang.code.startsWith(browserLang),
-      )
-
-      if (supportedLang) {
-        setCurrentLanguage(supportedLang.code)
-        document.documentElement.lang = supportedLang.code
-      }
+    if (supportedLang) {
+      setCurrentLanguage(supportedLang.code)
     }
-
-    detectLanguage()
   }, [])
 
-  const changeLanguage = (langCode: string) => {
+  const handleLanguageChange = (langCode: string) => {
     setCurrentLanguage(langCode)
-    document.documentElement.lang = langCode
-
-    // Aqui você implementaria a lógica real de tradução
-    // Por exemplo, carregar arquivos de tradução ou chamar uma API
-    console.log(`Idioma alterado para: ${langCode}`)
-
-    // Simular tradução (em produção, você usaria uma biblioteca como i18next)
-    const event = new CustomEvent("languageChanged", { detail: { language: langCode } })
-    document.dispatchEvent(event)
+    setIsOpen(false)
+    // Aqui você implementaria a lógica para mudar o idioma da aplicação
+    // Por exemplo, usando i18n ou outra biblioteca de internacionalização
   }
 
-  // Encontrar o idioma atual
-  const current = languages.find((lang) => lang.code === currentLanguage) || languages[0]
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
-          <Globe className="h-4 w-4" />
-          <span className="sr-only">Alterar idioma</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {languages.map((language) => (
-          <DropdownMenuItem
-            key={language.code}
-            onClick={() => changeLanguage(language.code)}
-            className={currentLanguage === language.code ? "bg-gray-800" : ""}
-          >
-            <span className="mr-2">{language.flag}</span>
-            {language.name}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center text-gray-300 hover:text-gold-400 transition-colors"
+        aria-label="Selecionar idioma"
+      >
+        <Globe className="h-5 w-5 mr-1" />
+        <span className="text-sm hidden md:inline">{currentLanguage.split("-")[0].toUpperCase()}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-black/90 border border-gold-500/30 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+          <div className="py-1">
+            {languages.map((language) => (
+              <button
+                key={language.code}
+                onClick={() => handleLanguageChange(language.code)}
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                  currentLanguage === language.code
+                    ? "text-gold-500 bg-gold-500/10"
+                    : "text-gray-300 hover:text-gold-400 hover:bg-gold-500/5"
+                }`}
+              >
+                {language.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
