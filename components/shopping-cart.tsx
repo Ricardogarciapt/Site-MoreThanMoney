@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 
 // Tipos
@@ -39,6 +39,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const cartRef = useRef<HTMLDivElement>(null)
 
   // Carregar itens do localStorage
   useEffect(() => {
@@ -98,6 +99,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const closeCart = () => {
     setIsOpen(false)
   }
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (cartRef.current && !cartRef.current.contains(e.target as Node)) {
+      // Apenas feche se o clique for fora da área do carrinho
+      setIsOpen(false)
+    }
+  }
+
+  const handleRemoveItem = (itemId: string) => {
+    if (confirm("Tem certeza que deseja remover este item do carrinho?")) {
+      // Lógica para remover o item
+      removeItem(itemId)
+    }
+  }
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+
+  useEffect(() => {
+    // Carregar carrinho do localStorage ao inicializar
+    const savedCart = localStorage.getItem("shoppingCart")
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Salvar carrinho no localStorage quando mudar
+    if (cartItems.length > 0) {
+      localStorage.setItem("shoppingCart", JSON.stringify(cartItems))
+    }
+  }, [cartItems])
 
   return (
     <CartContext.Provider

@@ -10,7 +10,7 @@ interface User {
   socialLink?: string
   jifuId?: string
   package?: string
-  isAdmin?: boolean
+  isAdmin: boolean
   role?: string
 }
 

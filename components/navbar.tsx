@@ -53,7 +53,13 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <Image src="/logo-new.png" alt="MoreThanMoney Logo" width={120} height={40} className="h-10 w-auto" />
+              <Image
+                src="/logo-new.png"
+                alt="MoreThanMoney Logo"
+                width={150}
+                height={50}
+                className="h-8 md:h-10 w-auto"
+              />
             </Link>
           </div>
 
@@ -144,7 +150,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-black/90 border-b border-gold-500/30">
+          <div className="p-2 md:p-4 space-y-1 sm:px-3 bg-black/90 border-b border-gold-500/30">
             {navigation.map((item) =>
               item.submenu ? (
                 <div key={item.name} className="space-y-1">

@@ -42,6 +42,7 @@ export default function LandingPage() {
             width={220}
             height={180}
             className="object-contain animate-logo-slide-in"
+            priority
           />
         </div>
       </div>

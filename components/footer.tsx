@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone } from "lucide-react"
+import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, Lock } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -73,6 +73,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/admin-login" className="text-gray-400 hover:text-gold-400 transition-colors">
+                  Painel de Admin
+                </Link>
+              </li>
+              <li>
                 <Link href="/register" className="text-gray-400 hover:text-gold-400 transition-colors">
                   Registrar
                 </Link>
@@ -129,16 +134,46 @@ export default function Footer() {
         </div>
 
         {/* Botão de Acesso Admin (discreto) */}
-        <div className="flex justify-center mt-8">
+        {/* <div className="flex justify-center mt-8">
           <Link href="/admin-dashboard" className="text-xs text-gray-600 hover:text-gold-400 transition-colors">
             Acesso Administrativo
           </Link>
-        </div>
+        </div> */}
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400 text-sm">
-            © 2025 MoreThanMoney. Todos os direitos reservados. MoreThanMoneyTM é uma marca registrada.
-          </p>
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <p className="text-gray-400 text-sm">
+              © 2025 MoreThanMoney. Todos os direitos reservados. MoreThanMoneyTM é uma marca registrada.
+            </p>
+            <Link
+              href="/admin-login"
+              className="text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1 text-sm"
+            >
+              <Lock className="h-3 w-3" /> Painel de Admin
+            </Link>
+          </div>
+        </div>
+        <div className="mt-4 text-center">
+          <Link
+            href="/admin-login"
+            className="inline-flex items-center text-sm text-gray-400 hover:text-gold-400 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+            Painel de Admin
+          </Link>
         </div>
       </div>
     </footer>

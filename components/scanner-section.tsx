@@ -10,10 +10,13 @@ import ScannerPricing from "@/components/scanner-pricing"
 export default function ScannerSection() {
   return (
     <>
-      <section className="relative py-20">
+      <section className="relative py-20" role="region" aria-labelledby="scanner-title">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+            <h2
+              className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600"
+              id="scanner-title"
+            >
               Scanner MTM
             </h2>
             <p className="text-xl text-gray-300 mb-12">
@@ -63,13 +66,17 @@ export default function ScannerSection() {
 
                   <div className="flex flex-col space-y-4">
                     <Link href="/scanner">
-                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
+                      <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full" aria-label="Acessar Scanner">
                         Acessar Scanner <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
 
                     <Link href="/scanner-access">
-                      <Button variant="outline" className="border-gold-500 text-gold-400 hover:bg-gold-500/10 w-full">
+                      <Button
+                        variant="outline"
+                        className="border-gold-500 text-gold-400 hover:bg-gold-500/10 w-full"
+                        aria-label="Solicitar Acesso ao Scanner"
+                      >
                         Solicitar Acesso <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>

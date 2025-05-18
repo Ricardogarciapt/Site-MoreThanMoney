@@ -68,14 +68,14 @@ interface SiteConfig {
 const defaultConfig: SiteConfig = {
   name: "MoreThanMoney",
   logoUrl: "/logo-new.png",
-  footerText: "© 2023 MoreThanMoney. Todos os direitos reservados.",
-  contactEmail: "suporte@morethanmoney.com",
+  footerText: "© 2025 MoreThanMoney. Todos os direitos reservados.",
+  contactEmail: "suporte@morethanmoney.pt",
   ownerInfo: {
     name: "Ricardo Garcia",
-    email: "info@morethanmoney.com",
-    phone: "+351 912 345 678",
-    address: "Rua Principal 123, 1000-000 Lisboa, Portugal",
-    taxId: "PT123456789",
+    email: "info@morethanmoney.pt",
+    phone: "+351 912 666 699",
+    address: "Santarém, Portugal",
+    taxId: "PT241991439",
   },
   socialLinks: [
     {

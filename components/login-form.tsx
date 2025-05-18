@@ -9,27 +9,50 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
 import { AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export default function LoginForm() {
+export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   const { login } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validação básica
+    if (!username.trim()) {
+      setError("Nome de usuário é obrigatório")
+      return
+    }
+
+    if (!password.trim()) {
+      setError("Senha é obrigatória")
+      return
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres")
+      return
+    }
+
     setError("")
     setIsLoading(true)
 
     try {
       const success = await login(username, password)
-      if (!success) {
-        setError("Credenciais inválidas. Tente novamente.")
+      if (success) {
+        onSuccess?.()
+        router.push("/member-area")
+      } else {
+        setError("Credenciais inválidas. Verifique seu nome de usuário e senha.")
       }
     } catch (err) {
-      setError("Ocorreu um erro ao fazer login. Tente novamente.")
+      setError("Ocorreu um erro ao fazer login. Tente novamente mais tarde.")
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
