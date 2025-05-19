@@ -14,6 +14,49 @@ import { AlertCircle, Check, Save } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useConfigStore, type SiteConfig } from "@/lib/config-service"
 
+const defaultTradingViewCode = `// Este é o código padrão do widget TradingView
+// Você pode personalizá-lo conforme necessário
+
+// Verificar se o TradingView está disponível
+if (!window.TradingView) {
+  console.error("TradingView não está disponível");
+  return;
+}
+
+// Criar o widget com configurações básicas
+const widget = new window.TradingView.widget({
+  autosize: true,
+  symbol: "OANDA:XAUUSD",
+  interval: "60",
+  timezone: "Etc/UTC",
+  theme: "dark",
+  style: "1",
+  locale: "br",
+  toolbar_bg: "#1E1E1E",
+  enable_publishing: false,
+  allow_symbol_change: true,
+  hide_side_toolbar: false,
+  withdateranges: true,
+  save_image: false,
+  studies: ["STD;MACD", "STD;RSI"],
+  container_id: container.querySelector("#tradingview_widget").id,
+});
+
+// Adicionar callback para quando o gráfico estiver pronto
+if (isAuthenticated) {
+  widget.onChartReady(function() {
+    try {
+      // Criar um novo estudo com o PineScript
+      widget.chart().createStudy("Custom Script", false, false, {
+        text: pineScriptScanner
+      });
+      console.log("PineScript MTM Scanner aplicado com sucesso");
+    } catch (error) {
+      console.error("Erro ao aplicar o PineScript:", error);
+    }
+  });
+}`
+
 // Componente para editar as configurações do site
 export default function SiteSettingsPage() {
   const { config: storeConfig, updateConfig } = useConfigStore()
@@ -505,13 +548,152 @@ export default function SiteSettingsPage() {
                 <p className="text-sm text-gray-500">Separe os recursos com vírgulas</p>
               </div>
 
-              <div className="grid gap-2">
-                <Label>Configurações Avançadas</Label>
-                <div className="p-4 bg-black/30 rounded-md">
-                  <p className="text-sm text-yellow-400 mb-4">
-                    As configurações avançadas do TradingView (overrides e studiesOverrides) podem ser modificadas
-                    diretamente no código. Consulte a documentação do TradingView para mais informações.
+              <div className="grid gap-2 mt-6">
+                <Label htmlFor="tradingViewCustomCode">Código Personalizado do Widget</Label>
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md mb-4">
+                  <p className="text-sm text-yellow-400">
+                    <strong>Atenção:</strong> Editar o código diretamente pode causar problemas de funcionamento.
+                    Certifique-se de testar suas alterações antes de salvar.
                   </p>
+                  <p className="text-sm text-yellow-400 mt-2">
+                    O código deve criar e inicializar um widget TradingView. Você tem acesso às variáveis:
+                    <code className="bg-black/30 px-1 mx-1 rounded">container</code>,
+                    <code className="bg-black/30 px-1 mx-1 rounded">isAuthenticated</code> e
+                    <code className="bg-black/30 px-1 mx-1 rounded">pineScriptScanner</code>.
+                  </p>
+                </div>
+                <textarea
+                  id="tradingViewCustomCode"
+                  rows={15}
+                  className="w-full p-4 font-mono text-sm bg-black/30 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  value={config.tradingViewCustomCode || defaultTradingViewCode}
+                  onChange={(e) => {
+                    setConfig((prev) => ({
+                      ...prev,
+                      tradingViewCustomCode: e.target.value,
+                    }))
+                  }}
+                  spellCheck="false"
+                />
+                <div className="flex justify-between mt-2">
+                  <Button
+                    variant="outline"
+                    className="text-red-400 border-red-400/30 hover:bg-red-500/10"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Tem certeza que deseja restaurar o código padrão? Todas as alterações serão perdidas.",
+                        )
+                      ) {
+                        setConfig((prev) => ({
+                          ...prev,
+                          tradingViewCustomCode: defaultTradingViewCode,
+                        }))
+                        toast({
+                          title: "Código restaurado",
+                          description: "O código padrão foi restaurado com sucesso.",
+                        })
+                      }
+                    }}
+                  >
+                    Restaurar Padrão
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-blue-400 border-blue-400/30 hover:bg-blue-500/10"
+                    onClick={() => {
+                      try {
+                        // Validação básica do código
+                        new Function(
+                          "container",
+                          "isAuthenticated",
+                          "pineScriptScanner",
+                          config.tradingViewCustomCode || defaultTradingViewCode,
+                        )
+                        toast({
+                          title: "Código válido",
+                          description: "O código parece ser válido. Salve as alterações para aplicá-las.",
+                        })
+                      } catch (error) {
+                        toast({
+                          title: "Erro de sintaxe",
+                          description: `Erro no código: ${error.message}`,
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                  >
+                    Validar Código
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-2 mt-6">
+                <h3 className="text-lg font-medium">Documentação e Recursos</h3>
+                <div className="grid gap-4 p-4 bg-black/30 rounded-md">
+                  <div>
+                    <h4 className="font-medium mb-1">Documentação Oficial</h4>
+                    <ul className="list-disc list-inside text-sm text-blue-400">
+                      <li>
+                        <a
+                          href="https://www.tradingview.com/widget/advanced-chart/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          Documentação do Widget Avançado
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="https://www.tradingview.com/widget-docs/chart_object/methods/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          Métodos do Objeto Chart
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="https://www.tradingview.com/widget-docs/chart_object/events/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          Eventos do Objeto Chart
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Exemplos Comuns</h4>
+                    <ul className="list-disc list-inside text-sm">
+                      <li>
+                        Alterar o tema: <code className="bg-black/30 px-1 rounded">theme: "light"</code>
+                      </li>
+                      <li>
+                        Adicionar indicadores:{" "}
+                        <code className="bg-black/30 px-1 rounded">studies: ["RSI", "MACD"]</code>
+                      </li>
+                      <li>
+                        Desabilitar recursos:{" "}
+                        <code className="bg-black/30 px-1 rounded">disabled_features: ["header_symbol_search"]</code>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Dicas</h4>
+                    <ul className="list-disc list-inside text-sm">
+                      <li>
+                        Use <code className="bg-black/30 px-1 rounded">console.log()</code> para depurar seu código
+                      </li>
+                      <li>Teste suas alterações em uma janela privada antes de salvar</li>
+                      <li>Faça backup do código antes de fazer grandes alterações</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </CardContent>

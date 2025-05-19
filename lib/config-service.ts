@@ -69,6 +69,7 @@ export interface SiteConfig {
     defaultSymbol?: string
     defaultInterval?: string
   }
+  tradingViewCustomCode?: string // Novo campo para código personalizado
 }
 
 // Configuração padrão
@@ -162,6 +163,7 @@ const defaultConfig: SiteConfig = {
     defaultSymbol: "BINANCE:BTCUSDT",
     defaultInterval: "240",
   },
+  tradingViewCustomCode: "", // Código personalizado para TradingView
 }
 
 // Criar a store com persistência
@@ -196,6 +198,7 @@ export const useConfigStore = create(
                   },
                 }
               : {}),
+            ...(newConfig.tradingViewCustomCode ? { tradingViewCustomCode: newConfig.tradingViewCustomCode } : {}),
           },
         })),
       resetConfig: () => set({ config: defaultConfig }),
