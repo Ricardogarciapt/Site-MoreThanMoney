@@ -69,7 +69,27 @@ export interface SiteConfig {
     defaultSymbol?: string
     defaultInterval?: string
   }
-  tradingViewCustomCode?: string // Novo campo para código personalizado
+  tradingViewCustomCode?: string
+  copytrading?: {
+    enabled: boolean
+    masterAccount: {
+      brokerName: string
+      accountNumber: string
+      serverName: string
+      password: string
+    }
+    brokerName?: string
+    serverName?: string
+    accountNumber?: string
+    lastConnected?: string
+    riskSettings?: {
+      maxVolume: string
+      maxDrawdown: string
+      useStopLoss: boolean
+      useTakeProfit: boolean
+      copyRatio: string
+    }
+  }
 }
 
 // Configuração padrão
@@ -163,7 +183,23 @@ const defaultConfig: SiteConfig = {
     defaultSymbol: "BINANCE:BTCUSDT",
     defaultInterval: "240",
   },
-  tradingViewCustomCode: "", // Código personalizado para TradingView
+  tradingViewCustomCode: "",
+  copytrading: {
+    enabled: false,
+    masterAccount: {
+      brokerName: "InfinoxLimited",
+      accountNumber: "87047541",
+      serverName: "InfinoxLimited-MT5Live",
+      password: "Superacao2022#",
+    },
+    riskSettings: {
+      maxVolume: "0.1",
+      maxDrawdown: "10",
+      useStopLoss: true,
+      useTakeProfit: true,
+      copyRatio: "1.0",
+    },
+  },
 }
 
 // Criar a store com persistência
@@ -199,6 +235,31 @@ export const useConfigStore = create(
                 }
               : {}),
             ...(newConfig.tradingViewCustomCode ? { tradingViewCustomCode: newConfig.tradingViewCustomCode } : {}),
+            ...(newConfig.copytrading
+              ? {
+                  copytrading: {
+                    ...state.config.copytrading,
+                    ...newConfig.copytrading,
+                    // Lidar com objetos aninhados dentro de copytrading
+                    ...(newConfig.copytrading.masterAccount
+                      ? {
+                          masterAccount: {
+                            ...state.config.copytrading?.masterAccount,
+                            ...newConfig.copytrading.masterAccount,
+                          },
+                        }
+                      : {}),
+                    ...(newConfig.copytrading.riskSettings
+                      ? {
+                          riskSettings: {
+                            ...state.config.copytrading?.riskSettings,
+                            ...newConfig.copytrading.riskSettings,
+                          },
+                        }
+                      : {}),
+                  },
+                }
+              : {}),
           },
         })),
       resetConfig: () => set({ config: defaultConfig }),

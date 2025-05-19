@@ -1,556 +1,198 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
-import { AlertCircle, Check, Save } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useConfigStore, type SiteConfig } from "@/lib/config-service"
+import { useConfigStore } from "@/lib/config-service"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Check, Save, RefreshCw } from "lucide-react"
 
-const defaultTradingViewCode = `// Este é o código padrão do widget TradingView
-// Você pode personalizá-lo conforme necessário
-
-// Verificar se o TradingView está disponível
-if (!window.TradingView) {
-  console.error("TradingView não está disponível");
-  return;
-}
-
-// Criar o widget com configurações básicas
-const widget = new window.TradingView.widget({
-  autosize: true,
-  symbol: "OANDA:XAUUSD",
-  interval: "60",
-  timezone: "Etc/UTC",
-  theme: "dark",
-  style: "1",
-  locale: "br",
-  toolbar_bg: "#1E1E1E",
-  enable_publishing: false,
-  allow_symbol_change: true,
-  hide_side_toolbar: false,
-  withdateranges: true,
-  save_image: false,
-  studies: ["STD;MACD", "STD;RSI"],
-  container_id: container.querySelector("#tradingview_widget").id,
-});
-
-// Adicionar callback para quando o gráfico estiver pronto
-if (isAuthenticated) {
-  widget.onChartReady(function() {
-    try {
-      // Criar um novo estudo com o PineScript
-      widget.chart().createStudy("Custom Script", false, false, {
-        text: pineScriptScanner
-      });
-      console.log("PineScript MTM Scanner aplicado com sucesso");
-    } catch (error) {
-      console.error("Erro ao aplicar o PineScript:", error);
-    }
-  });
-}`
-
-// Componente para editar as configurações do site
 export default function SiteSettingsPage() {
-  const { config: storeConfig, updateConfig } = useConfigStore()
-  const [config, setConfig] = useState<SiteConfig>(storeConfig)
+  const { isAuthenticated, isAdmin } = useAuth()
+  const router = useRouter()
   const { toast } = useToast()
+  const { config, updateConfig } = useConfigStore()
+  const [activeTab, setActiveTab] = useState("general")
   const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle")
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [tradingViewCode, setTradingViewCode] = useState(config.tradingViewCustomCode || "")
+  const [copytradingEnabled, setCopytradingEnabled] = useState(config.copytrading?.enabled || false)
+  const [masterAccount, setMasterAccount] = useState({
+    brokerName: config.copytrading?.masterAccount?.brokerName || "InfinoxLimited",
+    accountNumber: config.copytrading?.masterAccount?.accountNumber || "87047541",
+    serverName: config.copytrading?.masterAccount?.serverName || "InfinoxLimited-MT5Live",
+    password: config.copytrading?.masterAccount?.password || "Superacao2022#",
+  })
 
-  // Sincronizar com a store quando ela mudar
+  // Verificar autenticação
   useEffect(() => {
-    setConfig(storeConfig)
-  }, [storeConfig])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-
-    // Lidar com campos aninhados como ownerInfo.name ou affiliateLinks.jifuAffiliateLink
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".")
-      setConfig((prevConfig) => ({
-        ...prevConfig,
-        [parent]: {
-          ...prevConfig[parent as keyof SiteConfig],
-          [child]: value,
-        },
-      }))
-    } else {
-      setConfig((prevConfig) => ({
-        ...prevConfig,
-        [name]: value,
-      }))
+    if (!isAuthenticated || !isAdmin) {
+      router.push("/admin-login")
     }
-  }
+  }, [isAuthenticated, isAdmin, router])
 
-  const handleSave = async () => {
+  // Atualizar estado local quando a configuração global mudar
+  useEffect(() => {
+    setTradingViewCode(config.tradingViewCustomCode || "")
+    setCopytradingEnabled(config.copytrading?.enabled || false)
+    setMasterAccount({
+      brokerName: config.copytrading?.masterAccount?.brokerName || "InfinoxLimited",
+      accountNumber: config.copytrading?.masterAccount?.accountNumber || "87047541",
+      serverName: config.copytrading?.masterAccount?.serverName || "InfinoxLimited-MT5Live",
+      password: config.copytrading?.masterAccount?.password || "Superacao2022#",
+    })
+  }, [config])
+
+  const handleSaveTradingViewCode = () => {
     setIsSaving(true)
-    setSaveStatus("idle")
 
     try {
-      // Atualizar a configuração na store
-      updateConfig(config)
+      // Validar o código antes de salvar
+      new Function("container", "isAuthenticated", "pineScriptScanner", tradingViewCode)
 
-      setSaveStatus("success")
+      // Atualizar a configuração
+      updateConfig({ tradingViewCustomCode: tradingViewCode })
+
+      setSaveSuccess(true)
       toast({
-        title: "Configurações salvas",
-        description: "As alterações foram aplicadas com sucesso.",
+        title: "Código salvo",
+        description: "O código do TradingView foi salvo com sucesso.",
       })
+
+      setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
-      console.error("Erro ao salvar configurações:", error)
-      setSaveStatus("error")
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar as configurações.",
+        description: `Erro de sintaxe no código: ${error.message}`,
         variant: "destructive",
       })
     } finally {
       setIsSaving(false)
-
-      // Resetar o status após 3 segundos
-      setTimeout(() => {
-        setSaveStatus("idle")
-      }, 3000)
     }
   }
 
-  // Função para lidar com alterações em switches
-  const handleSwitchChange = (key: string, value: boolean) => {
-    setConfig((prevConfig) => ({
-      ...prevConfig,
-      display: {
-        ...prevConfig.display,
-        [key]: value,
-      },
-    }))
-  }
+  const handleSaveCopytradingSettings = () => {
+    setIsSaving(true)
 
-  // Função para lidar com alterações em cores
-  const handleColorChange = (key: string, value: string) => {
-    setConfig((prevConfig) => ({
-      ...prevConfig,
-      colors: {
-        ...prevConfig.colors,
-        [key]: value,
-      },
-    }))
-  }
-
-  // Função para lidar com alterações no programa de afiliados
-  const handleAffiliateChange = (key: string, value: any) => {
-    setConfig((prevConfig) => ({
-      ...prevConfig,
-      affiliateProgram: {
-        ...prevConfig.affiliateProgram!,
-        [key]: value,
-      },
-    }))
-  }
-
-  // Função para lidar com alterações nas taxas de comissão
-  const handleCommissionChange = (level: string, value: string) => {
-    const numValue = Number.parseFloat(value)
-    if (isNaN(numValue)) return
-
-    setConfig((prevConfig) => ({
-      ...prevConfig,
-      affiliateProgram: {
-        ...prevConfig.affiliateProgram!,
-        commissionRates: {
-          ...prevConfig.affiliateProgram!.commissionRates,
-          [level]: numValue,
+    try {
+      // Atualizar a configuração
+      updateConfig({
+        copytrading: {
+          enabled: copytradingEnabled,
+          masterAccount: masterAccount,
         },
-      },
-    }))
+      })
+
+      setSaveSuccess(true)
+      toast({
+        title: "Configurações salvas",
+        description: "As configurações de copytrading foram salvas com sucesso.",
+      })
+
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar",
+        description: `Erro ao salvar configurações: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return <div>Carregando...</div>
   }
 
   return (
-    <div className="container mx-auto py-10 bg-black/50 min-h-screen rounded-lg border border-gold-500/20">
-      <div className="flex justify-between items-center mb-5">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            className="border-gold-500/30 text-gold-400 hover:bg-gold-500/10"
-            onClick={() => window.history.back()}
-          >
-            ← Voltar
-          </Button>
+    <div className="container mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
           <h1 className="text-3xl font-bold">Configurações do Site</h1>
+          <p className="text-gray-500">Gerencie as configurações globais do site</p>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black"
-        >
-          {isSaving ? (
-            "Salvando..."
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              Salvar Alterações
-            </>
-          )}
+        <Button onClick={() => router.push("/admin-dashboard")} variant="outline">
+          Voltar ao Painel
         </Button>
       </div>
 
-      {saveStatus === "success" && (
-        <Alert className="mb-5 bg-green-500/20 border-green-500">
-          <Check className="h-4 w-4 text-green-500" />
-          <AlertTitle>Sucesso!</AlertTitle>
-          <AlertDescription>As configurações foram salvas com sucesso.</AlertDescription>
-        </Alert>
-      )}
-
-      {saveStatus === "error" && (
-        <Alert className="mb-5 bg-red-500/20 border-red-500">
-          <AlertCircle className="h-4 w-4 text-red-500" />
-          <AlertTitle>Erro!</AlertTitle>
-          <AlertDescription>Ocorreu um erro ao salvar as configurações. Tente novamente.</AlertDescription>
-        </Alert>
-      )}
-
-      <Tabs defaultValue="general" className="mb-10">
-        <TabsList className="mb-5">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="appearance">Aparência</TabsTrigger>
-          <TabsTrigger value="features">Recursos</TabsTrigger>
-          <TabsTrigger value="affiliates">Links de Afiliado</TabsTrigger>
-          <TabsTrigger value="affiliate-program">Programa de Afiliados</TabsTrigger>
           <TabsTrigger value="tradingview">TradingView</TabsTrigger>
-          <TabsTrigger value="owner">Proprietário</TabsTrigger>
+          <TabsTrigger value="copytrading">Copytrading</TabsTrigger>
         </TabsList>
 
+        {/* Aba Geral */}
         <TabsContent value="general">
           <Card>
             <CardHeader>
-              <CardTitle>Informações Gerais</CardTitle>
-              <CardDescription>Defina as informações básicas do seu site.</CardDescription>
+              <CardTitle>Configurações Gerais</CardTitle>
+              <CardDescription>Configurações básicas do site</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nome do Site</Label>
-                <Input id="name" name="name" value={config.name} onChange={handleChange} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="logoUrl">URL do Logo</Label>
-                <Input id="logoUrl" name="logoUrl" value={config.logoUrl} onChange={handleChange} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="footerText">Texto do Rodapé</Label>
-                <Input id="footerText" name="footerText" value={config.footerText} onChange={handleChange} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="contactEmail">Email de Contato</Label>
-                <Input id="contactEmail" name="contactEmail" value={config.contactEmail} onChange={handleChange} />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appearance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cores do Site</CardTitle>
-              <CardDescription>Personalize as cores do seu site.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="colors.primary">Cor Primária</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="colors.primary"
-                      name="colors.primary"
-                      value={config.colors.primary}
-                      onChange={(e) => handleColorChange("primary", e.target.value)}
-                    />
-                    <div className="w-10 h-10 rounded border" style={{ backgroundColor: config.colors.primary }} />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="colors.secondary">Cor Secundária</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="colors.secondary"
-                      name="colors.secondary"
-                      value={config.colors.secondary}
-                      onChange={(e) => handleColorChange("secondary", e.target.value)}
-                    />
-                    <div className="w-10 h-10 rounded border" style={{ backgroundColor: config.colors.secondary }} />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="colors.accent">Cor de Destaque</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="colors.accent"
-                      name="colors.accent"
-                      value={config.colors.accent}
-                      onChange={(e) => handleColorChange("accent", e.target.value)}
-                    />
-                    <div className="w-10 h-10 rounded border" style={{ backgroundColor: config.colors.accent }} />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="colors.background">Cor de Fundo</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="colors.background"
-                      name="colors.background"
-                      value={config.colors.background}
-                      onChange={(e) => handleColorChange("background", e.target.value)}
-                    />
-                    <div className="w-10 h-10 rounded border" style={{ backgroundColor: config.colors.background }} />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="colors.text">Cor do Texto</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="colors.text"
-                      name="colors.text"
-                      value={config.colors.text}
-                      onChange={(e) => handleColorChange("text", e.target.value)}
-                    />
-                    <div className="w-10 h-10 rounded border" style={{ backgroundColor: config.colors.text }} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="features">{/* Conteúdo existente da aba features */}</TabsContent>
-
-        {/* Aba de Links de Afiliado */}
-        <TabsContent value="affiliates">
-          <Card>
-            <CardHeader>
-              <CardTitle>Links de Afiliado</CardTitle>
-              <CardDescription>Configure os links de afiliado utilizados no site.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="affiliateLinks.jifuAffiliateLink">Link de Afiliado JIFU</Label>
-                  <Input
-                    id="affiliateLinks.jifuAffiliateLink"
-                    name="affiliateLinks.jifuAffiliateLink"
-                    value={config.affiliateLinks?.jifuAffiliateLink || ""}
-                    onChange={handleChange}
-                    placeholder="https://seunome.jifu.com"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Este link será usado em todos os botões de registro na JIFU do site.
-                  </p>
-                  <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
-                    <p className="text-sm text-yellow-400">
-                      <strong>Nota:</strong> Recomendamos usar HTTPS para garantir uma conexão segura. O link será
-                      automaticamente convertido para HTTPS se necessário.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Nova aba de Programa de Afiliados */}
-        <TabsContent value="affiliate-program">
-          <Card>
-            <CardHeader>
-              <CardTitle>Programa de Afiliados</CardTitle>
-              <CardDescription>Configure as opções do programa de afiliados.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Ativar Programa de Afiliados</h3>
-                  <p className="text-sm text-gray-500">Habilitar o programa de afiliados no site</p>
-                </div>
-                <Switch
-                  checked={config.affiliateProgram?.enabled || false}
-                  onCheckedChange={(checked) => handleAffiliateChange("enabled", checked)}
-                />
-              </div>
-
-              <div className="grid gap-4">
-                <h3 className="text-lg font-medium">Taxas de Comissão</h3>
+            <CardContent>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="level1">Nível 1 (Direto) %</Label>
-                    <Input
-                      id="level1"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={config.affiliateProgram?.commissionRates.level1 || 10}
-                      onChange={(e) => handleCommissionChange("level1", e.target.value)}
-                    />
+                  <div className="space-y-2">
+                    <Label htmlFor="site-name">Nome do Site</Label>
+                    <Input id="site-name" defaultValue={config.name} />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="level2">Nível 2 (Indireto) %</Label>
-                    <Input
-                      id="level2"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={config.affiliateProgram?.commissionRates.level2 || 5}
-                      onChange={(e) => handleCommissionChange("level2", e.target.value)}
-                    />
+                  <div className="space-y-2">
+                    <Label htmlFor="contact-email">Email de Contato</Label>
+                    <Input id="contact-email" defaultValue={config.contactEmail} />
                   </div>
                 </div>
-              </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="payoutThreshold">Valor Mínimo para Pagamento (€)</Label>
-                <Input
-                  id="payoutThreshold"
-                  type="number"
-                  min="0"
-                  value={config.affiliateProgram?.payoutThreshold || 50}
-                  onChange={(e) => handleAffiliateChange("payoutThreshold", Number.parseFloat(e.target.value))}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Valor mínimo que um afiliado precisa acumular para solicitar um pagamento.
-                </p>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="footer-text">Texto do Rodapé</Label>
+                  <Input id="footer-text" defaultValue={config.footerText} />
+                </div>
 
-              <div className="grid gap-2">
-                <Label>Métodos de Pagamento Disponíveis</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  {["PayPal", "Transferência Bancária", "Crypto"].map((method) => (
-                    <div key={method} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`payment-${method}`}
-                        checked={config.affiliateProgram?.paymentMethods.includes(method) || false}
-                        onChange={(e) => {
-                          const currentMethods = config.affiliateProgram?.paymentMethods || []
-                          const newMethods = e.target.checked
-                            ? [...currentMethods, method]
-                            : currentMethods.filter((m) => m !== method)
-                          handleAffiliateChange("paymentMethods", newMethods)
-                        }}
-                        className="rounded border-gray-300 text-gold-500 focus:ring-gold-500"
-                      />
-                      <Label htmlFor={`payment-${method}`}>{method}</Label>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <Label>Recursos Ativos</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {config.features.map((feature) => (
+                      <div key={feature.id} className="flex items-center space-x-2">
+                        <Switch id={feature.id} defaultChecked={feature.enabled} />
+                        <Label htmlFor={feature.id}>{feature.name}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Button>Salvar Configurações</Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Aba TradingView */}
         <TabsContent value="tradingview">
           <Card>
             <CardHeader>
               <CardTitle>Configurações do TradingView</CardTitle>
-              <CardDescription>Personalize as configurações do widget TradingView usado no scanner.</CardDescription>
+              <CardDescription>Personalize o código do widget TradingView</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="tradingViewSettings.defaultSymbol">Símbolo Padrão</Label>
-                <Input
-                  id="tradingViewSettings.defaultSymbol"
-                  name="tradingViewSettings.defaultSymbol"
-                  value={config.tradingViewSettings?.defaultSymbol || "BINANCE:BTCUSDT"}
-                  onChange={(e) => {
-                    setConfig((prev) => ({
-                      ...prev,
-                      tradingViewSettings: {
-                        ...prev.tradingViewSettings,
-                        defaultSymbol: e.target.value,
-                      },
-                    }))
-                  }}
-                  placeholder="BINANCE:BTCUSDT"
-                />
-              </div>
+            <CardContent>
+              <div className="space-y-4">
+                {saveSuccess && (
+                  <Alert className="bg-green-500/10 border-green-500">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <AlertDescription className="text-green-500">Código salvo com sucesso!</AlertDescription>
+                  </Alert>
+                )}
 
-              <div className="grid gap-2">
-                <Label htmlFor="tradingViewSettings.defaultInterval">Intervalo Padrão</Label>
-                <select
-                  id="tradingViewSettings.defaultInterval"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={config.tradingViewSettings?.defaultInterval || "240"}
-                  onChange={(e) => {
-                    setConfig((prev) => ({
-                      ...prev,
-                      tradingViewSettings: {
-                        ...prev.tradingViewSettings,
-                        defaultInterval: e.target.value,
-                      },
-                    }))
-                  }}
-                >
-                  <option value="1">1 minuto</option>
-                  <option value="5">5 minutos</option>
-                  <option value="15">15 minutos</option>
-                  <option value="30">30 minutos</option>
-                  <option value="60">1 hora</option>
-                  <option value="240">4 horas</option>
-                  <option value="D">Diário</option>
-                  <option value="W">Semanal</option>
-                </select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="tradingViewSettings.enabledFeatures">Recursos Habilitados</Label>
-                <Input
-                  id="tradingViewSettings.enabledFeatures"
-                  placeholder="use_localstorage_for_settings,save_chart_properties_to_local_storage"
-                  value={(config.tradingViewSettings?.enabledFeatures || []).join(",")}
-                  onChange={(e) => {
-                    setConfig((prev) => ({
-                      ...prev,
-                      tradingViewSettings: {
-                        ...prev.tradingViewSettings,
-                        enabledFeatures: e.target.value
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
-                      },
-                    }))
-                  }}
-                />
-                <p className="text-sm text-gray-500">Separe os recursos com vírgulas</p>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="tradingViewSettings.disabledFeatures">Recursos Desabilitados</Label>
-                <Input
-                  id="tradingViewSettings.disabledFeatures"
-                  placeholder="header_symbol_search,header_saveload"
-                  value={(config.tradingViewSettings?.disabledFeatures || []).join(",")}
-                  onChange={(e) => {
-                    setConfig((prev) => ({
-                      ...prev,
-                      tradingViewSettings: {
-                        ...prev.tradingViewSettings,
-                        disabledFeatures: e.target.value
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
-                      },
-                    }))
-                  }}
-                />
-                <p className="text-sm text-gray-500">Separe os recursos com vírgulas</p>
-              </div>
-
-              <div className="grid gap-2 mt-6">
-                <Label htmlFor="tradingViewCustomCode">Código Personalizado do Widget</Label>
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md mb-4">
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
                   <p className="text-sm text-yellow-400">
                     <strong>Atenção:</strong> Editar o código diretamente pode causar problemas de funcionamento.
                     Certifique-se de testar suas alterações antes de salvar.
@@ -562,217 +204,127 @@ export default function SiteSettingsPage() {
                     <code className="bg-black/30 px-1 mx-1 rounded">pineScriptScanner</code>.
                   </p>
                 </div>
-                <textarea
-                  id="tradingViewCustomCode"
-                  rows={15}
-                  className="w-full p-4 font-mono text-sm bg-black/30 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                  value={config.tradingViewCustomCode || defaultTradingViewCode}
-                  onChange={(e) => {
-                    setConfig((prev) => ({
-                      ...prev,
-                      tradingViewCustomCode: e.target.value,
-                    }))
-                  }}
-                  spellCheck="false"
-                />
-                <div className="flex justify-between mt-2">
-                  <Button
-                    variant="outline"
-                    className="text-red-400 border-red-400/30 hover:bg-red-500/10"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Tem certeza que deseja restaurar o código padrão? Todas as alterações serão perdidas.",
-                        )
-                      ) {
-                        setConfig((prev) => ({
-                          ...prev,
-                          tradingViewCustomCode: defaultTradingViewCode,
-                        }))
-                        toast({
-                          title: "Código restaurado",
-                          description: "O código padrão foi restaurado com sucesso.",
-                        })
-                      }
-                    }}
-                  >
-                    Restaurar Padrão
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-blue-400 border-blue-400/30 hover:bg-blue-500/10"
-                    onClick={() => {
-                      try {
-                        // Validação básica do código
-                        new Function(
-                          "container",
-                          "isAuthenticated",
-                          "pineScriptScanner",
-                          config.tradingViewCustomCode || defaultTradingViewCode,
-                        )
-                        toast({
-                          title: "Código válido",
-                          description: "O código parece ser válido. Salve as alterações para aplicá-las.",
-                        })
-                      } catch (error) {
-                        toast({
-                          title: "Erro de sintaxe",
-                          description: `Erro no código: ${error.message}`,
-                          variant: "destructive",
-                        })
-                      }
-                    }}
-                  >
-                    Validar Código
-                  </Button>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tradingview-code">Código Personalizado</Label>
+                  <textarea
+                    id="tradingview-code"
+                    rows={15}
+                    className="w-full p-4 font-mono text-sm bg-black/10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={tradingViewCode}
+                    onChange={(e) => setTradingViewCode(e.target.value)}
+                    spellCheck="false"
+                  />
                 </div>
-              </div>
 
-              <div className="grid gap-2 mt-6">
-                <h3 className="text-lg font-medium">Documentação e Recursos</h3>
-                <div className="grid gap-4 p-4 bg-black/30 rounded-md">
-                  <div>
-                    <h4 className="font-medium mb-1">Documentação Oficial</h4>
-                    <ul className="list-disc list-inside text-sm text-blue-400">
-                      <li>
-                        <a
-                          href="https://www.tradingview.com/widget/advanced-chart/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
-                          Documentação do Widget Avançado
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="https://www.tradingview.com/widget-docs/chart_object/methods/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
-                          Métodos do Objeto Chart
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="https://www.tradingview.com/widget-docs/chart_object/events/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
-                          Eventos do Objeto Chart
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-1">Exemplos Comuns</h4>
-                    <ul className="list-disc list-inside text-sm">
-                      <li>
-                        Alterar o tema: <code className="bg-black/30 px-1 rounded">theme: "light"</code>
-                      </li>
-                      <li>
-                        Adicionar indicadores:{" "}
-                        <code className="bg-black/30 px-1 rounded">studies: ["RSI", "MACD"]</code>
-                      </li>
-                      <li>
-                        Desabilitar recursos:{" "}
-                        <code className="bg-black/30 px-1 rounded">disabled_features: ["header_symbol_search"]</code>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-1">Dicas</h4>
-                    <ul className="list-disc list-inside text-sm">
-                      <li>
-                        Use <code className="bg-black/30 px-1 rounded">console.log()</code> para depurar seu código
-                      </li>
-                      <li>Teste suas alterações em uma janela privada antes de salvar</li>
-                      <li>Faça backup do código antes de fazer grandes alterações</li>
-                    </ul>
-                  </div>
+                <div className="pt-4 flex justify-end">
+                  <Button onClick={handleSaveTradingViewCode} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar Código
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="owner">
+        {/* Aba Copytrading */}
+        <TabsContent value="copytrading">
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Proprietário</CardTitle>
-              <CardDescription>Informações de contato do proprietário do site.</CardDescription>
+              <CardTitle>Configurações de Copytrading</CardTitle>
+              <CardDescription>Configure o sistema de copytrading</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="ownerInfo.name">Nome do Proprietário</Label>
-                <Input
-                  id="ownerInfo.name"
-                  name="ownerInfo.name"
-                  value={config.ownerInfo.name}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="ownerInfo.email">Email do Proprietário</Label>
-                <Input
-                  id="ownerInfo.email"
-                  name="ownerInfo.email"
-                  value={config.ownerInfo.email}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="ownerInfo.phone">Telefone do Proprietário</Label>
-                <Input
-                  id="ownerInfo.phone"
-                  name="ownerInfo.phone"
-                  value={config.ownerInfo.phone}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="ownerInfo.address">Endereço do Proprietário</Label>
-                <Input
-                  id="ownerInfo.address"
-                  name="ownerInfo.address"
-                  value={config.ownerInfo.address}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="ownerInfo.taxId">ID Fiscal do Proprietário</Label>
-                <Input
-                  id="ownerInfo.taxId"
-                  name="ownerInfo.taxId"
-                  value={config.ownerInfo.taxId}
-                  onChange={handleChange}
-                />
+            <CardContent>
+              <div className="space-y-6">
+                {saveSuccess && (
+                  <Alert className="bg-green-500/10 border-green-500">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <AlertDescription className="text-green-500">Configurações salvas com sucesso!</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="copytrading-enabled"
+                    checked={copytradingEnabled}
+                    onCheckedChange={setCopytradingEnabled}
+                  />
+                  <Label htmlFor="copytrading-enabled">Ativar Sistema de Copytrading</Label>
+                </div>
+
+                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-md">
+                  <h3 className="text-lg font-medium mb-2">Conta Mestre</h3>
+                  <p className="text-sm text-blue-400 mb-4">
+                    Esta é a conta principal de onde as operações serão copiadas para as contas dos clientes.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="master-broker">Broker</Label>
+                      <Input
+                        id="master-broker"
+                        value={masterAccount.brokerName}
+                        onChange={(e) => setMasterAccount({ ...masterAccount, brokerName: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="master-server">Servidor</Label>
+                      <Input
+                        id="master-server"
+                        value={masterAccount.serverName}
+                        onChange={(e) => setMasterAccount({ ...masterAccount, serverName: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="master-account">Número da Conta</Label>
+                      <Input
+                        id="master-account"
+                        value={masterAccount.accountNumber}
+                        onChange={(e) => setMasterAccount({ ...masterAccount, accountNumber: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="master-password">Senha</Label>
+                      <Input
+                        id="master-password"
+                        type="password"
+                        value={masterAccount.password}
+                        onChange={(e) => setMasterAccount({ ...masterAccount, password: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <Button onClick={handleSaveCopytradingSettings} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar Configurações
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-
-      <div className="flex justify-end mt-6">
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black"
-        >
-          {isSaving ? (
-            "Salvando..."
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              Salvar Alterações
-            </>
-          )}
-        </Button>
-      </div>
     </div>
   )
 }

@@ -45,13 +45,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-black border border-gold-500/30 rounded-lg shadow-lg w-full max-w-md relative">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in slide-in-from-right duration-300">
+      <div className="bg-black border border-gold-500/30 rounded-lg shadow-lg w-full max-w-md relative transform transition-all">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white" aria-label="Fechar">
           <X size={20} />
         </button>
 
-        <div className="p-6">
+        <div className="p-6 space-y-4">
           <h2 className="text-2xl font-bold mb-6 text-center text-gold-gradient">Área de Membro</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">

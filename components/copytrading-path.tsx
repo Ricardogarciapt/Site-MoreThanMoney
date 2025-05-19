@@ -118,6 +118,181 @@ export default function CopytradingPath() {
     <>
       <CopytradingPlans />
 
+      <section className="py-12 bg-black/50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">Planos de Copytrading MTM</h2>
+          <p className="text-center text-lg mb-12 max-w-3xl mx-auto">
+            Escolha o plano que melhor se adapta às suas necessidades e comece a copiar nossas operações
+            automaticamente.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Plano Básico */}
+            <div className="bg-black/80 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+              <h3 className="text-xl font-bold mb-4">Plano Básico</h3>
+              <div className="text-3xl font-bold text-gold-500 mb-6">
+                R$197<span className="text-lg text-gray-400">/mês</span>
+              </div>
+              <ul className="mb-8 flex-grow space-y-2">
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Cópia de até 5 operações simultâneas</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Gestão de risco básica</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Suporte por email</span>
+                </li>
+              </ul>
+              <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
+                Assinar Agora
+              </button>
+            </div>
+
+            {/* Plano Avançado */}
+            <div className="bg-black/80 border border-gold-500 rounded-lg p-6 flex flex-col relative transform scale-105 shadow-xl">
+              <div className="absolute top-0 right-0 bg-gold-600 text-black text-xs font-bold px-3 py-1 rounded-bl rounded-tr">
+                POPULAR
+              </div>
+              <h3 className="text-xl font-bold mb-4">Plano Avançado</h3>
+              <div className="text-3xl font-bold text-gold-500 mb-6">
+                R$397<span className="text-lg text-gray-400">/mês</span>
+              </div>
+              <ul className="mb-8 flex-grow space-y-2">
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Cópia de operações ilimitadas</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Gestão de risco avançada</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Suporte prioritário</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Acesso ao grupo VIP</span>
+                </li>
+              </ul>
+              <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
+                Assinar Agora
+              </button>
+            </div>
+
+            {/* Plano Premium */}
+            <div className="bg-black/80 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+              <h3 className="text-xl font-bold mb-4">Plano Premium</h3>
+              <div className="text-3xl font-bold text-gold-500 mb-6">
+                R$697<span className="text-lg text-gray-400">/mês</span>
+              </div>
+              <ul className="mb-8 flex-grow space-y-2">
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Tudo do plano Avançado</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Consultoria personalizada</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Acesso antecipado a novas funcionalidades</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Relatórios detalhados de desempenho</span>
+                </li>
+              </ul>
+              <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
+                Assinar Agora
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="relative min-h-screen flex items-center justify-center">
         <div className="container mx-auto px-4 py-20">
           <div className="text-center max-w-3xl mx-auto mb-16">

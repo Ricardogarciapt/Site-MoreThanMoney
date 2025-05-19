@@ -26,15 +26,17 @@ export default function Navbar() {
     {
       name: "Scanners",
       href: "/scanner",
-      submenu: [{ name: "Scanner MTM", href: "/scanner" }],
+      submenu: [
+        { name: "Apresentação Scanner", href: "/scanner" },
+        { name: "Scanner MTM", href: "/scanner-access" },
+      ],
     },
     {
       name: "Copytrading",
       href: "/copytrading",
       submenu: [
-        { name: "Planos", href: "/copytrading/plans" },
+        { name: "Planos", href: "/copytrading" },
         { name: "Ideias de Trading", href: "/trading-ideas" },
-        { name: "Portfólios", href: "/portfolios", restricted: true },
         { name: "TAP2TRADE MTM (Preview)", href: "/copytrading/tap2trade" },
       ],
     },
@@ -151,7 +153,14 @@ export default function Navbar() {
             <div className="ml-2">
               <ShoppingCart />
             </div>
-            {isAuthenticated && <UserDropdown />}
+
+            {isAuthenticated ? (
+              <UserDropdown />
+            ) : (
+              <Button onClick={openLoginModal} className="bg-gold-600 hover:bg-gold-700 text-black font-medium">
+                Área de Membro
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}

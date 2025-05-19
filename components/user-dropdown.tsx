@@ -41,7 +41,10 @@ export default function UserDropdown() {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-black border border-gold-500/30 overflow-hidden z-50">
+        <div
+          className="fixed top-16 right-4 w-56 rounded-md shadow-lg bg-black border border-gold-500/30 overflow-hidden z-50"
+          style={{ maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}
+        >
           <div className="py-2">
             <div className="px-4 py-2 border-b border-gold-500/20">
               <p className="text-sm font-medium text-gold-400">{user?.name}</p>
