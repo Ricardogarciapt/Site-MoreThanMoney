@@ -23,7 +23,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { MembershipRequired } from "@/components/membership-required"
-import Image from "next/image"
 
 export default function ScannerView() {
   const { isAuthenticated, user } = useAuth()
@@ -49,17 +48,67 @@ export default function ScannerView() {
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl font-bold text-center mb-8">Scanner MoreThanMoneyTM – Acesso Exclusivo</h1>
 
+      {/* Prévia do Scanner - Duplicado para página inicial */}
+      <div className="mb-12 bg-black/50 p-6 rounded-lg border border-gold-500/30">
+        <h2 className="text-2xl font-semibold text-gold-500 mb-4">Prévia do Scanner MTM</h2>
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          <div className="w-full md:w-1/2">
+            <img
+              src="https://www.tradingview.com/x/ZPM47fOg/"
+              alt="Scanner MTM Preview"
+              className="w-full h-auto rounded-lg border border-gold-500/30 shadow-lg"
+            />
+          </div>
+          <div className="w-full md:w-1/2">
+            <h3 className="text-xl font-medium text-gold-400 mb-3">
+              MoreThanMoney Scanner V3.4 - Market structures and ATR
+            </h3>
+            <p className="text-gray-300 mb-4">
+              O Scanner MTM é uma ferramenta avançada que identifica estruturas de mercado e utiliza o ATR (Average True
+              Range) para fornecer sinais precisos de trading. Desenvolvido exclusivamente para membros MoreThanMoney.
+            </p>
+            <ul className="list-disc list-inside text-gray-300 mb-6 space-y-2">
+              <li>Identificação de estruturas de mercado</li>
+              <li>Cálculo de ATR para gerenciamento de risco</li>
+              <li>Sinais de entrada e saída otimizados</li>
+              <li>Compatível com múltiplos timeframes</li>
+              <li>Atualizações regulares e suporte dedicado</li>
+            </ul>
+            <a
+              href="https://www.tradingview.com/script/BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold-500 hover:text-gold-400 underline inline-flex items-center"
+            >
+              Ver no TradingView
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Prévia do Scanner */}
       <div className="mb-12 bg-black/50 p-6 rounded-lg border border-gold-500/30">
         <h2 className="text-2xl font-semibold text-gold-500 mb-4">Prévia do Scanner MTM</h2>
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <div className="w-full md:w-1/2">
-            <Image
-              src="/scanner-preview.png"
+            <img
+              src="https://www.tradingview.com/x/ZPM47fOg/"
               alt="Scanner MTM Preview"
-              width={600}
-              height={400}
-              className="rounded-lg border border-gold-500/30 shadow-lg"
+              className="w-full h-auto rounded-lg border border-gold-500/30 shadow-lg"
             />
           </div>
           <div className="w-full md:w-1/2">

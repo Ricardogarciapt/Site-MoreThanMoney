@@ -157,9 +157,9 @@ export default function Navbar() {
             {isAuthenticated ? (
               <UserDropdown />
             ) : (
-              <Button onClick={openLoginModal} className="bg-gold-600 hover:bg-gold-700 text-black font-medium">
-                Área de Membro
-              </Button>
+              <Link href="/member-area">
+                <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium">Área de Membro</Button>
+              </Link>
             )}
           </div>
 
@@ -238,15 +238,14 @@ export default function Navbar() {
                 Minha Conta
               </Link>
             ) : (
-              <Button
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  openLoginModal()
-                }}
-                className="w-full mt-2 bg-gold-600 hover:bg-gold-700 text-black font-medium"
-              >
-                Área de Membro
-              </Button>
+              <Link href="/member-area">
+                <Button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full mt-2 bg-gold-600 hover:bg-gold-700 text-black font-medium"
+                >
+                  Área de Membro
+                </Button>
+              </Link>
             )}
           </div>
         </div>
