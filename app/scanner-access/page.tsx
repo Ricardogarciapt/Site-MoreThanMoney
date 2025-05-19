@@ -16,7 +16,7 @@ export default function ScannerAccessPage() {
               <div className="bg-gray-900 rounded-lg border border-gold-500/30 p-4 mb-8">
                 <h2 className="text-2xl font-semibold text-gold-500 mb-4">Scanner MTM - Visualização ao Vivo</h2>
                 <MembershipRequired>
-                  <TradingViewWidget />
+                  <TradingViewWidget scannerType="scanner1" />
                 </MembershipRequired>
               </div>
             </div>

@@ -18,7 +18,7 @@ export default function MTMGoldKillerPage() {
                   Scanner MTM Gold Killer - Visualização ao Vivo
                 </h2>
                 <MembershipRequired>
-                  <TradingViewWidget />
+                  <TradingViewWidget scannerType="scanner2" />
                 </MembershipRequired>
               </div>
             </div>
