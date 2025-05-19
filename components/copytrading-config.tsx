@@ -1,18 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Save, Check, AlertCircle } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { useConfigStore } from "@/lib/config-service"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+
+// Código padrão do TradingView (mesmo usado no painel de administração)
+const defaultTradingViewCode = `// Este é o código padrão do widget TradingView
+// Você pode personalizá-lo conforme necessário
+
+// Verificar se o TradingView está disponível
+if (!window.TradingView) {
+  console.error("TradingView não está disponível");
+  return;
+}
+
+// Criar o widget com configurações básicas
+const widget = new window.TradingView.widget({
+  autosize: true,
+  symbol: "OANDA:XAUUSD",
+  interval: "60",
+  timezone: "Etc/UTC",
+  theme: "dark",
+  style: "1",
+  locale: "br",
+  toolbar_bg: "#1E1E1E",
+  enable_publishing: false,
+  allow_symbol_change: true,
+  hide_side_toolbar: false,
+  withdateranges: true,
+  save_image: false,
+  studies: ["STD;MACD", "STD;RSI"],
+  container_id: container.querySelector("#tradingview_widget").id,
+});
+
+// Adicionar callback para quando o gráfico estiver pronto
+if (isAuthenticated) {
+  widget.onChartReady(function() {
+    try {
+      // Criar um novo estudo com o PineScript
+      widget.chart().createStudy("Custom Script", false, false, {
+        text: pineScriptScanner
+      });
+      console.log("PineScript MTM Scanner aplicado com sucesso");
+    } catch (error) {
+      console.error("Erro ao aplicar o PineScript:", error);
+    }
+  });
+}`
 
 export function CopytradingConfig() {
+  const { toast } = useToast()
+  const { config, updateConfig } = useConfigStore()
   const [activeTab, setActiveTab] = useState("planos")
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [brokerConnected, setBrokerConnected] = useState(false)
+  const [tradingViewCode, setTradingViewCode] = useState(config.tradingViewCustomCode || defaultTradingViewCode)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle")
+
+  // Sincronizar com a store quando ela mudar
+  useEffect(() => {
+    setTradingViewCode(config.tradingViewCustomCode || defaultTradingViewCode)
+  }, [config.tradingViewCustomCode])
 
   const handlePlanSelect = (plan: string) => {
     setSelectedPlan(plan)
@@ -26,6 +83,40 @@ export function CopytradingConfig() {
     }
   }
 
+  const handleSaveCode = async () => {
+    setIsSaving(true)
+    setSaveStatus("idle")
+
+    try {
+      // Validar o código antes de salvar
+      new Function("container", "isAuthenticated", "pineScriptScanner", tradingViewCode)
+
+      // Atualizar a configuração na store
+      updateConfig({ tradingViewCustomCode: tradingViewCode })
+
+      setSaveStatus("success")
+      toast({
+        title: "Código salvo",
+        description: "O código do TradingView foi salvo com sucesso e será aplicado em todo o site.",
+      })
+    } catch (error) {
+      console.error("Erro ao salvar código:", error)
+      setSaveStatus("error")
+      toast({
+        title: "Erro ao salvar",
+        description: `Erro de sintaxe no código: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+
+      // Resetar o status após 3 segundos
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 3000)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -36,7 +127,7 @@ export function CopytradingConfig() {
       <Card className="bg-black border-gray-800">
         <CardContent className="p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-black/50 border border-gold-500/30 mb-8">
+            <TabsList className="grid w-full grid-cols-4 bg-black/50 border border-gold-500/30 mb-8">
               <TabsTrigger value="planos" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
                 Planos
               </TabsTrigger>
@@ -51,6 +142,12 @@ export function CopytradingConfig() {
                 className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
               >
                 Portfólios
+              </TabsTrigger>
+              <TabsTrigger
+                value="tradingview"
+                className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
+              >
+                TradingView
               </TabsTrigger>
             </TabsList>
 
@@ -291,6 +388,160 @@ export function CopytradingConfig() {
 
                 <div className="mt-8">
                   <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">Salvar Configurações</Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Nova aba para configuração do TradingView */}
+            <TabsContent value="tradingview" className="mt-0">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Configuração do TradingView</h3>
+                  <p className="text-gray-400 mb-6">
+                    Personalize o código do widget TradingView usado nos scanners e gráficos.
+                  </p>
+                </div>
+
+                {saveStatus === "success" && (
+                  <Alert className="mb-5 bg-green-500/20 border-green-500">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <AlertTitle>Sucesso!</AlertTitle>
+                    <AlertDescription>O código foi salvo com sucesso.</AlertDescription>
+                  </Alert>
+                )}
+
+                {saveStatus === "error" && (
+                  <Alert className="mb-5 bg-red-500/20 border-red-500">
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    <AlertTitle>Erro!</AlertTitle>
+                    <AlertDescription>Ocorreu um erro ao salvar o código. Verifique a sintaxe.</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="grid gap-2">
+                  <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md mb-4">
+                    <p className="text-sm text-yellow-400">
+                      <strong>Atenção:</strong> Editar o código diretamente pode causar problemas de funcionamento.
+                      Certifique-se de testar suas alterações antes de salvar.
+                    </p>
+                    <p className="text-sm text-yellow-400 mt-2">
+                      O código deve criar e inicializar um widget TradingView. Você tem acesso às variáveis:
+                      <code className="bg-black/30 px-1 mx-1 rounded">container</code>,
+                      <code className="bg-black/30 px-1 mx-1 rounded">isAuthenticated</code> e
+                      <code className="bg-black/30 px-1 mx-1 rounded">pineScriptScanner</code>.
+                    </p>
+                  </div>
+                  <textarea
+                    rows={15}
+                    className="w-full p-4 font-mono text-sm bg-black/30 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    value={tradingViewCode}
+                    onChange={(e) => setTradingViewCode(e.target.value)}
+                    spellCheck="false"
+                  />
+                  <div className="flex justify-between mt-2">
+                    <Button
+                      variant="outline"
+                      className="text-red-400 border-red-400/30 hover:bg-red-500/10"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Tem certeza que deseja restaurar o código padrão? Todas as alterações serão perdidas.",
+                          )
+                        ) {
+                          setTradingViewCode(defaultTradingViewCode)
+                          toast({
+                            title: "Código restaurado",
+                            description: "O código padrão foi restaurado com sucesso.",
+                          })
+                        }
+                      }}
+                    >
+                      Restaurar Padrão
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-blue-400 border-blue-400/30 hover:bg-blue-500/10"
+                      onClick={() => {
+                        try {
+                          // Validação básica do código
+                          new Function("container", "isAuthenticated", "pineScriptScanner", tradingViewCode)
+                          toast({
+                            title: "Código válido",
+                            description: "O código parece ser válido. Salve as alterações para aplicá-las.",
+                          })
+                        } catch (error) {
+                          toast({
+                            title: "Erro de sintaxe",
+                            description: `Erro no código: ${error.message}`,
+                            variant: "destructive",
+                          })
+                        }
+                      }}
+                    >
+                      Validar Código
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-2 mt-6">
+                  <h3 className="text-lg font-medium">Documentação e Recursos</h3>
+                  <div className="grid gap-4 p-4 bg-black/30 rounded-md">
+                    <div>
+                      <h4 className="font-medium mb-1">Documentação Oficial</h4>
+                      <ul className="list-disc list-inside text-sm text-blue-400">
+                        <li>
+                          <a
+                            href="https://www.tradingview.com/widget/advanced-chart/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            Documentação do Widget Avançado
+                          </a>
+                        </li>
+                        <li>
+                          <a
+                            href="https://www.tradingview.com/widget-docs/chart_object/methods/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            Métodos do Objeto Chart
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-1">Exemplos Comuns</h4>
+                      <ul className="list-disc list-inside text-sm">
+                        <li>
+                          Alterar o tema: <code className="bg-black/30 px-1 rounded">theme: "light"</code>
+                        </li>
+                        <li>
+                          Adicionar indicadores:{" "}
+                          <code className="bg-black/30 px-1 rounded">studies: ["RSI", "MACD"]</code>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <Button
+                    onClick={handleSaveCode}
+                    disabled={isSaving}
+                    className="w-full flex items-center justify-center gap-2 bg-gold-600 hover:bg-gold-700 text-black"
+                  >
+                    {isSaving ? (
+                      "Salvando..."
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Salvar Código do TradingView
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </TabsContent>
