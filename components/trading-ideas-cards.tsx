@@ -22,7 +22,7 @@ interface TradingIdea {
 }
 
 // Ideias de exemplo
-const sampleIdeas: TradingIdea[] = [
+export const sampleIdeas: TradingIdea[] = [
   {
     id: "idea-1",
     title: "EUR/USD: Oportunidade de Compra na Zona de Suporte",
