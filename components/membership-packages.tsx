@@ -20,32 +20,32 @@ interface PackageOption {
 const packages: PackageOption[] = [
   {
     id: "basic",
-    name: "Membro Básico",
-    price: 29.9,
+    name: "Membro MoreThanMoney",
+    price: 50.00,
     period: "mensal",
-    features: ["Acesso aos cursos básicos", "Acesso ao fórum da comunidade", "Atualizações mensais"],
+    features: ["Acesso aos BootCamp MoreThanMoney", "Acesso ao fórum da comunidade", "Acesso aos Scanners na Plataforma"],
   },
   {
     id: "standard",
     name: "Membro Standard",
-    price: 49.9,
+    price: 169.99,
     period: "mensal",
     features: [
       "Todos os benefícios do plano Básico",
-      "Acesso ao scanner básico",
+      "Acesso aos Produtos JIFU",
       "Suporte prioritário",
-      "Webinars mensais exclusivos",
+      "Webinars mensais exclusivos","Eventos Regionais Exclusivos"
     ],
     recommended: true,
   },
   {
     id: "premium",
     name: "Membro Premium",
-    price: 99.9,
-    period: "mensal",
+    price: 1000.00,
+    period: "Unico",
     features: [
       "Todos os benefícios do plano Standard",
-      "Acesso completo ao scanner avançado",
+      "Acesso Vitalicio aos scanners avançado",
       "Acesso ao canal VIP de sinais",
       "Mentoria mensal individual",
       "Acesso antecipado a novos recursos",

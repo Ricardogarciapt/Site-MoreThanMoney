@@ -38,7 +38,7 @@ export default function Navbar() {
       submenu: [
         { name: "Planos", href: "/copytrading" },
         { name: "Ideias de Trading", href: "/trading-ideas" },
-        { name: "TAP2TRADE MTM (Preview)", href: "/copytrading/tap2trade" },
+        { name: "TAP2TRADE MTM (Preview)", href: "/tap-to-trade-preview" },
       ],
     },
     { name: "Automatização", href: "/automation" },

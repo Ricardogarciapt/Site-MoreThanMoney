@@ -155,37 +155,46 @@ export default function TradingViewWidget({ scannerType = "default" }) {
         </Alert>
       )}
 
-      {/* Controles do Scanner */}
-      <div className="absolute top-2 left-2 z-30 flex gap-2">
-        <Button
-          onClick={() => switchScanner("scanner1")}
-          variant={currentScanner === "scanner1" ? "default" : "outline"}
-          className="bg-gray-800 text-white hover:bg-gray-700"
-          size="sm"
+      {/* Barra de Navegação do Scanner - Nova posição destacada */}
+      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/90 py-2 px-4 flex items-center justify-between border-b border-gold-500/30">
+        <div className="flex gap-2">
+          <Button
+            onClick={() => switchScanner("scanner1")}
+            variant={currentScanner === "scanner1" ? "default" : "outline"}
+            className={`${
+              currentScanner === "scanner1" ? "bg-gold-600 text-black" : "bg-gray-700 text-white"
+            } hover:bg-gold-700 hover:text-black`}
+            size="sm"
+          >
+            Scanner MTM V3.4
+          </Button>
+          <Button
+            onClick={() => switchScanner("scanner2")}
+            variant={currentScanner === "scanner2" ? "default" : "outline"}
+            className={`${
+              currentScanner === "scanner2" ? "bg-gold-600 text-black" : "bg-gray-700 text-white"
+            } hover:bg-gold-700 hover:text-black`}
+            size="sm"
+          >
+            MTM Gold Killer
+          </Button>
+        </div>
+
+        <button
+          onClick={handleFullScreen}
+          className="bg-gray-700 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 flex items-center gap-1"
         >
-          Scanner MTM V3.4
-        </Button>
-        <Button
-          onClick={() => switchScanner("scanner2")}
-          variant={currentScanner === "scanner2" ? "default" : "outline"}
-          className="bg-gray-800 text-white hover:bg-gray-700"
-          size="sm"
-        >
-          MTM Gold Killer
-        </Button>
+          <Maximize2 className="w-4 h-4" />
+          Tela cheia
+        </button>
       </div>
 
-      {/* Botão de Tela Cheia */}
-      <button
-        onClick={handleFullScreen}
-        className="absolute top-2 right-2 z-30 bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 flex items-center gap-1"
+      {/* Container do Widget - ajustado para dar espaço à barra de navegação */}
+      <div
+        ref={containerRef}
+        className="w-full h-full pt-12" // Adicionado padding-top para compensar a barra
+        style={{ visibility: widgetLoaded ? "visible" : "hidden" }}
       >
-        <Maximize2 className="w-4 h-4" />
-        Tela cheia
-      </button>
-
-      {/* Container do Widget */}
-      <div ref={containerRef} className="w-full h-full" style={{ visibility: widgetLoaded ? "visible" : "hidden" }}>
         <div id="tradingview_widget" style={{ height: "100%", width: "100%" }}></div>
       </div>
 
