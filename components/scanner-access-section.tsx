@@ -3,10 +3,13 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function ScannerAccessSection() {
+  const router = useRouter()
+
   const handleRequestAccess = () => {
-    window.open("https://wa.link/08k5so", "_blank")
+    router.push("/scanners-and-ideas")
   }
 
   return (
@@ -22,8 +25,40 @@ export default function ScannerAccessSection() {
         </div>
 
         <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gold-gradient">
-          Scanner MoreThanMoneyTM – Acesso Exclusivo
+          Scanner's MoreThanMoney - Acesso Exclusivo
         </h2>
+
+        {/* Vídeo de apresentação */}
+        <div className="max-w-4xl mx-auto mb-10 rounded-xl overflow-hidden shadow-2xl border-2 border-gold-500/30">
+          <div className="aspect-video bg-black/50 flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="w-20 h-20 bg-gold-500/80 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-10 w-10 text-black"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-gold-500 text-lg">Conhece tudo sobre os Scanner's</p>
+              <p className="text-gray-400 text-sm mt-2">Em breve disponível</p>
+            </div>
+          </div>
+        </div>
 
         <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
           Solicita acesso ao nosso Scanner MoreThanMoney exclusivo, que identifica estruturas de mercado e níveis chave
@@ -35,13 +70,13 @@ export default function ScannerAccessSection() {
             onClick={handleRequestAccess}
             className="bg-gold-600 hover:bg-gold-700 text-black font-bold px-8 py-3 text-lg rounded-md transform transition-transform duration-300 hover:scale-105"
           >
-            Pedir Acesso ao Scanner
+            Conhece o nosso scanner
           </Button>
         </div>
 
         <div className="mb-12 text-sm text-gray-400">
           <Link
-            href="https://br.tradingview.com/script/BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR/"
+            href="https://www.tradingview.com/script/fhpIupC5-MTM-Gold-Killer-V2-1/"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-white transition-colors"

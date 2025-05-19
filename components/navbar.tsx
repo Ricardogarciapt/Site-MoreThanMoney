@@ -27,8 +27,9 @@ export default function Navbar() {
       name: "Scanners",
       href: "/scanner",
       submenu: [
-        { name: "Apresentação Scanner", href: "/scanner" },
+        { name: "Os nossos Scanners", href: "/scanner" },
         { name: "Scanner MTM", href: "/scanner-access" },
+        { name: "MTM Gold Killer", href: "/scanner/mtm-gold-killer" },
       ],
     },
     {
