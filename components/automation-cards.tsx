@@ -120,9 +120,9 @@ export default function AutomationCards() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/signals" className="w-full">
+              <Link href="/trading-ideas" className="w-full">
                 <Button className="bg-gold-600 hover:bg-gold-700 text-black w-full">
-                  Ativar Sinais <ArrowRight className="ml-2 h-4 w-4" />
+                  Ver Ideias <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </CardFooter>

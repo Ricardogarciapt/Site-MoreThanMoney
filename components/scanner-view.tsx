@@ -22,7 +22,6 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import Link from "next/link"
-import MembershipRequired from "@/components/membership-required"
 
 export default function ScannerView() {
   const { isAuthenticated, user } = useAuth()
@@ -33,11 +32,40 @@ export default function ScannerView() {
 
   // Verificar se o usuário está autenticado
   if (!isAuthenticated) {
-    return <MembershipRequired />
-  }
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center max-w-4xl mx-auto mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+            Scanner MTM V3.4
+          </h1>
+          <p className="text-xl text-gray-300">
+            Identifique oportunidades de mercado com nosso scanner proprietário que analisa padrões e estruturas de alta
+            probabilidade.
+          </p>
+        </div>
 
-  // Verificar se o usuário tem acesso ao scanner
-  const hasAccess = user?.package && ["Trader", "Pro Trader", "VIP Trader"].includes(user.package)
+        <div className="max-w-2xl mx-auto bg-black/50 border border-gold-500/30 backdrop-blur-sm rounded-lg p-8 text-center">
+          <Lock className="h-16 w-16 text-gold-500 mb-4 mx-auto" />
+          <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
+          <p className="text-gray-300 mb-6">
+            Faça login para acessar o Scanner MTM V3.4 e descobrir oportunidades de mercado em tempo real.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={() => router.push("/member-area")} className="bg-gold-600 hover:bg-gold-700 text-black">
+              Fazer Login
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/scanner-access")}
+              className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+            >
+              Saber Mais
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleTradeAccept = () => {
     setShowAcceptedMessage(true)
@@ -85,7 +113,7 @@ export default function ScannerView() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                  {hasAccess ? (
+                  {isAuthenticated ? (
                     <div className="aspect-video min-h-[400px] w-full">
                       <TradingViewWidget />
                     </div>
@@ -94,25 +122,22 @@ export default function ScannerView() {
                       <Lock className="h-16 w-16 text-gold-500 mb-4" />
                       <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
                       <p className="text-gray-300 mb-6 max-w-lg">
-                        O Scanner MTM V3.4 está disponível apenas para membros com pacotes Trader, Pro Trader e VIP
-                        Trader.
+                        Faça login para acessar o Scanner MTM V3.4 e descobrir oportunidades de mercado em tempo real.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <Button
-                          onClick={() => router.push("/scanner-access")}
+                          onClick={() => router.push("/member-area")}
                           className="bg-gold-600 hover:bg-gold-700 text-black"
                         >
-                          Obter Acesso
+                          Fazer Login
                         </Button>
-                        {!isAuthenticated && (
-                          <Button
-                            variant="outline"
-                            onClick={() => router.push("/")}
-                            className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                          >
-                            Fazer Login
-                          </Button>
-                        )}
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push("/scanner-access")}
+                          className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
+                        >
+                          Saber Mais
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -125,7 +150,7 @@ export default function ScannerView() {
                     <span className="mr-1">Informações do Scanner</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`} />
                   </button>
-                  {hasAccess && (
+                  {isAuthenticated && (
                     <div className="flex items-center">
                       <Unlock className="h-4 w-4 mr-1 text-green-500" />
                       <span className="text-green-500 text-sm">Acesso Ativo</span>
@@ -198,7 +223,7 @@ export default function ScannerView() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  {!hasAccess && (
+                  {!isAuthenticated && (
                     <Button
                       onClick={() => router.push("/scanner-access")}
                       className="w-full bg-gold-600 hover:bg-gold-700 text-black"

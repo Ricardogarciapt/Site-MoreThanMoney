@@ -18,20 +18,28 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isScannerSubmenuOpen, setIsScannerSubmenuOpen] = useState(false)
+  const [isCopytradingSubmenuOpen, setIsCopytradingSubmenuOpen] = useState(false)
 
   const navigation = [
     { name: "Início", href: "/" },
+    { name: "Educação JIFU", href: "/jifu-education" },
     {
-      name: "Scanner",
+      name: "Scanners",
       href: "/scanner",
+      submenu: [{ name: "Scanner MTM", href: "/scanner" }],
+    },
+    {
+      name: "Copytrading",
+      href: "/copytrading",
       submenu: [
-        { name: "Scanner MTM", href: "/scanner" },
+        { name: "Planos", href: "/copytrading/plans" },
         { name: "Ideias de Trading", href: "/trading-ideas" },
+        { name: "Portfólios", href: "/portfolios", restricted: true },
+        { name: "TAP2TRADE MTM (Preview)", href: "/copytrading/tap2trade" },
       ],
     },
-    { name: "Copytrading", href: "/copytrading" },
-    { name: "Educação JIFU", href: "/jifu-education" },
     { name: "Automatização", href: "/automation" },
+    { name: "Painel de Afiliados", href: "/affiliate-dashboard" },
   ]
 
   const toggleMenu = () => {
@@ -70,8 +78,14 @@ export default function Navbar() {
                 <div
                   key={item.name}
                   className="relative"
-                  onMouseEnter={() => setIsScannerSubmenuOpen(true)}
-                  onMouseLeave={() => setIsScannerSubmenuOpen(false)}
+                  onMouseEnter={() => {
+                    if (item.name === "Scanners") setIsScannerSubmenuOpen(true)
+                    if (item.name === "Copytrading") setIsCopytradingSubmenuOpen(true)
+                  }}
+                  onMouseLeave={() => {
+                    if (item.name === "Scanners") setIsScannerSubmenuOpen(false)
+                    if (item.name === "Copytrading") setIsCopytradingSubmenuOpen(false)
+                  }}
                 >
                   <button
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center ${
@@ -84,7 +98,8 @@ export default function Navbar() {
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </button>
 
-                  {isScannerSubmenuOpen && (
+                  {((item.name === "Scanners" && isScannerSubmenuOpen) ||
+                    (item.name === "Copytrading" && isCopytradingSubmenuOpen)) && (
                     <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-black/90 border border-gold-500/30 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div className="py-1">
                         {item.submenu.map((subitem) => (
@@ -95,9 +110,14 @@ export default function Navbar() {
                               pathname === subitem.href
                                 ? "text-gold-500 bg-gold-500/10"
                                 : "text-gray-300 hover:text-gold-400 hover:bg-gold-500/5"
-                            }`}
+                            } ${subitem.restricted ? "flex items-center" : ""}`}
                           >
                             {subitem.name}
+                            {subitem.restricted && (
+                              <span className="ml-2 px-1.5 py-0.5 text-xs bg-gold-500/20 text-gold-500 rounded-md">
+                                Restrito
+                              </span>
+                            )}
                           </Link>
                         ))}
                       </div>
@@ -172,10 +192,15 @@ export default function Navbar() {
                           pathname === subitem.href
                             ? "text-gold-500 bg-gold-500/10"
                             : "text-gray-300 hover:text-gold-400 hover:bg-gold-500/5"
-                        }`}
+                        } ${subitem.restricted ? "flex items-center" : ""}`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {subitem.name}
+                        {subitem.restricted && (
+                          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gold-500/20 text-gold-500 rounded-md">
+                            Restrito
+                          </span>
+                        )}
                       </Link>
                     ))}
                   </div>

@@ -1,21 +1,41 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Check } from "lucide-react"
 import Image from "next/image"
+import { useConfigStore } from "@/lib/config-service"
 
 export default function JifuEducationPath() {
   const [videoPlaying, setVideoPlaying] = useState(true)
   const videoRef = useRef<HTMLIFrameElement>(null)
+  const { config } = useConfigStore()
+  const [jifuAffiliateLink, setJifuAffiliateLink] = useState(
+    config.affiliateLinks?.jifuAffiliateLink || "https://ricardogarcia.jifu.com",
+  )
+
+  // Atualizar o link quando a configuração mudar
+  useEffect(() => {
+    if (config.affiliateLinks?.jifuAffiliateLink) {
+      setJifuAffiliateLink(config.affiliateLinks.jifuAffiliateLink)
+    }
+  }, [config.affiliateLinks?.jifuAffiliateLink])
 
   const handleRegisterClick = () => {
     // Parar o vídeo quando o usuário clica para se registrar
     setVideoPlaying(false)
 
-    // Abrir a página de registro da JIFU em uma nova aba
-    window.open("https://jifu.com", "_blank", "noopener,noreferrer")
+    // Garantir que o link comece com https://
+    let secureLink = jifuAffiliateLink
+    if (!secureLink.startsWith("http")) {
+      secureLink = "https://" + secureLink
+    } else if (secureLink.startsWith("http://")) {
+      secureLink = secureLink.replace("http://", "https://")
+    }
+
+    // Abrir a página de registro da JIFU em uma nova aba com o link de afiliação configurado
+    window.open(secureLink, "_blank", "noopener,noreferrer")
   }
 
   return (

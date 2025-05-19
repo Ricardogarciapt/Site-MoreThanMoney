@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, Lock } from "lucide-react"
+import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, Lock, MapPin, FileText } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -106,15 +106,23 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-gold-400" />
-                <a href="mailto:info@morethanmoney.com" className="text-gray-400 hover:text-gold-400 transition-colors">
-                  info@morethanmoney.com
+                <a href="mailto:info@morethanmoney.pt" className="text-gray-400 hover:text-gold-400 transition-colors">
+                  info@morethanmoney.pt
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-gold-400" />
-                <a href="tel:+351123456789" className="text-gray-400 hover:text-gold-400 transition-colors">
-                  +351 123 456 789
+                <a href="tel:+351912666699" className="text-gray-400 hover:text-gold-400 transition-colors">
+                  +351 912 666 699
                 </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gold-400" />
+                <span className="text-gray-400">Portugal</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gold-400" />
+                <span className="text-gray-400">NIF: PT241991439</span>
               </li>
             </ul>
             <div className="mt-4">

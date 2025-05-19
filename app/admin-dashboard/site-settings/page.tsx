@@ -2,140 +2,35 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { processAdminAction } from "@/lib/admin-service"
 import { useToast } from "@/components/ui/use-toast"
 import { AlertCircle, Check, Save } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-// Define os tipos para configurações do site
-interface SiteConfig {
-  name: string
-  logoUrl: string
-  footerText: string
-  contactEmail: string
-  ownerInfo: {
-    name: string
-    email: string
-    phone: string
-    address: string
-    taxId: string
-  }
-  socialLinks: {
-    platform: string
-    url: string
-    icon: string
-  }[]
-  seo: {
-    title: string
-    description: string
-    keywords: string
-  }
-  analytics: {
-    googleAnalyticsId: string
-    facebookPixelId: string
-  }
-  colors: {
-    primary: string
-    secondary: string
-    accent: string
-    background: string
-    text: string
-  }
-  features: {
-    id: string
-    name: string
-    enabled: boolean
-  }[]
-  display: {
-    showIdeas: boolean
-    showPortfolios: boolean
-    showTapToTrade: boolean
-    showScanner: boolean
-    showEducation?: boolean
-    showCopytrading?: boolean
-  }
-}
-
-// Configuração inicial do site
-const defaultConfig: SiteConfig = {
-  name: "MoreThanMoney",
-  logoUrl: "/logo-new.png",
-  footerText: "© 2025 MoreThanMoney. Todos os direitos reservados.",
-  contactEmail: "suporte@morethanmoney.pt",
-  ownerInfo: {
-    name: "Ricardo Garcia",
-    email: "info@morethanmoney.pt",
-    phone: "+351 912 666 699",
-    address: "Santarém, Portugal",
-    taxId: "PT241991439",
-  },
-  socialLinks: [
-    {
-      platform: "Instagram",
-      url: "https://instagram.com/morethanmoney",
-      icon: "instagram",
-    },
-    {
-      platform: "Telegram",
-      url: "https://t.me/morethanmoney",
-      icon: "telegram",
-    },
-    {
-      platform: "YouTube",
-      url: "https://youtube.com/morethanmoney",
-      icon: "youtube",
-    },
-  ],
-  seo: {
-    title: "MoreThanMoney | Trading e Investimentos",
-    description: "Plataforma de trading, educação financeira e soluções de investimento automatizado.",
-    keywords: "trading, investimentos, forex, criptomoedas, scanner, copytrading",
-  },
-  analytics: {
-    googleAnalyticsId: "",
-    facebookPixelId: "",
-  },
-  colors: {
-    primary: "#f9b208",
-    secondary: "#000000",
-    accent: "#f9b208",
-    background: "#0f0f0f",
-    text: "#ffffff",
-  },
-  features: [
-    { id: "scanner", name: "Scanner MTM", enabled: true },
-    { id: "copytrading", name: "Copytrading", enabled: true },
-    { id: "education", name: "Educação JIFU", enabled: true },
-    { id: "automation", name: "Automatização", enabled: true },
-    { id: "affiliate", name: "Sistema de Afiliados", enabled: true },
-    { id: "ideas", name: "Ideias de Trading", enabled: true },
-  ],
-  display: {
-    showIdeas: true,
-    showPortfolios: true,
-    showTapToTrade: true,
-    showScanner: true,
-    showEducation: true,
-    showCopytrading: true,
-  },
-}
+import { useConfigStore, type SiteConfig } from "@/lib/config-service"
 
 // Componente para editar as configurações do site
 export default function SiteSettingsPage() {
-  const [config, setConfig] = useState<SiteConfig>(defaultConfig)
+  const { config: storeConfig, updateConfig } = useConfigStore()
+  const [config, setConfig] = useState<SiteConfig>(storeConfig)
+  const { toast } = useToast()
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle")
+
+  // Sincronizar com a store quando ela mudar
+  useEffect(() => {
+    setConfig(storeConfig)
+  }, [storeConfig])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
 
-    // Lidar com campos aninhados como ownerInfo.name
+    // Lidar com campos aninhados como ownerInfo.name ou affiliateLinks.jifuAffiliateLink
     if (name.includes(".")) {
       const [parent, child] = name.split(".")
       setConfig((prevConfig) => ({
@@ -153,25 +48,13 @@ export default function SiteSettingsPage() {
     }
   }
 
-  const { toast } = useToast()
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle")
-
   const handleSave = async () => {
     setIsSaving(true)
     setSaveStatus("idle")
 
     try {
-      // Salvar configurações usando o serviço de admin
-      await processAdminAction({
-        type: "UPDATE_SITE_CONFIG",
-        payload: config,
-      })
-
-      // Atualizar o estado local
-      if (typeof window !== "undefined") {
-        localStorage.setItem("siteConfig", JSON.stringify(config))
-      }
+      // Atualizar a configuração na store
+      updateConfig(config)
 
       setSaveStatus("success")
       toast({
@@ -214,6 +97,34 @@ export default function SiteSettingsPage() {
       colors: {
         ...prevConfig.colors,
         [key]: value,
+      },
+    }))
+  }
+
+  // Função para lidar com alterações no programa de afiliados
+  const handleAffiliateChange = (key: string, value: any) => {
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      affiliateProgram: {
+        ...prevConfig.affiliateProgram!,
+        [key]: value,
+      },
+    }))
+  }
+
+  // Função para lidar com alterações nas taxas de comissão
+  const handleCommissionChange = (level: string, value: string) => {
+    const numValue = Number.parseFloat(value)
+    if (isNaN(numValue)) return
+
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      affiliateProgram: {
+        ...prevConfig.affiliateProgram!,
+        commissionRates: {
+          ...prevConfig.affiliateProgram!.commissionRates,
+          [level]: numValue,
+        },
       },
     }))
   }
@@ -268,6 +179,9 @@ export default function SiteSettingsPage() {
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="appearance">Aparência</TabsTrigger>
           <TabsTrigger value="features">Recursos</TabsTrigger>
+          <TabsTrigger value="affiliates">Links de Afiliado</TabsTrigger>
+          <TabsTrigger value="affiliate-program">Programa de Afiliados</TabsTrigger>
+          <TabsTrigger value="tradingview">TradingView</TabsTrigger>
           <TabsTrigger value="owner">Proprietário</TabsTrigger>
         </TabsList>
 
@@ -371,106 +285,235 @@ export default function SiteSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="features">
+        <TabsContent value="features">{/* Conteúdo existente da aba features */}</TabsContent>
+
+        {/* Aba de Links de Afiliado */}
+        <TabsContent value="affiliates">
           <Card>
             <CardHeader>
-              <CardTitle>Visibilidade das Seções</CardTitle>
-              <CardDescription>Controle quais seções são exibidas no site.</CardDescription>
+              <CardTitle>Links de Afiliado</CardTitle>
+              <CardDescription>Configure os links de afiliado utilizados no site.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Scanner MTM</h3>
-                  <p className="text-sm text-gray-500">Exibir a seção de Scanner no site</p>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="affiliateLinks.jifuAffiliateLink">Link de Afiliado JIFU</Label>
+                  <Input
+                    id="affiliateLinks.jifuAffiliateLink"
+                    name="affiliateLinks.jifuAffiliateLink"
+                    value={config.affiliateLinks?.jifuAffiliateLink || ""}
+                    onChange={handleChange}
+                    placeholder="https://seunome.jifu.com"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Este link será usado em todos os botões de registro na JIFU do site.
+                  </p>
+                  <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
+                    <p className="text-sm text-yellow-400">
+                      <strong>Nota:</strong> Recomendamos usar HTTPS para garantir uma conexão segura. O link será
+                      automaticamente convertido para HTTPS se necessário.
+                    </p>
+                  </div>
                 </div>
-                <Switch
-                  checked={config.display.showScanner}
-                  onCheckedChange={(checked) => handleSwitchChange("showScanner", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Ideias de Trading</h3>
-                  <p className="text-sm text-gray-500">Exibir a seção de Ideias de Trading no site</p>
-                </div>
-                <Switch
-                  checked={config.display.showIdeas}
-                  onCheckedChange={(checked) => handleSwitchChange("showIdeas", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Portfólios</h3>
-                  <p className="text-sm text-gray-500">Exibir a seção de Portfólios no site</p>
-                </div>
-                <Switch
-                  checked={config.display.showPortfolios}
-                  onCheckedChange={(checked) => handleSwitchChange("showPortfolios", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Tap to Trade</h3>
-                  <p className="text-sm text-gray-500">Exibir a funcionalidade Tap to Trade no site</p>
-                </div>
-                <Switch
-                  checked={config.display.showTapToTrade}
-                  onCheckedChange={(checked) => handleSwitchChange("showTapToTrade", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Educação JIFU</h3>
-                  <p className="text-sm text-gray-500">Exibir a seção de Educação JIFU no site</p>
-                </div>
-                <Switch
-                  checked={config.display.showEducation || false}
-                  onCheckedChange={(checked) => handleSwitchChange("showEducation", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">Copytrading</h3>
-                  <p className="text-sm text-gray-500">Exibir a seção de Copytrading no site</p>
-                </div>
-                <Switch
-                  checked={config.display.showCopytrading || false}
-                  onCheckedChange={(checked) => handleSwitchChange("showCopytrading", checked)}
-                />
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          <Card className="mt-6">
+        {/* Nova aba de Programa de Afiliados */}
+        <TabsContent value="affiliate-program">
+          <Card>
             <CardHeader>
-              <CardTitle>Recursos Habilitados</CardTitle>
-              <CardDescription>Ative ou desative recursos específicos do site.</CardDescription>
+              <CardTitle>Programa de Afiliados</CardTitle>
+              <CardDescription>Configure as opções do programa de afiliados.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              {config.features.map((feature) => (
-                <div key={feature.id} className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium">{feature.name}</h3>
-                    <p className="text-sm text-gray-500">Habilitar o recurso {feature.name}</p>
-                  </div>
-                  <Switch
-                    checked={feature.enabled}
-                    onCheckedChange={(checked) => {
-                      setConfig((prevConfig) => ({
-                        ...prevConfig,
-                        features: prevConfig.features.map((f) =>
-                          f.id === feature.id ? { ...f, enabled: checked } : f,
-                        ),
-                      }))
-                    }}
-                  />
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Ativar Programa de Afiliados</h3>
+                  <p className="text-sm text-gray-500">Habilitar o programa de afiliados no site</p>
                 </div>
-              ))}
+                <Switch
+                  checked={config.affiliateProgram?.enabled || false}
+                  onCheckedChange={(checked) => handleAffiliateChange("enabled", checked)}
+                />
+              </div>
+
+              <div className="grid gap-4">
+                <h3 className="text-lg font-medium">Taxas de Comissão</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="level1">Nível 1 (Direto) %</Label>
+                    <Input
+                      id="level1"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={config.affiliateProgram?.commissionRates.level1 || 10}
+                      onChange={(e) => handleCommissionChange("level1", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="level2">Nível 2 (Indireto) %</Label>
+                    <Input
+                      id="level2"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={config.affiliateProgram?.commissionRates.level2 || 5}
+                      onChange={(e) => handleCommissionChange("level2", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="payoutThreshold">Valor Mínimo para Pagamento (€)</Label>
+                <Input
+                  id="payoutThreshold"
+                  type="number"
+                  min="0"
+                  value={config.affiliateProgram?.payoutThreshold || 50}
+                  onChange={(e) => handleAffiliateChange("payoutThreshold", Number.parseFloat(e.target.value))}
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Valor mínimo que um afiliado precisa acumular para solicitar um pagamento.
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label>Métodos de Pagamento Disponíveis</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  {["PayPal", "Transferência Bancária", "Crypto"].map((method) => (
+                    <div key={method} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`payment-${method}`}
+                        checked={config.affiliateProgram?.paymentMethods.includes(method) || false}
+                        onChange={(e) => {
+                          const currentMethods = config.affiliateProgram?.paymentMethods || []
+                          const newMethods = e.target.checked
+                            ? [...currentMethods, method]
+                            : currentMethods.filter((m) => m !== method)
+                          handleAffiliateChange("paymentMethods", newMethods)
+                        }}
+                        className="rounded border-gray-300 text-gold-500 focus:ring-gold-500"
+                      />
+                      <Label htmlFor={`payment-${method}`}>{method}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tradingview">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações do TradingView</CardTitle>
+              <CardDescription>Personalize as configurações do widget TradingView usado no scanner.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="tradingViewSettings.defaultSymbol">Símbolo Padrão</Label>
+                <Input
+                  id="tradingViewSettings.defaultSymbol"
+                  name="tradingViewSettings.defaultSymbol"
+                  value={config.tradingViewSettings?.defaultSymbol || "BINANCE:BTCUSDT"}
+                  onChange={(e) => {
+                    setConfig((prev) => ({
+                      ...prev,
+                      tradingViewSettings: {
+                        ...prev.tradingViewSettings,
+                        defaultSymbol: e.target.value,
+                      },
+                    }))
+                  }}
+                  placeholder="BINANCE:BTCUSDT"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="tradingViewSettings.defaultInterval">Intervalo Padrão</Label>
+                <select
+                  id="tradingViewSettings.defaultInterval"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={config.tradingViewSettings?.defaultInterval || "240"}
+                  onChange={(e) => {
+                    setConfig((prev) => ({
+                      ...prev,
+                      tradingViewSettings: {
+                        ...prev.tradingViewSettings,
+                        defaultInterval: e.target.value,
+                      },
+                    }))
+                  }}
+                >
+                  <option value="1">1 minuto</option>
+                  <option value="5">5 minutos</option>
+                  <option value="15">15 minutos</option>
+                  <option value="30">30 minutos</option>
+                  <option value="60">1 hora</option>
+                  <option value="240">4 horas</option>
+                  <option value="D">Diário</option>
+                  <option value="W">Semanal</option>
+                </select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="tradingViewSettings.enabledFeatures">Recursos Habilitados</Label>
+                <Input
+                  id="tradingViewSettings.enabledFeatures"
+                  placeholder="use_localstorage_for_settings,save_chart_properties_to_local_storage"
+                  value={(config.tradingViewSettings?.enabledFeatures || []).join(",")}
+                  onChange={(e) => {
+                    setConfig((prev) => ({
+                      ...prev,
+                      tradingViewSettings: {
+                        ...prev.tradingViewSettings,
+                        enabledFeatures: e.target.value
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean),
+                      },
+                    }))
+                  }}
+                />
+                <p className="text-sm text-gray-500">Separe os recursos com vírgulas</p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="tradingViewSettings.disabledFeatures">Recursos Desabilitados</Label>
+                <Input
+                  id="tradingViewSettings.disabledFeatures"
+                  placeholder="header_symbol_search,header_saveload"
+                  value={(config.tradingViewSettings?.disabledFeatures || []).join(",")}
+                  onChange={(e) => {
+                    setConfig((prev) => ({
+                      ...prev,
+                      tradingViewSettings: {
+                        ...prev.tradingViewSettings,
+                        disabledFeatures: e.target.value
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean),
+                      },
+                    }))
+                  }}
+                />
+                <p className="text-sm text-gray-500">Separe os recursos com vírgulas</p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label>Configurações Avançadas</Label>
+                <div className="p-4 bg-black/30 rounded-md">
+                  <p className="text-sm text-yellow-400 mb-4">
+                    As configurações avançadas do TradingView (overrides e studiesOverrides) podem ser modificadas
+                    diretamente no código. Consulte a documentação do TradingView para mais informações.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
