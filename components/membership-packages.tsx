@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
+import { useCart } from "@/components/shopping-cart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, AlertCircle } from "lucide-react"
-import { BuyButton } from "@/components/buy-button"
+import { CheckCircle, AlertCircle, ShoppingCart } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 
 interface PackageOption {
   id: string
@@ -21,9 +23,13 @@ const packages: PackageOption[] = [
   {
     id: "basic",
     name: "Membro MoreThanMoney",
-    price: 50.00,
+    price: 50.0,
     period: "mensal",
-    features: ["Acesso aos BootCamp MoreThanMoney", "Acesso ao fórum da comunidade", "Acesso aos Scanners na Plataforma"],
+    features: [
+      "Acesso aos BootCamp MoreThanMoney",
+      "Acesso ao fórum da comunidade",
+      "Acesso aos Scanners na Plataforma",
+    ],
   },
   {
     id: "standard",
@@ -34,14 +40,15 @@ const packages: PackageOption[] = [
       "Todos os benefícios do plano Básico",
       "Acesso aos Produtos JIFU",
       "Suporte prioritário",
-      "Webinars mensais exclusivos","Eventos Regionais Exclusivos"
+      "Webinars mensais exclusivos",
+      "Eventos Regionais Exclusivos",
     ],
     recommended: true,
   },
   {
     id: "premium",
     name: "Membro Premium",
-    price: 1000.00,
+    price: 1000.0,
     period: "Unico",
     features: [
       "Todos os benefícios do plano Standard",
@@ -54,32 +61,62 @@ const packages: PackageOption[] = [
 ]
 
 export default function MembershipPackages() {
-  const { user, updateUserPackage } = useAuth()
+  const { user } = useAuth()
+  const { addItem, openCart } = useCart()
+  const router = useRouter()
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  const handlePackageChange = async (packageId: string) => {
-    if (user?.package === packageId) return
+  const handleAddToCart = (pkg: PackageOption) => {
+    setIsProcessing(pkg.id)
 
-    setIsProcessing(packageId)
-    setSuccessMessage(null)
+    // Adicionar ao carrinho
+    addItem({
+      id: `membership-${pkg.id}`,
+      name: pkg.name,
+      price: pkg.price,
+      quantity: 1,
+      type: "membership",
+      details: {
+        duration: pkg.period,
+        packageId: pkg.id,
+      },
+    })
 
-    try {
-      // Simulação de processamento de pagamento
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+    // Mostrar notificação
+    toast({
+      title: "Adicionado ao carrinho",
+      description: `${pkg.name} foi adicionado ao seu carrinho.`,
+      duration: 3000,
+    })
 
-      const success = await updateUserPackage(packageId)
-
-      if (success) {
-        setSuccessMessage(
-          `Seu pacote foi atualizado com sucesso para ${packages.find((p) => p.id === packageId)?.name}!`,
-        )
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar pacote:", error)
-    } finally {
+    // Abrir o carrinho
+    setTimeout(() => {
+      openCart()
       setIsProcessing(null)
-    }
+    }, 500)
+  }
+
+  const handleCheckout = (pkg: PackageOption) => {
+    setIsProcessing(pkg.id)
+
+    // Adicionar ao carrinho
+    addItem({
+      id: `membership-${pkg.id}`,
+      name: pkg.name,
+      price: pkg.price,
+      quantity: 1,
+      type: "membership",
+      details: {
+        duration: pkg.period,
+        packageId: pkg.id,
+      },
+    })
+
+    // Redirecionar para o checkout
+    setTimeout(() => {
+      router.push("/checkout")
+      setIsProcessing(null)
+    }, 500)
   }
 
   const currentPackage = user?.package || "basic"
@@ -92,13 +129,6 @@ export default function MembershipPackages() {
         </h2>
         <p className="text-gray-300">Escolha o pacote que melhor atende às suas necessidades</p>
       </div>
-
-      {successMessage && (
-        <div className="bg-green-900/30 border border-green-500 text-green-300 p-4 rounded-lg flex items-center mb-6">
-          <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-          <p>{successMessage}</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {packages.map((pkg) => {
@@ -124,7 +154,7 @@ export default function MembershipPackages() {
 
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-white">R${pkg.price.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-white">€{pkg.price.toFixed(2)}</span>
                   <span className="text-gray-400">/{pkg.period}</span>
                 </div>
 
@@ -138,57 +168,52 @@ export default function MembershipPackages() {
                 </ul>
               </CardContent>
 
-              <CardFooter>
-                {pkg.id === "basic" ? (
-                  <BuyButton
-                    productType="membership"
-                    productName="Pacote Básico MoreThanMoney"
-                    productPrice={50}
-                    className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
-                  />
-                ) : (
-                  <Button
-                    onClick={() => handlePackageChange(pkg.id)}
-                    disabled={isProcessing !== null || isCurrentPackage}
-                    className={`w-full ${
-                      isCurrentPackage ? "bg-green-600 hover:bg-green-700" : "bg-gold-600 hover:bg-gold-700"
-                    } text-black`}
-                  >
-                    {isProcessing === pkg.id ? (
-                      <span className="flex items-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-black"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Processando...
-                      </span>
-                    ) : isCurrentPackage ? (
-                      "Pacote Atual"
-                    ) : currentPackage &&
-                      packages.findIndex((p) => p.id === currentPackage) >
-                        packages.findIndex((p) => p.id === pkg.id) ? (
-                      "Fazer Downgrade"
-                    ) : (
-                      "Fazer Upgrade"
-                    )}
-                  </Button>
-                )}
+              <CardFooter className="flex flex-col space-y-2">
+                <Button
+                  onClick={() => handleCheckout(pkg)}
+                  disabled={isProcessing !== null || isCurrentPackage}
+                  className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+                >
+                  {isProcessing === pkg.id ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-black"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Processando...
+                    </span>
+                  ) : isCurrentPackage ? (
+                    "Pacote Atual"
+                  ) : (
+                    "Comprar Agora"
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => handleAddToCart(pkg)}
+                  disabled={isProcessing !== null || isCurrentPackage}
+                  variant="outline"
+                  className="w-full border-gold-500/50 text-gold-500 hover:bg-gold-500/10"
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Adicionar ao Carrinho
+                </Button>
               </CardFooter>
             </Card>
           )
@@ -209,13 +234,6 @@ export default function MembershipPackages() {
           </div>
         </div>
       </div>
-
-      <BuyButton
-        productType="bootcamp"
-        productName="Bootcamp MoreThanMoney"
-        productPrice={50}
-        className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
-      />
     </div>
   )
 }
