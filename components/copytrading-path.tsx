@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/login-form"
-import CopytradingPlans from "./copytrading-plans"
 
 export default function CopytradingPath() {
   // Lista de brokers MT4
@@ -116,8 +115,6 @@ export default function CopytradingPath() {
 
   return (
     <>
-      <CopytradingPlans />
-
       <section className="py-12 bg-black/50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">Planos de Copytrading MTM</h2>
@@ -126,13 +123,14 @@ export default function CopytradingPath() {
             automaticamente.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Plano Básico */}
             <div className="bg-black/80 border border-gold-500/30 rounded-lg p-6 flex flex-col">
               <h3 className="text-xl font-bold mb-4">Plano Básico</h3>
               <div className="text-3xl font-bold text-gold-500 mb-6">
-                R$197<span className="text-lg text-gray-400">/mês</span>
+                5%<span className="text-lg text-gray-400">/mensal</span>
               </div>
+              <p className="text-gray-300 mb-4">Ideal para quem está começando no mundo do copytrading</p>
               <ul className="mb-8 flex-grow space-y-2">
                 <li className="flex items-start">
                   <svg
@@ -143,7 +141,7 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Cópia de até 5 operações simultâneas</span>
+                  <span>Copytrading automático 24/7</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -154,7 +152,7 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Gestão de risco básica</span>
+                  <span>Acesso ao sistema Tap to Trade</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -165,80 +163,35 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Suporte por email</span>
+                  <span>Suporte técnico básico</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Depósito mínimo: 500€</span>
                 </li>
               </ul>
               <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
-                Assinar Agora
-              </button>
-            </div>
-
-            {/* Plano Avançado */}
-            <div className="bg-black/80 border border-gold-500 rounded-lg p-6 flex flex-col relative transform scale-105 shadow-xl">
-              <div className="absolute top-0 right-0 bg-gold-600 text-black text-xs font-bold px-3 py-1 rounded-bl rounded-tr">
-                POPULAR
-              </div>
-              <h3 className="text-xl font-bold mb-4">Plano Avançado</h3>
-              <div className="text-3xl font-bold text-gold-500 mb-6">
-                R$397<span className="text-lg text-gray-400">/mês</span>
-              </div>
-              <ul className="mb-8 flex-grow space-y-2">
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Cópia de operações ilimitadas</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Gestão de risco avançada</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Suporte prioritário</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Acesso ao grupo VIP</span>
-                </li>
-              </ul>
-              <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
-                Assinar Agora
+                Ativar Agora
               </button>
             </div>
 
             {/* Plano Premium */}
-            <div className="bg-black/80 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+            <div className="bg-black/80 border border-gold-500 rounded-lg p-6 flex flex-col relative transform scale-105 shadow-xl">
+              <div className="absolute top-0 right-0 bg-gold-600 text-black text-xs font-bold px-3 py-1 rounded-bl rounded-tr">
+                POPULAR
+              </div>
               <h3 className="text-xl font-bold mb-4">Plano Premium</h3>
               <div className="text-3xl font-bold text-gold-500 mb-6">
-                R$697<span className="text-lg text-gray-400">/mês</span>
+                30%<span className="text-lg text-gray-400">/mensal</span>
               </div>
+              <p className="text-gray-300 mb-4">Nossa opção mais popular com o melhor custo-benefício</p>
               <ul className="mb-8 flex-grow space-y-2">
                 <li className="flex items-start">
                   <svg
@@ -249,7 +202,7 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Tudo do plano Avançado</span>
+                  <span>Todas as vantagens do plano básico</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -260,7 +213,7 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Consultoria personalizada</span>
+                  <span>Gestão de risco personalizada</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -271,7 +224,7 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Acesso antecipado a novas funcionalidades</span>
+                  <span>Acesso a estratégias avançadas</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -282,11 +235,69 @@ export default function CopytradingPath() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Relatórios detalhados de desempenho</span>
+                  <span>Depósito mínimo: 350€</span>
                 </li>
               </ul>
               <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
-                Assinar Agora
+                Ativar Agora
+              </button>
+            </div>
+
+            {/* Plano VIP */}
+            <div className="bg-black/80 border border-gold-500/30 rounded-lg p-6 flex flex-col">
+              <h3 className="text-xl font-bold mb-4">Plano VIP</h3>
+              <div className="text-3xl font-bold text-gold-500 mb-6">
+                VIP<span className="text-lg text-gray-400">/customizado</span>
+              </div>
+              <p className="text-gray-300 mb-4">Experiência exclusiva com atendimento VIP personalizado</p>
+              <ul className="mb-8 flex-grow space-y-2">
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Todas as vantagens dos outros planos</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Mentoria individual mensal</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Estratégias exclusivas de alto retorno</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-gold-500 mr-2 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Depósito mínimo: 1000€</span>
+                </li>
+              </ul>
+              <button className="w-full py-2 px-4 bg-gold-600 hover:bg-gold-700 text-black font-medium rounded transition-colors">
+                Ativar Agora
               </button>
             </div>
           </div>

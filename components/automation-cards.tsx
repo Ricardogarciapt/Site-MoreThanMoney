@@ -61,7 +61,7 @@ export default function AutomationCards() {
               <div className="h-16 w-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
                 <BarChart2 className="h-8 w-8 text-gold-500" />
               </div>
-              <CardTitle className="text-2xl font-bold text-center">Scanner MTM V3.4</CardTitle>
+              <CardTitle className="text-2xl font-bold text-center">Scanners MTM </CardTitle>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-gray-300 mb-6">
