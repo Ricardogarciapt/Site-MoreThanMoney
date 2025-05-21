@@ -20,6 +20,8 @@ export default function ProfilePage() {
     name: "",
     email: "",
     phone: "",
+    jifuId: "",
+    jifuAffiliateLink: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -42,6 +44,8 @@ export default function ProfilePage() {
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
+        jifuId: user.jifuId || "",
+        jifuAffiliateLink: user.jifuAffiliateLink || "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -240,6 +244,40 @@ export default function ProfilePage() {
                         className="bg-gray-800/50 border-white/10 text-white"
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="jifuId">ID da JIFU</Label>
+                      <Input
+                        id="jifuId"
+                        name="jifuId"
+                        value={formData.jifuId || ""}
+                        onChange={handleChange}
+                        className="bg-gray-800/50 border-white/10 text-white"
+                        placeholder="Seu ID na plataforma JIFU"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="jifuAffiliateLink">Link de Afiliado JIFU</Label>
+                      <Input
+                        id="jifuAffiliateLink"
+                        name="jifuAffiliateLink"
+                        value={formData.jifuAffiliateLink || ""}
+                        onChange={handleChange}
+                        className="bg-gray-800/50 border-white/10 text-white"
+                        placeholder="seunome.jifu.com"
+                      />
+                      <p className="text-xs text-gray-400">Formato: seunome.jifu.com (sem https://)</p>
+                    </div>
+
+                    {formData.jifuAffiliateLink && (
+                      <div className="mt-2 p-3 bg-gold-500/10 border border-gold-500/30 rounded-md">
+                        <p className="text-sm font-medium mb-1">Seu link personalizado para Educação JIFU:</p>
+                        <p className="text-gold-400 text-sm break-all">
+                          {`${window.location.origin}/jifu-education?ref=${formData.jifuAffiliateLink.split(".")[0]}`}
+                        </p>
+                      </div>
+                    )}
 
                     <Button type="submit" className="bg-gold-600 hover:bg-gold-700 text-black" disabled={isSaving}>
                       {isSaving ? "Salvando..." : "Salvar Alterações"}

@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, BookOpen, Users, Brain, PlayCircle, ExternalLink } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
 import {
   Dialog,
@@ -129,7 +128,14 @@ export default function MoreThanMoneyCourses() {
             <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
               <CardHeader>
                 <div className="rounded-lg overflow-hidden mb-4 aspect-video relative">
-                  <Image src="/placeholder-ckgdy.png" alt="Bootcamp MoreThanMoney" fill className="object-cover" />
+                  <iframe
+                    src="https://www.youtube.com/embed/videoseries?list=PL6XU0y2YUMZLpIsO63P_E6w4OCY8Y467m"
+                    title="Bootcamp MoreThanMoney"
+                    className="absolute inset-0 w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
                 </div>
                 <CardTitle>Bootcamp MoreThanMoney: Do Iniciante ao Experiente</CardTitle>
                 <CardDescription>
@@ -668,39 +674,6 @@ export default function MoreThanMoneyCourses() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <div className="bg-black/50 border border-gold-500/30 rounded-lg p-6 mt-8">
-        <h3 className="text-xl font-bold mb-4">Seu Progresso</h3>
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between mb-1">
-              <span>Bootcamp MoreThanMoney</span>
-              <span>25%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2.5">
-              <div className="bg-gold-500 h-2.5 rounded-full" style={{ width: "25%" }}></div>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between mb-1">
-              <span>Programa de Educação de Distribuidores</span>
-              <span>10%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2.5">
-              <div className="bg-gold-500 h-2.5 rounded-full" style={{ width: "10%" }}></div>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between mb-1">
-              <span>Inteligência Artificial</span>
-              <span>0%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2.5">
-              <div className="bg-gold-500 h-2.5 rounded-full" style={{ width: "0%" }}></div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="bg-gold-500/10 border border-gold-500/30 rounded-lg p-6 mt-6">
         <div className="flex items-start">
