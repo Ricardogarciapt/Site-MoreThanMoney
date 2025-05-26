@@ -83,9 +83,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   }
 
   const toggleStudy = (study: string) => {
-    setSelectedStudies((prev) =>
-      prev.includes(study) ? prev.filter((s) => s !== study) : [...prev, study]
-    )
+    setSelectedStudies((prev) => (prev.includes(study) ? prev.filter((s) => s !== study) : [...prev, study]))
   }
 
   const loadTradingViewWidget = async () => {
@@ -180,7 +178,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   }, [selectedStudies])
 
   return (
-    <div className="w-full h-[600px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden">
+    <div className="w-full h-[800px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden">
       {error && (
         <Alert className="absolute top-2 left-2 right-2 z-20 bg-red-500/20 border-red-500">
           <AlertCircle className="h-4 w-4 text-red-500" />
