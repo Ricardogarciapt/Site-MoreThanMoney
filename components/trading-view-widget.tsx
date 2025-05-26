@@ -4,26 +4,23 @@ import { useEffect, useRef, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useConfigStore } from "@/lib/config-service"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Maximize2, TrendingUp, Zap, Brain, Search, Crown, Waves } from "lucide-react"
+import { AlertCircle, Maximize2, TrendingUp, Zap, Search, Crown, Waves } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-// ---- Constantes externas ----
+import { Checkbox } from "@/components/ui/checkbox"
 
 const scannerStudies: Record<string, string> = {
   MoreThanMoney: "script/WCjsFqLh-MoreThanMoney-Scanner-V3-4/",
   MTMGoldKiller: "script/DeXfIkiK-MTM-Gold-Killer-V2-1/",
   GoldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
   TrendWave: "PUB;38080827cf244587b5e7dbb9f272db0a",
-  SmartMonics: "PUB;ec7a7c1c91c645519b35b9505b4169a9",
   SmartScanner: "PUB;e378ef7473b14614a6b1fc5d4bba8061",
 }
 
 const scannerLabels: Record<string, string> = {
-  MoreThanMoney: "MoreThanMoney Scanner",
-  MTMGoldKiller: "MTM GoldKiller",
+  MoreThanMoney: "MoreThanMoney",
+  MTMGoldKiller: "GoldKiller",
   GoldenEra: "GoldenEra",
   TrendWave: "TrendWave",
-  SmartMonics: "SmartMonics",
   SmartScanner: "SmartScanner",
 }
 
@@ -48,11 +45,6 @@ const scannerLogos: Record<string, { icon: any; color: string; bgColor: string }
     color: "text-blue-300",
     bgColor: "bg-gradient-to-r from-blue-600 to-cyan-500",
   },
-  SmartMonics: {
-    icon: Brain,
-    color: "text-purple-300",
-    bgColor: "bg-gradient-to-r from-purple-600 to-pink-500",
-  },
   SmartScanner: {
     icon: Search,
     color: "text-green-300",
@@ -74,13 +66,14 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   const widgetRef = useRef<any>(null)
   const isLoadingScanner = useRef(false)
   const { config } = useConfigStore()
-  const [currentScanner, setCurrentScanner] = useState<string>(() => {
-    return localStorage.getItem("lastScanner") || scannerType
+  const [selectedStudies, setSelectedStudies] = useState<string[]>(() => {
+    const last = localStorage.getItem("activeStudies")
+    return last ? JSON.parse(last) : [scannerType]
   })
 
   useEffect(() => {
-    localStorage.setItem("lastScanner", currentScanner)
-  }, [currentScanner])
+    localStorage.setItem("activeStudies", JSON.stringify(selectedStudies))
+  }, [selectedStudies])
 
   const handleFullScreen = () => {
     const elem = containerRef.current
@@ -89,22 +82,13 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
     else if ((elem as any)?.msRequestFullscreen) (elem as any).msRequestFullscreen()
   }
 
-  const switchScanner = (scannerKey: string) => {
-    if (widgetRef.current?.remove) {
-      try {
-        widgetRef.current.remove()
-      } catch (e) {
-        console.error("Erro ao remover widget:", e)
-      }
-    }
-    setCurrentScanner(scannerKey)
-    if (containerRef.current) {
-      containerRef.current.innerHTML = ""
-      loadTradingViewWidget(scannerKey)
-    }
+  const toggleStudy = (study: string) => {
+    setSelectedStudies((prev) =>
+      prev.includes(study) ? prev.filter((s) => s !== study) : [...prev, study]
+    )
   }
 
-  const loadTradingViewWidget = async (scannerKey: string) => {
+  const loadTradingViewWidget = async () => {
     if (!window.TradingView) {
       setError("TradingView não está disponível. Tente recarregar a página.")
       return
@@ -117,6 +101,8 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
       if (containerRef.current) {
         containerRef.current.innerHTML = '<div id="tradingview_widget" style="height: 100%; width: 100%;"></div>'
       }
+
+      const studiesToApply = selectedStudies.map((key) => scannerStudies[key]).filter(Boolean)
 
       const widgetOptions = {
         autosize: true,
@@ -133,11 +119,8 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         withdateranges: true,
         save_image: false,
         container_id: "tradingview_widget",
-        studies: [],
+        studies: studiesToApply,
       }
-
-      const scriptId = scannerStudies[scannerKey]
-      if (scriptId) widgetOptions.studies = [scriptId]
 
       widgetRef.current = new window.TradingView.widget(widgetOptions)
       setWidgetLoaded(true)
@@ -151,9 +134,9 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   }
 
   useEffect(() => {
-    const loadTradingViewScript = () => {
+    const loadScript = () => {
       if (document.getElementById("tradingview-script")) {
-        initTradingView()
+        init()
         return
       }
 
@@ -161,20 +144,20 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
       script.id = "tradingview-script"
       script.src = "https://s3.tradingview.com/tv.js"
       script.async = true
-      script.onload = initTradingView
+      script.onload = init
       script.onerror = () => setError("Falha ao carregar o script do TradingView")
       document.head.appendChild(script)
     }
 
-    const initTradingView = () => {
+    const init = () => {
       if (!window.TradingView) {
-        setTimeout(initTradingView, 100)
+        setTimeout(init, 100)
         return
       }
-      loadTradingViewWidget(currentScanner)
+      loadTradingViewWidget()
     }
 
-    loadTradingViewScript()
+    loadScript()
 
     return () => {
       if (widgetRef.current?.remove) {
@@ -186,6 +169,15 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (widgetRef.current?.remove) {
+      try {
+        widgetRef.current.remove()
+      } catch (e) {}
+    }
+    loadTradingViewWidget()
+  }, [selectedStudies])
 
   return (
     <div className="w-full h-[600px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden">
@@ -200,34 +192,27 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         <div className="flex flex-wrap gap-3 justify-center items-center">
           {Object.keys(scannerStudies).map((key) => {
             const logo = scannerLogos[key]
-            const IconComponent = logo.icon
-            const isActive = currentScanner === key
+            const Icon = logo.icon
+            const isChecked = selectedStudies.includes(key)
 
             return (
               <Button
                 key={key}
-                onClick={() => switchScanner(key)}
+                onClick={() => toggleStudy(key)}
                 variant="ghost"
-                className={`
-                  relative overflow-hidden transition-all duration-300 transform hover:scale-105
-                  ${
-                    isActive
-                      ? `${logo.bgColor} text-white shadow-lg shadow-black/50`
-                      : "bg-gray-700/80 text-gray-300 hover:bg-gray-600/80"
-                  }
-                  border border-gray-600/50 hover:border-gray-500
-                  px-4 py-2 rounded-lg flex items-center gap-2 min-w-[140px] justify-center
-                `}
-                size="sm"
+                className={`transition-all duration-300 transform hover:scale-105 ${
+                  isChecked
+                    ? `${logo.bgColor} text-white shadow-lg shadow-black/50`
+                    : "bg-gray-700/80 text-gray-300 hover:bg-gray-600/80"
+                } border border-gray-600/50 hover:border-gray-500 px-4 py-2 rounded-lg flex items-center gap-2`}
               >
-                {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
-                )}
-                <div className={`relative z-10 ${isActive ? "text-white" : logo.color}`}>
-                  <IconComponent className="w-4 h-4" />
-                </div>
-                <span className="font-medium text-sm relative z-10">{scannerLabels[key]}</span>
-                {isActive && <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full animate-ping" />}
+                <Checkbox
+                  checked={isChecked}
+                  onCheckedChange={() => toggleStudy(key)}
+                  className="border-white bg-white/10"
+                />
+                <Icon className={`w-4 h-4 ${isChecked ? "text-white" : logo.color}`} />
+                <span>{scannerLabels[key]}</span>
               </Button>
             )
           })}
@@ -254,7 +239,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-10">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-yellow-400 font-medium">Carregando Scanner MTM...</p>
+            <p className="text-yellow-400 font-medium">Carregando Scanners...</p>
           </div>
         </div>
       )}
