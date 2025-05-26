@@ -66,8 +66,15 @@ export default function JifuEducationPath() {
               ></iframe>
             </div>
 
-            {/* Rest of the component content remains the same as in the original v221 version */}
-            {/* ... all the existing content ... */}
+            {/* Botão Principal de Registro */}
+            <div className="text-center">
+              <button
+                onClick={handleRegisterClick}
+                className="bg-gold-600 hover:bg-gold-700 text-black font-bold px-12 py-4 text-xl rounded-md transform transition-transform duration-300 hover:scale-105"
+              >
+                Registrar na JIFU
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>

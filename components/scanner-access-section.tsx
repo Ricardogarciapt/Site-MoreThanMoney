@@ -9,7 +9,7 @@ export default function ScannerAccessSection() {
   const router = useRouter()
 
   const handleRequestAccess = () => {
-    router.push("/scanners-and-ideas")
+    router.push("/scanner")
   }
 
   return (
@@ -70,7 +70,7 @@ export default function ScannerAccessSection() {
             onClick={handleRequestAccess}
             className="bg-gold-600 hover:bg-gold-700 text-black font-bold px-8 py-3 text-lg rounded-md transform transition-transform duration-300 hover:scale-105"
           >
-            Conhece o nosso scanner
+            Conhece os nossos Scanners
           </Button>
         </div>
 

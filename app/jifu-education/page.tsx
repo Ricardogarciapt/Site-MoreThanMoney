@@ -21,7 +21,7 @@ export default function JifuEducationPage() {
     <AuthProvider>
       <Breadcrumbs />
       <main className="relative min-h-screen bg-black text-white">
-        <JifuEducationPath affiliateRef={ref} />
+        <JifuEducationPath />
       </main>
     </AuthProvider>
   )

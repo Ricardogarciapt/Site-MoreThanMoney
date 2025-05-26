@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button"
 // ---- Constantes externas ----
 
 const scannerStudies: Record<string, string> = {
-  MoreThanMoney: "Script;BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR",
-  MTMGoldKiller: "Script;fhpIupC5-MTM-Gold-Killer-V2-1",
+  MoreThanMoney: "script/WCjsFqLh-MoreThanMoney-Scanner-V3-4/",
+  MTMGoldKiller: "script/DeXfIkiK-MTM-Gold-Killer-V2-1/",
   GoldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
   TrendWave: "PUB;38080827cf244587b5e7dbb9f272db0a",
   SmartMonics: "PUB;ec7a7c1c91c645519b35b9505b4169a9",

@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { MembershipRequired } from "@/components/membership-required"
+import LoginModal from "@/components/login-modal"
 
 export default function ScannerView() {
   const { isAuthenticated, user } = useAuth()
@@ -30,10 +31,11 @@ export default function ScannerView() {
   const [activeTab, setActiveTab] = useState("scanner")
   const [showDetails, setShowDetails] = useState(false)
   const [showAcceptedMessage, setShowAcceptedMessage] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   const handleAccessClick = () => {
     if (!isAuthenticated) {
-      router.push("/login")
+      setShowLoginModal(true)
     }
   }
 
@@ -174,7 +176,7 @@ export default function ScannerView() {
 
       {isAuthenticated ? (
         <MembershipRequired>
-          <div className="bg-black/80 p-6 rounded-lg border border-gold-500/30">
+          <div className="bg-black/80 p-6 rounded-lg border border-gold-500/30 text-center">
             {/* Conteúdo existente do scanner */}
             <h2 className="text-2xl font-bold mb-4">Scanner de Mercado</h2>
             <p className="mb-6">
@@ -941,7 +943,7 @@ export default function ScannerView() {
           </div>
         </MembershipRequired>
       ) : (
-        <div className="bg-black/80 p-6 rounded-lg border border-gold-500/30">
+        <div className="bg-black/80 p-6 rounded-lg border border-gold-500/30 text-center">
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6">
             Para acessar o scanner de mercado, você precisa ser um membro MoreThanMoney.
@@ -951,6 +953,7 @@ export default function ScannerView() {
           </Button>
         </div>
       )}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   )\
 }
