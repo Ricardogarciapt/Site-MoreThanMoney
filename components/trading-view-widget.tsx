@@ -4,17 +4,16 @@ import { useEffect, useRef, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useConfigStore } from "@/lib/config-service"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Maximize2 } from "lucide-react"
+import { AlertCircle, Maximize2, TrendingUp, Zap, Brain, Search, Crown, Waves } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// Adicionando tipagem para o objeto global TradingView
 declare global {
   interface Window {
     TradingView?: any
   }
 }
 
-export default function TradingViewWidget({ scannerType = "default" }) {
+export default function TradingViewWidget({ scannerType = "scanner1" }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [widgetLoaded, setWidgetLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,11 +22,55 @@ export default function TradingViewWidget({ scannerType = "default" }) {
   const { config } = useConfigStore()
   const [currentScanner, setCurrentScanner] = useState(scannerType)
 
-  // URLs dos scanners - usando embed direto para maior compatibilidade
-  const scannerUrls = {
-    default: "https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD",
-    scanner1: "https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD",
-    scanner2: "https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD",
+  const scannerStudies: Record<string, string> = {
+    scanner1: "Script;BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR",
+    scanner2: "Script;fhpIupC5-MTM-Gold-Killer-V2-1",
+    goldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
+    trendWave1: "PUB;38080827cf244587b5e7dbb9f272db0a",
+    smartmonics1: "PUB;ec7a7c1c91c645519b35b9505b4169a9",
+    smartScanner1: "PUB;e378ef7473b14614a6b1fc5d4bba8061",
+  }
+
+  const scannerLabels: Record<string, string> = {
+    scanner1: "MoreThanMoney Scanner",
+    scanner2: "MTM GoldKiller",
+    goldenEra: "GoldenEra",
+    trendWave1: "TrendWave",
+    smartmonics1: "SmartMonics",
+    smartScanner1: "SmartScanner",
+  }
+
+  const scannerLogos: Record<string, { icon: any; color: string; bgColor: string }> = {
+    scanner1: {
+      icon: TrendingUp,
+      color: "text-gold-400",
+      bgColor: "bg-gradient-to-r from-gold-600 to-yellow-500",
+    },
+    scanner2: {
+      icon: Zap,
+      color: "text-yellow-300",
+      bgColor: "bg-gradient-to-r from-yellow-600 to-orange-500",
+    },
+    goldenEra: {
+      icon: Crown,
+      color: "text-gold-300",
+      bgColor: "bg-gradient-to-r from-gold-500 to-yellow-400",
+    },
+    trendWave1: {
+      icon: Waves,
+      color: "text-blue-300",
+      bgColor: "bg-gradient-to-r from-blue-600 to-cyan-500",
+    },
+    smartmonics1: {
+      icon: Brain,
+      color: "text-purple-300",
+      bgColor: "bg-gradient-to-r from-purple-600 to-pink-500",
+    },
+    smartScanner1: {
+      icon: Search,
+      color: "text-green-300",
+      bgColor: "bg-gradient-to-r from-green-600 to-emerald-500",
+    },
   }
 
   const handleFullScreen = () => {
@@ -43,31 +86,23 @@ export default function TradingViewWidget({ scannerType = "default" }) {
 
   const switchScanner = (scannerKey: string) => {
     setCurrentScanner(scannerKey)
-
-    // Ao mudar o scanner, precisamos recarregar o widget
     if (containerRef.current) {
-      const container = containerRef.current
-      container.innerHTML = ""
-
-      // Recria o widget com o novo scanner
+      containerRef.current.innerHTML = ""
       loadTradingViewWidget(scannerKey)
     }
   }
 
   const loadTradingViewWidget = (scannerKey: string) => {
     if (!window.TradingView) {
-      console.error("TradingView não está disponível")
       setError("TradingView não está disponível. Tente recarregar a página.")
       return
     }
 
     try {
-      // Limpa o container
       if (containerRef.current) {
         containerRef.current.innerHTML = '<div id="tradingview_widget" style="height: 100%; width: 100%;"></div>'
       }
 
-      // Configurações base do widget
       const widgetOptions: any = {
         autosize: true,
         symbol: "OANDA:XAUUSD",
@@ -83,30 +118,24 @@ export default function TradingViewWidget({ scannerType = "default" }) {
         withdateranges: true,
         save_image: false,
         container_id: "tradingview_widget",
+        studies: [],
       }
 
-      // Adiciona o script específico baseado no scanner selecionado
-      if (scannerKey === "scanner1") {
-        widgetOptions.studies = ["Script;BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR"]
-      } else if (scannerKey === "scanner2") {
-        widgetOptions.studies = ["Script;fhpIupC5-MTM-Gold-Killer-V2-1"]
-      }
+      const scriptId = scannerStudies[scannerKey]
+      if (scriptId) widgetOptions.studies = [scriptId]
 
-      // Cria o widget
       widgetRef.current = new window.TradingView.widget(widgetOptions)
       setWidgetLoaded(true)
       setError(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao inicializar widget:", error)
       setError(`Erro ao inicializar widget: ${error.message}`)
     }
   }
 
   useEffect(() => {
-    // Carrega o script do TradingView
     const loadTradingViewScript = () => {
       if (document.getElementById("tradingview-script")) {
-        // Script já carregado
         initTradingView()
         return
       }
@@ -116,26 +145,22 @@ export default function TradingViewWidget({ scannerType = "default" }) {
       script.src = "https://s3.tradingview.com/tv.js"
       script.async = true
       script.onload = initTradingView
-      script.onerror = () => {
-        setError("Falha ao carregar o script do TradingView")
-      }
+      script.onerror = () => setError("Falha ao carregar o script do TradingView")
       document.head.appendChild(script)
     }
 
     const initTradingView = () => {
-      // Verifica se o TradingView está disponível
       if (!window.TradingView) {
-        setTimeout(initTradingView, 100) // Tenta novamente em 100ms
+        setTimeout(initTradingView, 100)
         return
       }
-
       loadTradingViewWidget(currentScanner)
     }
 
     loadTradingViewScript()
 
     return () => {
-      if (widgetRef.current && typeof widgetRef.current.remove === "function") {
+      if (widgetRef.current?.remove) {
         try {
           widgetRef.current.remove()
         } catch (e) {
@@ -147,7 +172,6 @@ export default function TradingViewWidget({ scannerType = "default" }) {
 
   return (
     <div className="w-full h-[600px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden">
-      {/* Erro */}
       {error && (
         <Alert className="absolute top-2 left-2 right-2 z-20 bg-red-500/20 border-red-500">
           <AlertCircle className="h-4 w-4 text-red-500" />
@@ -155,50 +179,76 @@ export default function TradingViewWidget({ scannerType = "default" }) {
         </Alert>
       )}
 
-      {/* Barra de Navegação do Scanner - Nova posição destacada */}
-      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/90 py-2 px-4 flex items-center justify-between border-b border-gold-500/30">
-        <div className="flex gap-2">
-          <Button
-            onClick={() => switchScanner("scanner1")}
-            variant={currentScanner === "scanner1" ? "default" : "outline"}
-            className={`${
-              currentScanner === "scanner1" ? "bg-gold-600 text-black" : "bg-gray-700 text-white"
-            } hover:bg-gold-700 hover:text-black`}
-            size="sm"
-          >
-            Scanner MTM V3.4
-          </Button>
-          <Button
-            onClick={() => switchScanner("scanner2")}
-            variant={currentScanner === "scanner2" ? "default" : "outline"}
-            className={`${
-              currentScanner === "scanner2" ? "bg-gold-600 text-black" : "bg-gray-700 text-white"
-            } hover:bg-gold-700 hover:text-black`}
-            size="sm"
-          >
-            MTM Gold Killer
-          </Button>
-        </div>
+      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/95 backdrop-blur-sm py-3 px-4 border-b border-gold-500/30">
+        <div className="flex flex-wrap gap-3 justify-center items-center">
+          {Object.keys(scannerStudies).map((key) => {
+            const logo = scannerLogos[key]
+            const IconComponent = logo.icon
+            const isActive = currentScanner === key
 
-        <button
-          onClick={handleFullScreen}
-          className="bg-gray-700 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 flex items-center gap-1"
-        >
-          <Maximize2 className="w-4 h-4" />
-          Tela cheia
-        </button>
+            return (
+              <Button
+                key={key}
+                onClick={() => switchScanner(key)}
+                variant="ghost"
+                className={`
+                  relative overflow-hidden transition-all duration-300 transform hover:scale-105
+                  ${
+                    isActive
+                      ? `${logo.bgColor} text-white shadow-lg shadow-black/50`
+                      : "bg-gray-700/80 text-gray-300 hover:bg-gray-600/80"
+                  }
+                  border border-gray-600/50 hover:border-gray-500
+                  px-4 py-2 rounded-lg flex items-center gap-2 min-w-[140px] justify-center
+                `}
+                size="sm"
+              >
+                {/* Efeito de brilho para botão ativo */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                )}
+
+                {/* Ícone com efeito de glow */}
+                <div className={`relative ${isActive ? "text-white" : logo.color}`}>
+                  <IconComponent className="w-4 h-4" />
+                  {isActive && (
+                    <div className={`absolute inset-0 ${logo.color} blur-sm opacity-50`}>
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Texto do scanner */}
+                <span className="font-medium text-sm relative z-10">{scannerLabels[key]}</span>
+
+                {/* Indicador de status ativo */}
+                {isActive && <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full animate-pulse" />}
+              </Button>
+            )
+          })}
+
+          {/* Separador visual */}
+          <div className="w-px h-8 bg-gradient-to-b from-transparent via-gold-500/50 to-transparent mx-2" />
+
+          {/* Botão de tela cheia com design aprimorado */}
+          <button
+            onClick={handleFullScreen}
+            className="bg-gradient-to-r from-gray-700 to-gray-600 text-white px-4 py-2 rounded-lg text-sm hover:from-gray-600 hover:to-gray-500 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 border border-gray-600/50 hover:border-gray-500"
+          >
+            <Maximize2 className="w-4 h-4" />
+            <span className="font-medium">Tela Cheia</span>
+          </button>
+        </div>
       </div>
 
-      {/* Container do Widget - ajustado para dar espaço à barra de navegação */}
       <div
         ref={containerRef}
-        className="w-full h-full pt-12" // Adicionado padding-top para compensar a barra
+        className="w-full h-full pt-16"
         style={{ visibility: widgetLoaded ? "visible" : "hidden" }}
       >
         <div id="tradingview_widget" style={{ height: "100%", width: "100%" }}></div>
       </div>
 
-      {/* Fallback para quando o widget não está carregado */}
       {!widgetLoaded && !error && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-10">
           <div className="text-center">
@@ -208,7 +258,6 @@ export default function TradingViewWidget({ scannerType = "default" }) {
         </div>
       )}
 
-      {/* Overlay para usuários não autenticados */}
       {!isAuthenticated && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/80 z-20">
           <div className="text-center max-w-md p-6 bg-gray-900 rounded-lg border border-gold-500/30">
