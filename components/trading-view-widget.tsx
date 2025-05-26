@@ -7,84 +7,96 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Maximize2, TrendingUp, Zap, Brain, Search, Crown, Waves } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+// ---- Constantes externas ----
+
+const scannerStudies: Record<string, string> = {
+  MoreThanMoney: "Script;BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR",
+  MTMGoldKiller: "Script;fhpIupC5-MTM-Gold-Killer-V2-1",
+  GoldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
+  TrendWave: "PUB;38080827cf244587b5e7dbb9f272db0a",
+  SmartMonics: "PUB;ec7a7c1c91c645519b35b9505b4169a9",
+  SmartScanner: "PUB;e378ef7473b14614a6b1fc5d4bba8061",
+}
+
+const scannerLabels: Record<string, string> = {
+  MoreThanMoney: "MoreThanMoney Scanner",
+  MTMGoldKiller: "MTM GoldKiller",
+  GoldenEra: "GoldenEra",
+  TrendWave: "TrendWave",
+  SmartMonics: "SmartMonics",
+  SmartScanner: "SmartScanner",
+}
+
+const scannerLogos: Record<string, { icon: any; color: string; bgColor: string }> = {
+  MoreThanMoney: {
+    icon: TrendingUp,
+    color: "text-gold-400",
+    bgColor: "bg-gradient-to-r from-gold-600 to-yellow-500",
+  },
+  MTMGoldKiller: {
+    icon: Zap,
+    color: "text-yellow-300",
+    bgColor: "bg-gradient-to-r from-yellow-600 to-orange-500",
+  },
+  GoldenEra: {
+    icon: Crown,
+    color: "text-gold-300",
+    bgColor: "bg-gradient-to-r from-gold-500 to-yellow-400",
+  },
+  TrendWave: {
+    icon: Waves,
+    color: "text-blue-300",
+    bgColor: "bg-gradient-to-r from-blue-600 to-cyan-500",
+  },
+  SmartMonics: {
+    icon: Brain,
+    color: "text-purple-300",
+    bgColor: "bg-gradient-to-r from-purple-600 to-pink-500",
+  },
+  SmartScanner: {
+    icon: Search,
+    color: "text-green-300",
+    bgColor: "bg-gradient-to-r from-green-600 to-emerald-500",
+  },
+}
+
 declare global {
   interface Window {
     TradingView?: any
   }
 }
 
-export default function TradingViewWidget({ scannerType = "scanner1" }) {
+export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [widgetLoaded, setWidgetLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isAuthenticated } = useAuth()
   const widgetRef = useRef<any>(null)
+  const isLoadingScanner = useRef(false)
   const { config } = useConfigStore()
-  const [currentScanner, setCurrentScanner] = useState(scannerType)
+  const [currentScanner, setCurrentScanner] = useState<string>(() => {
+    return localStorage.getItem("lastScanner") || scannerType
+  })
 
-  const scannerStudies: Record<string, string> = {
-    scanner1: "Script;BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR",
-    scanner2: "Script;fhpIupC5-MTM-Gold-Killer-V2-1",
-    goldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
-    trendWave1: "PUB;38080827cf244587b5e7dbb9f272db0a",
-    smartmonics1: "PUB;ec7a7c1c91c645519b35b9505b4169a9",
-    smartScanner1: "PUB;e378ef7473b14614a6b1fc5d4bba8061",
-  }
-
-  const scannerLabels: Record<string, string> = {
-    scanner1: "MoreThanMoney Scanner",
-    scanner2: "MTM GoldKiller",
-    goldenEra: "GoldenEra",
-    trendWave1: "TrendWave",
-    smartmonics1: "SmartMonics",
-    smartScanner1: "SmartScanner",
-  }
-
-  const scannerLogos: Record<string, { icon: any; color: string; bgColor: string }> = {
-    scanner1: {
-      icon: TrendingUp,
-      color: "text-gold-400",
-      bgColor: "bg-gradient-to-r from-gold-600 to-yellow-500",
-    },
-    scanner2: {
-      icon: Zap,
-      color: "text-yellow-300",
-      bgColor: "bg-gradient-to-r from-yellow-600 to-orange-500",
-    },
-    goldenEra: {
-      icon: Crown,
-      color: "text-gold-300",
-      bgColor: "bg-gradient-to-r from-gold-500 to-yellow-400",
-    },
-    trendWave1: {
-      icon: Waves,
-      color: "text-blue-300",
-      bgColor: "bg-gradient-to-r from-blue-600 to-cyan-500",
-    },
-    smartmonics1: {
-      icon: Brain,
-      color: "text-purple-300",
-      bgColor: "bg-gradient-to-r from-purple-600 to-pink-500",
-    },
-    smartScanner1: {
-      icon: Search,
-      color: "text-green-300",
-      bgColor: "bg-gradient-to-r from-green-600 to-emerald-500",
-    },
-  }
+  useEffect(() => {
+    localStorage.setItem("lastScanner", currentScanner)
+  }, [currentScanner])
 
   const handleFullScreen = () => {
     const elem = containerRef.current
-    if (elem?.requestFullscreen) {
-      elem.requestFullscreen()
-    } else if ((elem as any)?.webkitRequestFullscreen) {
-      ;(elem as any).webkitRequestFullscreen()
-    } else if ((elem as any)?.msRequestFullscreen) {
-      ;(elem as any).msRequestFullscreen()
-    }
+    if (elem?.requestFullscreen) elem.requestFullscreen()
+    else if ((elem as any)?.webkitRequestFullscreen) (elem as any).webkitRequestFullscreen()
+    else if ((elem as any)?.msRequestFullscreen) (elem as any).msRequestFullscreen()
   }
 
   const switchScanner = (scannerKey: string) => {
+    if (widgetRef.current?.remove) {
+      try {
+        widgetRef.current.remove()
+      } catch (e) {
+        console.error("Erro ao remover widget:", e)
+      }
+    }
     setCurrentScanner(scannerKey)
     if (containerRef.current) {
       containerRef.current.innerHTML = ""
@@ -92,18 +104,21 @@ export default function TradingViewWidget({ scannerType = "scanner1" }) {
     }
   }
 
-  const loadTradingViewWidget = (scannerKey: string) => {
+  const loadTradingViewWidget = async (scannerKey: string) => {
     if (!window.TradingView) {
       setError("TradingView não está disponível. Tente recarregar a página.")
       return
     }
+
+    if (isLoadingScanner.current) return
+    isLoadingScanner.current = true
 
     try {
       if (containerRef.current) {
         containerRef.current.innerHTML = '<div id="tradingview_widget" style="height: 100%; width: 100%;"></div>'
       }
 
-      const widgetOptions: any = {
+      const widgetOptions = {
         autosize: true,
         symbol: "OANDA:XAUUSD",
         interval: "60",
@@ -127,9 +142,11 @@ export default function TradingViewWidget({ scannerType = "scanner1" }) {
       widgetRef.current = new window.TradingView.widget(widgetOptions)
       setWidgetLoaded(true)
       setError(null)
-    } catch (error: any) {
-      console.error("Erro ao inicializar widget:", error)
-      setError(`Erro ao inicializar widget: ${error.message}`)
+    } catch (err: any) {
+      console.error("Erro ao inicializar widget:", err)
+      setError(`Erro ao inicializar widget: ${err.message}`)
+    } finally {
+      isLoadingScanner.current = false
     }
   }
 
@@ -203,34 +220,20 @@ export default function TradingViewWidget({ scannerType = "scanner1" }) {
                 `}
                 size="sm"
               >
-                {/* Efeito de brilho para botão ativo */}
                 {isActive && (
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
                 )}
-
-                {/* Ícone com efeito de glow */}
-                <div className={`relative ${isActive ? "text-white" : logo.color}`}>
+                <div className={`relative z-10 ${isActive ? "text-white" : logo.color}`}>
                   <IconComponent className="w-4 h-4" />
-                  {isActive && (
-                    <div className={`absolute inset-0 ${logo.color} blur-sm opacity-50`}>
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                  )}
                 </div>
-
-                {/* Texto do scanner */}
                 <span className="font-medium text-sm relative z-10">{scannerLabels[key]}</span>
-
-                {/* Indicador de status ativo */}
-                {isActive && <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full animate-pulse" />}
+                {isActive && <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full animate-ping" />}
               </Button>
             )
           })}
 
-          {/* Separador visual */}
           <div className="w-px h-8 bg-gradient-to-b from-transparent via-gold-500/50 to-transparent mx-2" />
 
-          {/* Botão de tela cheia com design aprimorado */}
           <button
             onClick={handleFullScreen}
             className="bg-gradient-to-r from-gray-700 to-gray-600 text-white px-4 py-2 rounded-lg text-sm hover:from-gray-600 hover:to-gray-500 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 border border-gray-600/50 hover:border-gray-500"
@@ -245,9 +248,7 @@ export default function TradingViewWidget({ scannerType = "scanner1" }) {
         ref={containerRef}
         className="w-full h-full pt-16"
         style={{ visibility: widgetLoaded ? "visible" : "hidden" }}
-      >
-        <div id="tradingview_widget" style={{ height: "100%", width: "100%" }}></div>
-      </div>
+      />
 
       {!widgetLoaded && !error && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-10">

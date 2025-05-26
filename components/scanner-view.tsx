@@ -181,258 +181,246 @@ export default function ScannerView() {
               Utilize nosso scanner exclusivo para identificar oportunidades de mercado em tempo real.
             </p>
 
-            {/* Faixa "Em Breve" */}
-            <div className="relative">
-              <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <div className="bg-gradient-to-r from-gold-500/20 to-gold-600/20 border border-gold-500/50 rounded-lg px-8 py-4 backdrop-blur-md">
-                  <h3 className="text-2xl font-bold text-gold-400 text-center mb-2">🚀 Em Breve</h3>
-                  <p className="text-gray-300 text-center text-sm">
-                    Novas funcionalidades chegando em breve!
-                  </p>
-                </div>
-              </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
+                <TabsTrigger value="scanner" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+                  Scanner
+                </TabsTrigger>
+                <TabsTrigger value="forex" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+                  Ideias Forex
+                </TabsTrigger>
+                <TabsTrigger value="crypto" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
+                  Ideias Cripto
+                </TabsTrigger>
+                <TabsTrigger
+                  value="taptotrade"
+                  className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
+                >
+                  TAPTOTRADE
+                </TabsTrigger>
+              </TabsList>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
-                  <TabsTrigger value="scanner" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-                    Scanner
-                  </TabsTrigger>
-                  <TabsTrigger value="forex" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-                    Ideias Forex
-                  </TabsTrigger>
-                  <TabsTrigger value="crypto" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-                    Ideias Cripto
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="taptotrade"
-                    className="data-[state=active]:bg-gold-500 data-[state=active]:text-black"
-                  >
-                    TAPTOTRADE
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Resto do conteúdo das tabs permanece igual */}
-                <TabsContent value="scanner">
-                  <div className="grid gap-8 md:grid-cols-3">
-                    <div className="md:col-span-2">
-                      <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full">
-                        <CardHeader>
-                          <CardTitle>Scanner Ao Vivo</CardTitle>
-                          <CardDescription>
-                            Visualize e analise os mercados em tempo real com nosso scanner especializado.
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          {isAuthenticated ? (
-                            <div className="aspect-video min-h-[400px] w-full">
-                              <TradingViewWidget />
-                            </div>
-                          ) : (
-                            <div className="aspect-video min-h-[400px] w-full bg-black/90 flex flex-col items-center justify-center p-6 text-center">
-                              <Lock className="h-16 w-16 text-gold-500 mb-4" />
-                              <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
-                              <p className="text-gray-300 mb-6 max-w-lg">
-                                Faça login para acessar o Scanner MTM V3.4 e descobrir oportunidades de mercado em tempo
-                                real.
-                              </p>
-                              <div className="flex flex-col sm:flex-row gap-4">
-                                <Button
-                                  onClick={() => router.push("/member-area")}
-                                  className="bg-gold-600 hover:bg-gold-700 text-black"
-                                >
-                                  Fazer Login
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  onClick={() => router.push("/scanner-access")}
-                                  className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
-                                >
-                                  Saber Mais
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                        <CardFooter className="flex justify-between items-center">
-                          <button
-                            onClick={() => setShowDetails(!showDetails)}
-                            className="flex items-center text-gold-400 hover:text-gold-500 transition-colors"
-                          >
-                            <span className="mr-1">Informações do Scanner</span>
-                            <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`} />
-                          </button>
-                          {isAuthenticated && (
-                            <div className="flex items-center">
-                              <Unlock className="h-4 w-4 mr-1 text-green-500" />
-                              <span className="text-green-500 text-sm">Acesso Ativo</span>
-                            </div>
-                          )}
-                        </CardFooter>
-                      </Card>
-
-                      {showDetails && (
-                        <div className="mt-6">
-                          <ScannerInfo />
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-6">
-                        <CardHeader>
-                          <CardTitle className="flex items-center">
-                            <Zap className="h-5 w-5 text-gold-500 mr-2" />
-                            Benefícios do Scanner
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-3">
-                            <li className="flex items-start">
-                              <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
-                                <span className="text-gold-500 text-sm">1</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Identificação de Padrões</span>
-                                <p className="text-sm text-gray-400">
-                                  Reconhecimento automático de estruturas de mercado e padrões de alta probabilidade.
-                                </p>
-                              </div>
-                            </li>
-                            <li className="flex items-start">
-                              <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
-                                <span className="text-gold-500 text-sm">2</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Múltiplos Mercados</span>
-                                <p className="text-sm text-gray-400">
-                                  Análise simultânea de diversos pares de moedas, criptomoedas e outros ativos
-                                  financeiros.
-                                </p>
-                              </div>
-                            </li>
-                            <li className="flex items-start">
-                              <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
-                                <span className="text-gold-500 text-sm">3</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Alertas em Tempo Real</span>
-                                <p className="text-sm text-gray-400">
-                                  Notificações instantâneas sobre oportunidades de entrada e saída de acordo com sua
-                                  estratégia.
-                                </p>
-                              </div>
-                            </li>
-                            <li className="flex items-start">
-                              <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
-                                <span className="text-gold-500 text-sm">4</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Gestão de Risco</span>
-                                <p className="text-sm text-gray-400">
-                                  Sugestões de stop loss e take profit baseadas em níveis importantes do mercado.
-                                </p>
-                              </div>
-                            </li>
-                          </ul>
-                        </CardContent>
-                        <CardFooter>
-                          {!isAuthenticated && (
-                            <Button
-                              onClick={() => router.push("/scanner-access")}
-                              className="w-full bg-gold-600 hover:bg-gold-700 text-black"
-                            >
-                              Obter Acesso ao Scanner
-                            </Button>
-                          )}
-                        </CardFooter>
-                      </Card>
-
-                      <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
-                        <CardHeader>
-                          <CardTitle className="flex items-center">
-                            <MessageSquare className="h-5 w-5 text-gold-500 mr-2" />
-                            Ideias de Trading
-                          </CardTitle>
-                          <CardDescription>Acesse análises e ideias de trading dos nossos especialistas.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
-                                  <DollarSign className="h-4 w-4 text-blue-400" />
-                                </div>
-                                <span>Ideias Forex</span>
-                              </div>
+              {/* Resto do conteúdo das tabs permanece igual */}
+              <TabsContent value="scanner">
+                <div className="grid gap-8 md:grid-cols-3">
+                  <div className="md:col-span-2">
+                    <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm h-full">
+                      <CardHeader>
+                        <CardTitle>Scanner Ao Vivo</CardTitle>
+                        <CardDescription>
+                          Visualize e analise os mercados em tempo real com nosso scanner especializado.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        {isAuthenticated ? (
+                          <div className="aspect-video min-h-[400px] w-full">
+                            <TradingViewWidget />
+                          </div>
+                        ) : (
+                          <div className="aspect-video min-h-[400px] w-full bg-black/90 flex flex-col items-center justify-center p-6 text-center">
+                            <Lock className="h-16 w-16 text-gold-500 mb-4" />
+                            <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
+                            <p className="text-gray-300 mb-6 max-w-lg">
+                              Faça login para acessar o Scanner MTM V3.4 e descobrir oportunidades de mercado em tempo
+                              real.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4">
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setActiveTab("forex")}
-                                className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                                onClick={() => router.push("/member-area")}
+                                className="bg-gold-600 hover:bg-gold-700 text-black"
                               >
-                                Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                                Fazer Login
                               </Button>
-                            </div>
-                            <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center mr-3">
-                                  <CandlestickChart className="h-4 w-4 text-purple-400" />
-                                </div>
-                                <span>Ideias Cripto</span>
-                              </div>
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setActiveTab("crypto")}
-                                className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                                variant="outline"
+                                onClick={() => router.push("/scanner-access")}
+                                className="border-gold-500 text-gold-400 hover:bg-gold-500/10"
                               >
-                                Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                                Saber Mais
                               </Button>
-                            </div>
-                            <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center mr-3">
-                                  <Timer className="h-4 w-4 text-green-400" />
-                                </div>
-                                <span>TAPTOTRADE</span>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setActiveTab("taptotrade")}
-                                className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
-                              >
-                                Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-teal-500/20 flex items-center justify-center mr-3">
-                                  <MessageSquare className="h-4 w-4 text-teal-400" />
-                                </div>
-                                <span>Canal VIP Telegram</span>
-                              </div>
-                              <Link href="/trading-ideas">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
-                                >
-                                  Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                                </Button>
-                              </Link>
                             </div>
                           </div>
-                        </CardContent>
-                        <CardFooter>
-                          <Link href="/trading-ideas" className="w-full">
-                            <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                              Ver Todas as Ideias de Trading
+                        )}
+                      </CardContent>
+                      <CardFooter className="flex justify-between items-center">
+                        <button
+                          onClick={() => setShowDetails(!showDetails)}
+                          className="flex items-center text-gold-400 hover:text-gold-500 transition-colors"
+                        >
+                          <span className="mr-1">Informações do Scanner</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+                        </button>
+                        {isAuthenticated && (
+                          <div className="flex items-center">
+                            <Unlock className="h-4 w-4 mr-1 text-green-500" />
+                            <span className="text-green-500 text-sm">Acesso Ativo</span>
+                          </div>
+                        )}
+                      </CardFooter>
+                    </Card>
+
+                    {showDetails && (
+                      <div className="mt-6">
+                        <ScannerInfo />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mb-6">
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Zap className="h-5 w-5 text-gold-500 mr-2" />
+                          Benefícios do Scanner
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-3">
+                          <li className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                              <span className="text-gold-500 text-sm">1</span>
+                            </div>
+                            <div>
+                              <span className="font-medium">Identificação de Padrões</span>
+                              <p className="text-sm text-gray-400">
+                                Reconhecimento automático de estruturas de mercado e padrões de alta probabilidade.
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                              <span className="text-gold-500 text-sm">2</span>
+                            </div>
+                            <div>
+                              <span className="font-medium">Múltiplos Mercados</span>
+                              <p className="text-sm text-gray-400">
+                                Análise simultânea de diversos pares de moedas, criptomoedas e outros ativos
+                                financeiros.
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                              <span className="text-gold-500 text-sm">3</span>
+                            </div>
+                            <div>
+                              <span className="font-medium">Alertas em Tempo Real</span>
+                              <p className="text-sm text-gray-400">
+                                Notificações instantâneas sobre oportunidades de entrada e saída de acordo com sua
+                                estratégia.
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-gold-500/20 flex items-center justify-center mr-3 mt-0.5">
+                              <span className="text-gold-500 text-sm">4</span>
+                            </div>
+                            <div>
+                              <span className="font-medium">Gestão de Risco</span>
+                              <p className="text-sm text-gray-400">
+                                Sugestões de stop loss e take profit baseadas em níveis importantes do mercado.
+                              </p>
+                            </div>
+                          </li>
+                        </ul>
+                      </CardContent>
+                      <CardFooter>
+                        {!isAuthenticated && (
+                          <Button
+                            onClick={() => router.push("/scanner-access")}
+                            className="w-full bg-gold-600 hover:bg-gold-700 text-black"
+                          >
+                            Obter Acesso ao Scanner
+                          </Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+
+                    <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <MessageSquare className="h-5 w-5 text-gold-500 mr-2" />
+                          Ideias de Trading
+                        </CardTitle>
+                        <CardDescription>Acesse análises e ideias de trading dos nossos especialistas.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
+                                <DollarSign className="h-4 w-4 text-blue-400" />
+                              </div>
+                              <span>Ideias Forex</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setActiveTab("forex")}
+                              className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                            >
+                              Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
                             </Button>
-                          </Link>
-                        </CardFooter>
-                      </Card>
-                    </div>
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center mr-3">
+                                <CandlestickChart className="h-4 w-4 text-purple-400" />
+                              </div>
+                              <span>Ideias Cripto</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setActiveTab("crypto")}
+                              className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                            >
+                              Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                            </Button>
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center mr-3">
+                                <Timer className="h-4 w-4 text-green-400" />
+                              </div>
+                              <span>TAPTOTRADE</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setActiveTab("taptotrade")}
+                              className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                            >
+                              Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                            </Button>
+                          </div>
+                          <div className="flex items-center justify-between p-3 border border-gray-700 rounded-md hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-teal-500/20 flex items-center justify-center mr-3">
+                                <MessageSquare className="h-4 w-4 text-teal-400" />
+                              </div>
+                              <span>Canal VIP Telegram</span>
+                            </div>
+                            <Link href="/trading-ideas">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 text-gold-400 hover:text-gold-500 hover:bg-gold-500/10"
+                              >
+                                Ver <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Link href="/trading-ideas" className="w-full">
+                          <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
+                            Ver Todas as Ideias de Trading
+                          </Button>
+                        </Link>
+                      </CardFooter>
+                    </Card>
                   </div>
                 </TabsContent>
 
@@ -706,14 +694,7 @@ export default function ScannerView() {
                         </div>
                       </div>
                     </CardContent>
-                    <CardFooter>
-                      <Link href="/trading-ideas" className="w-full">
-                        <Button className="w-full bg-gold-600 hover:bg-gold-700 text-black">
-                          Ver Análise Completa
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
+                    </Card>
 
                   <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
                     <CardHeader>
@@ -820,7 +801,7 @@ export default function ScannerView() {
                 <div className="space-y-6">
                   <div className="text-center max-w-3xl mx-auto mb-8">
                     <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
-                      TAPTOTRADE - Sinais em 2 Minutos
+                      TAPTOTRADE - Sinais em 2 Minutos (EM BREVE)
                     </h2>
                     <p className="text-lg text-gray-300 mt-2">
                       Aceite sinais de trading específicos em apenas 2 minutos e maximize suas oportunidades de mercado.
@@ -960,13 +941,13 @@ export default function ScannerView() {
           </div>
         </MembershipRequired>
       ) : (
-        <div className="text-center p-8 bg-black/50 rounded-lg border border-gold-500/30">
+        <div className="bg-black/80 p-6 rounded-lg border border-gold-500/30">
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6">
-            Para acessar o Scanner MTM completo, você precisa estar logado e ter uma assinatura ativa.
+            Para acessar o scanner de mercado, você precisa ser um membro MoreThanMoney.
           </p>
-          <Button onClick={handleAccessClick} className="bg-gold-600 hover:bg-gold-700 text-black font-medium">
-            Obter Acesso
+          <Button onClick={handleAccessClick} className="bg-gold-600 hover:bg-gold-700 text-black">
+            Acessar o Scanner
           </Button>
         </div>
       )}
