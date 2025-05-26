@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useConfigStore } from "@/lib/config-service"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Maximize2, TrendingUp, Zap, Brain, Search, Crown, Waves } from "lucide-react"
+import { AlertCircle, Maximize2, TrendingUp, Zap, Search, Crown, Waves, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // ---- Constantes externas ----
@@ -14,7 +14,6 @@ const scannerStudies: Record<string, string> = {
   MTMGoldKiller: "script/DeXfIkiK-MTM-Gold-Killer-V2-1/",
   GoldenEra: "PUB;0b373fb0e6634a73bc8b838cf0690725",
   TrendWave: "PUB;38080827cf244587b5e7dbb9f272db0a",
-  SmartMonics: "PUB;ec7a7c1c91c645519b35b9505b4169a9",
   SmartScanner: "PUB;e378ef7473b14614a6b1fc5d4bba8061",
 }
 
@@ -23,7 +22,6 @@ const scannerLabels: Record<string, string> = {
   MTMGoldKiller: "MTM GoldKiller",
   GoldenEra: "GoldenEra",
   TrendWave: "TrendWave",
-  SmartMonics: "SmartMonics",
   SmartScanner: "SmartScanner",
 }
 
@@ -48,11 +46,6 @@ const scannerLogos: Record<string, { icon: any; color: string; bgColor: string }
     color: "text-blue-300",
     bgColor: "bg-gradient-to-r from-blue-600 to-cyan-500",
   },
-  SmartMonics: {
-    icon: Brain,
-    color: "text-purple-300",
-    bgColor: "bg-gradient-to-r from-purple-600 to-pink-500",
-  },
   SmartScanner: {
     icon: Search,
     color: "text-green-300",
@@ -70,16 +63,19 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [widgetLoaded, setWidgetLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isRetrying, setIsRetrying] = useState(false)
   const { isAuthenticated } = useAuth()
   const widgetRef = useRef<any>(null)
   const isLoadingScanner = useRef(false)
   const { config } = useConfigStore()
   const [currentScanner, setCurrentScanner] = useState<string>(() => {
-    return localStorage.getItem("lastScanner") || scannerType
+    return typeof window !== "undefined" ? localStorage.getItem("lastScanner") || scannerType : scannerType
   })
 
   useEffect(() => {
-    localStorage.setItem("lastScanner", currentScanner)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lastScanner", currentScanner)
+    }
   }, [currentScanner])
 
   const handleFullScreen = () => {
@@ -90,17 +86,21 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   }
 
   const switchScanner = (scannerKey: string) => {
-    if (widgetRef.current?.remove) {
-      try {
+    try {
+      if (widgetRef.current && typeof widgetRef.current.remove === "function") {
         widgetRef.current.remove()
-      } catch (e) {
-        console.error("Erro ao remover widget:", e)
       }
+    } catch (error) {
+      console.warn("Error removing widget:", error)
     }
+
+    widgetRef.current = null
+    setWidgetLoaded(false)
     setCurrentScanner(scannerKey)
+
     if (containerRef.current) {
       containerRef.current.innerHTML = ""
-      loadTradingViewWidget(scannerKey)
+      setTimeout(() => loadTradingViewWidget(scannerKey), 100)
     }
   }
 
@@ -114,6 +114,16 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
     isLoadingScanner.current = true
 
     try {
+      // Clear any existing widget first
+      if (widgetRef.current && typeof widgetRef.current.remove === "function") {
+        try {
+          widgetRef.current.remove()
+        } catch (e) {
+          console.warn("Error removing existing widget:", e)
+        }
+      }
+      widgetRef.current = null
+
       if (containerRef.current) {
         containerRef.current.innerHTML = '<div id="tradingview_widget" style="height: 100%; width: 100%;"></div>'
       }
@@ -142,23 +152,26 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
       widgetRef.current = new window.TradingView.widget(widgetOptions)
       setWidgetLoaded(true)
       setError(null)
+      setIsRetrying(false)
     } catch (err: any) {
       console.error("Erro ao inicializar widget:", err)
       setError(`Erro ao inicializar widget: ${err.message}`)
+      setIsRetrying(false)
     } finally {
       isLoadingScanner.current = false
     }
   }
 
   useEffect(() => {
+    if (typeof window === "undefined") return
+
     const loadTradingViewScript = () => {
-      if (document.getElementById("tradingview-script")) {
+      if (document.querySelector("script[src='https://s3.tradingview.com/tv.js']")) {
         initTradingView()
         return
       }
 
       const script = document.createElement("script")
-      script.id = "tradingview-script"
       script.src = "https://s3.tradingview.com/tv.js"
       script.async = true
       script.onload = initTradingView
@@ -177,13 +190,14 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
     loadTradingViewScript()
 
     return () => {
-      if (widgetRef.current?.remove) {
-        try {
+      try {
+        if (widgetRef.current && typeof widgetRef.current.remove === "function") {
           widgetRef.current.remove()
-        } catch (e) {
-          console.error("Erro ao remover widget:", e)
         }
+      } catch (error) {
+        console.warn("Error during cleanup:", error)
       }
+      widgetRef.current = null
     }
   }, [])
 
@@ -193,6 +207,20 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         <Alert className="absolute top-2 left-2 right-2 z-20 bg-red-500/20 border-red-500">
           <AlertCircle className="h-4 w-4 text-red-500" />
           <AlertDescription>{error}</AlertDescription>
+          <div className="mt-2">
+            <Button
+              onClick={() => {
+                setError(null)
+                setIsRetrying(true)
+                loadTradingViewWidget(currentScanner)
+              }}
+              size="sm"
+              variant="outline"
+              className="text-red-500 border-red-500"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" /> Tentar Novamente
+            </Button>
+          </div>
         </Alert>
       )}
 
