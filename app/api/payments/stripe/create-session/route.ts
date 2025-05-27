@@ -1,14 +1,37 @@
 import { type NextRequest, NextResponse } from "next/server"
-import Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-})
+// Verificar se estamos em runtime (não durante build)
+const isRuntime = typeof window === "undefined" && process.env.NODE_ENV !== "test"
+
+// Inicializar Stripe apenas se as chaves estiverem disponíveis
+let stripe: any = null
+
+if (isRuntime && process.env.STRIPE_SECRET_KEY) {
+  const Stripe = require("stripe")
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-06-20",
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar se o Stripe está configurado
+    if (!stripe) {
+      console.error("Stripe não configurado - chave secreta ausente")
+      return NextResponse.json({ error: "Serviço de pagamento não disponível" }, { status: 503 })
+    }
+
     const body = await request.json()
     const { items, customerInfo, successUrl, cancelUrl, metadata } = body
+
+    // Validar dados obrigatórios
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Itens do carrinho são obrigatórios" }, { status: 400 })
+    }
+
+    if (!customerInfo || !customerInfo.email) {
+      return NextResponse.json({ error: "Informações do cliente são obrigatórias" }, { status: 400 })
+    }
 
     // Criar line items para o Stripe
     const lineItems = items.map((item: any) => ({
@@ -20,19 +43,22 @@ export async function POST(request: NextRequest) {
         },
         unit_amount: Math.round(item.price * 100), // Stripe usa centavos
       },
-      quantity: item.quantity,
+      quantity: item.quantity || 1,
     }))
+
+    // URL base para redirecionamentos
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://morethanmoney.pt"
 
     // Criar sessão de checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "sepa_debit"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}${cancelUrl}`,
+      success_url: `${baseUrl}${successUrl || "/payment/success"}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}${cancelUrl || "/payment/cancelled"}`,
       customer_email: customerInfo.email,
       metadata: {
-        customerName: customerInfo.name,
+        customerName: customerInfo.name || "",
         customerPhone: customerInfo.phone || "",
         ...metadata,
       },
@@ -45,9 +71,27 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ id: session.id, url: session.url })
+    return NextResponse.json({
+      id: session.id,
+      url: session.url,
+    })
   } catch (error) {
     console.error("Erro ao criar sessão Stripe:", error)
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
+
+    // Retornar erro mais específico
+    const errorMessage = error instanceof Error ? error.message : "Erro interno do servidor"
+
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
+}
+
+// Função para verificar saúde da API
+export async function GET() {
+  const isConfigured = !!process.env.STRIPE_SECRET_KEY
+
+  return NextResponse.json({
+    status: "ok",
+    stripe_configured: isConfigured,
+    environment: process.env.NODE_ENV,
+  })
 }

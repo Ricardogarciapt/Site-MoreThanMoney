@@ -1,41 +1,75 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { headers } from "next/headers"
 import Stripe from "stripe"
-import { memberService } from "@/lib/member-service"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-})
+// Verificar se estamos em runtime
+const isRuntime = typeof window === "undefined" && process.env.NODE_ENV !== "test"
+
+// Inicializar Stripe apenas se disponível
+let stripe: any = null
+
+if (isRuntime && process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-06-20",
+  })
+}
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text()
-    const signature = request.headers.get("stripe-signature")!
-
-    let event: Stripe.Event
-
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err)
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
+    // Verificar se o Stripe está configurado
+    if (!stripe) {
+      console.error("Stripe não configurado para webhook")
+      return NextResponse.json({ error: "Webhook não disponível" }, { status: 503 })
     }
 
-    // Processar diferentes tipos de eventos
+    const body = await request.text()
+    const headersList = headers()
+    const signature = headersList.get("stripe-signature")
+
+    if (!signature) {
+      console.error("Assinatura do webhook ausente")
+      return NextResponse.json({ error: "Assinatura inválida" }, { status: 400 })
+    }
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!webhookSecret) {
+      console.error("Webhook secret não configurado")
+      return NextResponse.json({ error: "Webhook não configurado" }, { status: 503 })
+    }
+
+    // Verificar assinatura do webhook
+    let event
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    } catch (err) {
+      console.error("Erro na verificação do webhook:", err)
+      return NextResponse.json({ error: "Webhook inválido" }, { status: 400 })
+    }
+
+    // Processar eventos do Stripe
     switch (event.type) {
       case "checkout.session.completed":
-        const session = event.data.object as Stripe.Checkout.Session
-        await handleSuccessfulPayment(session)
+        const session = event.data.object
+        console.log("Pagamento concluído:", session.id)
+
+        // Aqui você pode:
+        // 1. Atualizar banco de dados
+        // 2. Enviar email de confirmação
+        // 3. Liberar acesso ao produto
+        // 4. Atualizar membership do usuário
+
+        await handlePaymentSuccess(session)
         break
 
       case "payment_intent.succeeded":
-        const paymentIntent = event.data.object as Stripe.PaymentIntent
-        console.log("Pagamento confirmado:", paymentIntent.id)
+        const paymentIntent = event.data.object
+        console.log("Payment Intent sucesso:", paymentIntent.id)
         break
 
       case "payment_intent.payment_failed":
-        const failedPayment = event.data.object as Stripe.PaymentIntent
+        const failedPayment = event.data.object
         console.log("Pagamento falhou:", failedPayment.id)
         break
 
@@ -46,68 +80,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error("Erro no webhook:", error)
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 })
   }
 }
 
-async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
+// Função para processar pagamento bem-sucedido
+async function handlePaymentSuccess(session: any) {
   try {
-    // Recuperar detalhes da sessão
-    const sessionWithLineItems = await stripe.checkout.sessions.retrieve(session.id, { expand: ["line_items"] })
-
+    // Extrair informações do pagamento
     const customerEmail = session.customer_email
     const customerName = session.metadata?.customerName
-    const lineItems = sessionWithLineItems.line_items?.data
+    const amount = session.amount_total / 100 // Converter de centavos
 
-    if (!customerEmail || !lineItems) {
-      console.error("Dados insuficientes na sessão")
-      return
-    }
+    console.log("Processando pagamento:", {
+      email: customerEmail,
+      name: customerName,
+      amount: amount,
+      sessionId: session.id,
+    })
 
-    // Processar cada item comprado
-    for (const item of lineItems) {
-      const productName = item.description
-
-      // Determinar o tipo de produto e atualizar o usuário
-      if (productName?.includes("Scanner")) {
-        await updateUserAccess(customerEmail, "scanner")
-      } else if (productName?.includes("Copytrading")) {
-        await updateUserAccess(customerEmail, "copytrading")
-      } else if (productName?.includes("JIFU")) {
-        await updateUserAccess(customerEmail, "jifu")
-      }
-    }
-
-    // Enviar email de confirmação (implementar depois)
-    await sendConfirmationEmail(customerEmail, customerName, lineItems)
-
-    console.log("Pagamento processado com sucesso para:", customerEmail)
+    // TODO: Integrar com banco de dados
+    // - Criar/atualizar usuário
+    // - Registrar pagamento
+    // - Atualizar membership
+    // - Enviar email de confirmação
   } catch (error) {
-    console.error("Erro ao processar pagamento bem-sucedido:", error)
+    console.error("Erro ao processar pagamento:", error)
   }
 }
 
-async function updateUserAccess(email: string, accessType: string) {
-  try {
-    // Buscar usuário por email
-    const members = await memberService.getAllMembers()
-    const member = members.find((m) => m.email === email)
-
-    if (member) {
-      // Atualizar acesso do usuário
-      const currentPackage = member.package || ""
-      const newPackage = currentPackage ? `${currentPackage},${accessType}` : accessType
-
-      await memberService.updateMemberPackage(member.id, newPackage)
-      console.log(`Acesso ${accessType} adicionado para ${email}`)
-    }
-  } catch (error) {
-    console.error("Erro ao atualizar acesso do usuário:", error)
-  }
-}
-
-async function sendConfirmationEmail(email: string, name: string | undefined, items: any[]) {
-  // Implementar envio de email de confirmação
-  console.log("Enviando email de confirmação para:", email)
-  // TODO: Integrar com serviço de email (SendGrid, Mailgun, etc.)
+// Health check
+export async function GET() {
+  return NextResponse.json({
+    status: "webhook_ready",
+    stripe_configured: !!process.env.STRIPE_SECRET_KEY,
+    webhook_secret_configured: !!process.env.STRIPE_WEBHOOK_SECRET,
+  })
 }

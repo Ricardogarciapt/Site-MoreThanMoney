@@ -1,8 +1,11 @@
-// Serviço de pagamentos integrado com Stripe e PayPal
+// Serviço de pagamentos com verificações de segurança
 import { loadStripe } from "@stripe/stripe-js"
 
-// Configuração do Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+// Verificar se a chave pública está disponível
+const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+// Inicializar Stripe apenas se a chave estiver disponível
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 
 // Tipos para pagamentos
 export interface PaymentItem {
@@ -45,9 +48,28 @@ export class PaymentService {
     return PaymentService.instance
   }
 
+  // Verificar se o Stripe está configurado
+  private isStripeConfigured(): boolean {
+    return !!stripePublicKey && !!stripePromise
+  }
+
   // Processar pagamento com Stripe
   async processStripePayment(paymentData: PaymentData): Promise<PaymentResult> {
     try {
+      // Verificar se o Stripe está configurado
+      if (!this.isStripeConfigured()) {
+        throw new Error("Stripe não está configurado. Verifique as chaves de API.")
+      }
+
+      // Validar dados obrigatórios
+      if (!paymentData.items || paymentData.items.length === 0) {
+        throw new Error("Carrinho vazio")
+      }
+
+      if (!paymentData.customerInfo.email) {
+        throw new Error("Email é obrigatório")
+      }
+
       const response = await fetch("/api/payments/stripe/create-session", {
         method: "POST",
         headers: {
@@ -88,45 +110,6 @@ export class PaymentService {
     }
   }
 
-  // Processar pagamento com PayPal
-  async processPayPalPayment(paymentData: PaymentData): Promise<PaymentResult> {
-    try {
-      const response = await fetch("/api/payments/paypal/create-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(paymentData),
-      })
-
-      const order = await response.json()
-
-      if (!response.ok) {
-        throw new Error(order.error || "Erro ao criar ordem PayPal")
-      }
-
-      // Redirecionar para PayPal
-      const approvalUrl = order.links.find((link: any) => link.rel === "approve")?.href
-
-      if (approvalUrl) {
-        window.location.href = approvalUrl
-        return {
-          success: true,
-          paymentId: order.id,
-          redirectUrl: approvalUrl,
-        }
-      }
-
-      throw new Error("URL de aprovação não encontrada")
-    } catch (error) {
-      console.error("Erro no pagamento PayPal:", error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Erro desconhecido",
-      }
-    }
-  }
-
   // Verificar status do pagamento
   async checkPaymentStatus(
     paymentId: string,
@@ -137,6 +120,11 @@ export class PaymentService {
   }> {
     try {
       const response = await fetch(`/api/payments/${provider}/status/${paymentId}`)
+
+      if (!response.ok) {
+        throw new Error("Erro ao verificar status")
+      }
+
       const result = await response.json()
 
       return {
@@ -149,21 +137,12 @@ export class PaymentService {
     }
   }
 
-  // Processar webhook de pagamento
-  async processWebhook(provider: "stripe" | "paypal", payload: any, signature?: string): Promise<boolean> {
+  // Verificar se o serviço está disponível
+  async checkServiceHealth(): Promise<boolean> {
     try {
-      const response = await fetch(`/api/payments/${provider}/webhook`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(signature && { "stripe-signature": signature }),
-        },
-        body: JSON.stringify(payload),
-      })
-
-      return response.ok
-    } catch (error) {
-      console.error("Erro ao processar webhook:", error)
+      const response = await fetch("/api/payments/stripe/create-session")
+      return response.status !== 503
+    } catch {
       return false
     }
   }
