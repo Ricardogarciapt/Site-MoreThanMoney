@@ -5,12 +5,11 @@ import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/login-form"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User, BookOpen, BarChart2, UserPlus, CreditCard, Copy } from "lucide-react"
+import { LogOut, User, BookOpen, BarChart2, UserPlus, CreditCard } from "lucide-react"
 import MoreThanMoneyCourses from "@/components/morethanmoney-courses"
 import MemberRegistration from "@/components/member-registration"
 import MembershipPackages from "@/components/membership-packages"
 import { MemberScannersIdeas } from "@/components/member-scanners-ideas"
-import { CopytradingConfig } from "@/components/copytrading-config"
 
 export default function MemberArea() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -71,7 +70,7 @@ export default function MemberArea() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8 bg-black/50 border border-gold-500/30">
+          <TabsList className="grid grid-cols-4 mb-8 bg-black/50 border border-gold-500/30">
             <TabsTrigger value="courses" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <BookOpen size={16} className="mr-2" />
               Cursos MoreThanMoney
@@ -79,10 +78,6 @@ export default function MemberArea() {
             <TabsTrigger value="scanners" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
               <BarChart2 size={16} className="mr-2" />
               Scanners e Ideias
-            </TabsTrigger>
-            <TabsTrigger value="copytrading" className="data-[state=active]:bg-gold-500 data-[state=active]:text-black">
-              <Copy size={16} className="mr-2" />
-              Copytrading
             </TabsTrigger>
             <TabsTrigger
               value="subscription"
@@ -103,10 +98,6 @@ export default function MemberArea() {
 
           <TabsContent value="scanners" className="mt-0">
             <MemberScannersIdeas />
-          </TabsContent>
-
-          <TabsContent value="copytrading" className="mt-0">
-            <CopytradingConfig />
           </TabsContent>
 
           <TabsContent value="subscription" className="mt-0">

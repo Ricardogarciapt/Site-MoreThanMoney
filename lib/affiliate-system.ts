@@ -31,6 +31,14 @@ export const commissionTable: AffiliateCommission[] = [
     productId: "copytrading-mtm",
     productName: "Copytrading MTM",
     rate: 30, // 30% de comissão
+    basePrice: 350, // 350€ (atualizado)
+    minimumRoleRequired: "Distribuidor",
+    excludedRoles: ["Membro", "Membro VIP"],
+  },
+  {
+    productId: "bootcamp-mtm",
+    productName: "Bootcamp MoreThanMoney",
+    rate: 20, // 20% de comissão
     basePrice: 200, // 200€
     minimumRoleRequired: "Distribuidor",
     excludedRoles: ["Membro", "Membro VIP"],

@@ -129,7 +129,7 @@ export default function MemberRegistration() {
   // Função para obter o preço com base no pacote e opção selecionados
   const getPackagePrice = () => {
     if (formData.selectedPackage === "basic") {
-      return "€50"
+      return "€50/mês"
     } else if (formData.selectedPackage === "scanner") {
       return formData.paymentOption === "annual" ? "€200/ano" : "€1000/vitalício"
     } else {
@@ -175,7 +175,7 @@ export default function MemberRegistration() {
                 <CardTitle className="text-2xl font-bold text-center">Pacote Básico</CardTitle>
                 <div className="text-center mt-4">
                   <span className="text-4xl font-bold text-gold-500">€50</span>
-                  <span className="text-gray-400 ml-2">/único</span>
+                  <span className="text-gray-400 ml-2">/mês</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -197,9 +197,26 @@ export default function MemberRegistration() {
               <CardFooter>
                 <Button
                   className={`w-full ${formData.selectedPackage === "basic" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
-                  onClick={() => handlePackageSelect("basic")}
+                  onClick={() => {
+                    // Adicionar ao carrinho e redirecionar para checkout
+                    const cartItem = {
+                      id: "basic-monthly",
+                      name: "Pacote Básico - Mensal",
+                      price: 50,
+                      quantity: 1,
+                      type: "subscription",
+                    }
+
+                    // Salvar no localStorage
+                    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]")
+                    const updatedCart = [...existingCart.filter((item: any) => item.id !== "basic-monthly"), cartItem]
+                    localStorage.setItem("cart", JSON.stringify(updatedCart))
+
+                    // Redirecionar para checkout
+                    window.location.href = "/checkout"
+                  }}
                 >
-                  {formData.selectedPackage === "basic" ? "Selecionado" : "Selecionar"}
+                  Assinar por €50/mês
                 </Button>
               </CardFooter>
             </Card>
@@ -272,7 +289,7 @@ export default function MemberRegistration() {
                   className={`w-full ${formData.selectedPackage === "scanner" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
                   onClick={() => handlePackageSelect("scanner")}
                 >
-                  {formData.selectedPackage === "scanner" ? "Selecionado" : "Selecionar"}
+                  {formData.selectedPackage === "scanner" ? "Selecionado" : "Selecionar Scanner"}
                 </Button>
               </CardFooter>
             </Card>
@@ -312,7 +329,7 @@ export default function MemberRegistration() {
                   className={`w-full ${formData.selectedPackage === "premium" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
                   onClick={() => handlePackageSelect("premium")}
                 >
-                  {formData.selectedPackage === "premium" ? "Selecionado" : "Selecionar"}
+                  {formData.selectedPackage === "premium" ? "Selecionado" : "Verificar JIFU"}
                 </Button>
               </CardFooter>
             </Card>

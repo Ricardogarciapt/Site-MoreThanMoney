@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight, TrendingUp, BarChart3, LineChart, DollarSign } from "lucide-react"
 import TradingViewWidget from "./trading-view-widget"
-import { sampleIdeas } from "./trading-ideas-cards"
+import { getRecentIdeas } from "@/lib/telegram-ideas"
 import { portfolioData } from "@/lib/portfolio-service"
 
 export function MemberScannersIdeas() {
   const [activeTab, setActiveTab] = useState("scanners")
+  const recentIdeas = getRecentIdeas(3)
 
   return (
     <div className="space-y-6">
@@ -116,7 +117,7 @@ export function MemberScannersIdeas() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {sampleIdeas.slice(0, 3).map((idea) => (
+              {recentIdeas.map((idea) => (
                 <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between mb-1">
@@ -124,26 +125,31 @@ export function MemberScannersIdeas() {
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
                           idea.category === "forex"
                             ? "bg-blue-500/20 text-blue-400"
-                            : "bg-purple-500/20 text-purple-400"
+                            : idea.category === "crypto"
+                              ? "bg-purple-500/20 text-purple-400"
+                              : "bg-yellow-500/20 text-yellow-400"
                         }`}
                       >
-                        {idea.category === "forex" ? "Forex" : "Cripto"}
+                        {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {new Date(idea.dateCreated).toLocaleDateString("pt-PT")}
+                        {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
                       </span>
                     </div>
-                    <CardTitle className="text-base">{idea.title}</CardTitle>
+                    <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-2">
-                    <p className="text-sm text-gray-400 line-clamp-2">{idea.description}</p>
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {idea.content.length > 100 ? idea.content.substring(0, 100) + "..." : idea.content}
+                    </p>
                   </CardContent>
                   <CardFooter className="pt-0">
-                    <Link href={`/trading-ideas?id=${idea.id}`} className="w-full">
-                      <Button variant="ghost" className="w-full text-gold-400 hover:text-gold-500 hover:bg-gold-500/10">
-                        Ver Detalhes <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <div className="w-full flex justify-between items-center">
+                      <div className="text-xs text-gold-500">{idea.author}</div>
+                      <span className="text-xs text-gray-500">
+                        {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                      </span>
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -248,32 +254,39 @@ export function MemberScannersIdeas() {
 
         <TabsContent value="ideas" className="mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sampleIdeas.slice(0, 6).map((idea) => (
+            {recentIdeas.map((idea) => (
               <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between mb-1">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        idea.category === "forex" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"
+                        idea.category === "forex"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : idea.category === "crypto"
+                            ? "bg-purple-500/20 text-purple-400"
+                            : "bg-yellow-500/20 text-yellow-400"
                       }`}
                     >
-                      {idea.category === "forex" ? "Forex" : "Cripto"}
+                      {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {new Date(idea.dateCreated).toLocaleDateString("pt-PT")}
+                      {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
                     </span>
                   </div>
-                  <CardTitle className="text-base">{idea.title}</CardTitle>
+                  <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
                 </CardHeader>
                 <CardContent className="pb-2">
-                  <p className="text-sm text-gray-400 line-clamp-2">{idea.description}</p>
+                  <p className="text-sm text-gray-400 line-clamp-2">
+                    {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
+                  </p>
                 </CardContent>
                 <CardFooter className="pt-0">
-                  <Link href={`/trading-ideas?id=${idea.id}`} className="w-full">
-                    <Button variant="ghost" className="w-full text-gold-400 hover:text-gold-500 hover:bg-gold-500/10">
-                      Ver Detalhes <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-xs text-gold-500">{idea.author}</div>
+                    <span className="text-xs text-gray-500">
+                      {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                    </span>
+                  </div>
                 </CardFooter>
               </Card>
             ))}

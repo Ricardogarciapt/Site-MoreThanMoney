@@ -68,6 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (existingItem) {
         return prevItems.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + (item.quantity || 1) } : i))
       }
+
       return [...prevItems, { ...item, quantity: item.quantity || 1 }]
     })
   }
@@ -121,9 +122,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [isOpen])
 
   // Ir para o checkout
-  const goToCheckout = () => {
-    closeCart()
-    router.push("/checkout")
+  const goToCheckout = async () => {
+    if (items.length === 0) return
+
+    try {
+      // Preparar dados do pagamento
+      const paymentItems = items.map((item) => ({
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.name,
+            description: item.details?.duration || "Produto MoreThanMoney",
+          },
+          unit_amount: Math.round(item.price * 100), // Stripe usa centavos
+        },
+        quantity: item.quantity,
+      }))
+
+      // Criar sessão do Stripe
+      const response = await fetch("/api/payments/stripe/create-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: paymentItems,
+          success_url: `${window.location.origin}/payment/success`,
+          cancel_url: `${window.location.origin}/payment/cancelled`,
+          metadata: {
+            cartId: Date.now().toString(),
+            source: "shopping-cart",
+          },
+        }),
+      })
+
+      const { url, error } = await response.json()
+
+      if (error) {
+        throw new Error(error)
+      }
+
+      // Redirecionar para o Stripe
+      window.location.href = url
+    } catch (error) {
+      console.error("Erro no checkout:", error)
+      alert("Erro ao processar pagamento. Tente novamente.")
+    }
   }
 
   return (

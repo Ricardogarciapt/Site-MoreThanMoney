@@ -7,7 +7,7 @@ import { useCart } from "@/components/shopping-cart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, AlertCircle, ShoppingCart } from "lucide-react"
+import { CheckCircle, AlertCircle, ShoppingCart, Star } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 interface PackageOption {
@@ -17,6 +17,8 @@ interface PackageOption {
   period: string
   features: string[]
   recommended?: boolean
+  popular?: boolean
+  special?: string
 }
 
 const packages: PackageOption[] = [
@@ -29,34 +31,43 @@ const packages: PackageOption[] = [
       "Acesso aos BootCamp MoreThanMoney",
       "Acesso ao fórum da comunidade",
       "Acesso aos Scanners na Plataforma",
+      "Acesso a mentoria privada para plano de crescimento",
     ],
   },
   {
-    id: "standard",
-    name: "Membro Standard",
-    price: 169.99,
+    id: "education",
+    name: "Membro Educação",
+    price: 0.0,
     period: "mensal",
     features: [
       "Todos os benefícios do plano Básico",
       "Acesso aos Produtos JIFU",
+      "Acesso a Tap2Trade",
+      "Acesso a JifuConnect",
       "Suporte prioritário",
       "Webinars mensais exclusivos",
       "Eventos Regionais Exclusivos",
+      "Acesso ao canal VIP de sinais",
     ],
     recommended: true,
+    special: "Ao comprovares o teu acesso JIFU",
   },
   {
-    id: "premium",
-    name: "Membro Premium",
+    id: "automation",
+    name: "Membro Automatização",
     price: 1000.0,
-    period: "Unico",
+    period: "único",
     features: [
-      "Todos os benefícios do plano Standard",
-      "Acesso Vitalicio aos scanners avançado",
+      "Todos os benefícios dos planos anteriores",
+      "Acesso Vitalício aos scanners avançados",
       "Acesso ao canal VIP de sinais",
       "Mentoria mensal individual",
       "Acesso antecipado a novos recursos",
+      "€299 reverte para inscrição JIFU",
+      "Restante para o sistema de Copytrading MTM",
+      "Margem de €1000-1500 no depósito de Sistemas automáticos",
     ],
+    popular: true,
   },
 ]
 
@@ -97,6 +108,12 @@ export default function MembershipPackages() {
   }
 
   const handleCheckout = (pkg: PackageOption) => {
+    if (pkg.price === 0) {
+      // Para plano gratuito, redirecionar para verificação JIFU
+      router.push("/jifu-education")
+      return
+    }
+
     setIsProcessing(pkg.id)
 
     // Adicionar ao carrinho
@@ -133,36 +150,59 @@ export default function MembershipPackages() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {packages.map((pkg) => {
           const isCurrentPackage = currentPackage === pkg.id
+          const isFree = pkg.price === 0
 
           return (
             <Card
               key={pkg.id}
               className={`border ${
-                pkg.recommended ? "border-gold-500 bg-black/60" : "border-gray-700 bg-black/40"
+                pkg.recommended
+                  ? "border-gold-500 bg-black/60"
+                  : pkg.popular
+                    ? "border-blue-500 bg-black/60"
+                    : "border-gray-700 bg-black/40"
               } relative overflow-hidden`}
             >
               {pkg.recommended && (
                 <div className="absolute top-0 right-0">
-                  <Badge className="bg-gold-500 text-black font-medium m-2">Recomendado</Badge>
+                  <Badge className="bg-gold-500 text-black font-medium m-2">
+                    <Star className="w-3 h-3 mr-1" />
+                    Recomendado
+                  </Badge>
+                </div>
+              )}
+
+              {pkg.popular && (
+                <div className="absolute top-0 right-0">
+                  <Badge className="bg-blue-500 text-white font-medium m-2">Popular</Badge>
                 </div>
               )}
 
               <CardHeader>
                 <CardTitle className="text-xl font-bold">{pkg.name}</CardTitle>
-                <CardDescription className="text-gray-400">{isCurrentPackage && "Seu pacote atual"}</CardDescription>
+                <CardDescription className="text-gray-400">
+                  {isCurrentPackage && "Seu pacote atual"}
+                  {pkg.special && <span className="text-gold-400">{pkg.special}</span>}
+                </CardDescription>
               </CardHeader>
 
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-white">€{pkg.price.toFixed(2)}</span>
-                  <span className="text-gray-400">/{pkg.period}</span>
+                  {isFree ? (
+                    <span className="text-3xl font-bold text-gold-500">GRATUITO</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-bold text-white">€{pkg.price.toFixed(2)}</span>
+                      <span className="text-gray-400">/{pkg.period}</span>
+                    </>
+                  )}
                 </div>
 
                 <ul className="space-y-2">
                   {pkg.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckCircle className="h-5 w-5 text-gold-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-300">{feature}</span>
+                      <span className="text-gray-300 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -172,12 +212,18 @@ export default function MembershipPackages() {
                 <Button
                   onClick={() => handleCheckout(pkg)}
                   disabled={isProcessing !== null || isCurrentPackage}
-                  className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+                  className={`w-full font-semibold ${
+                    pkg.recommended
+                      ? "bg-gold-600 hover:bg-gold-700 text-black"
+                      : pkg.popular
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-gray-600 hover:bg-gray-700 text-white"
+                  }`}
                 >
                   {isProcessing === pkg.id ? (
                     <span className="flex items-center">
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-black"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -200,24 +246,81 @@ export default function MembershipPackages() {
                     </span>
                   ) : isCurrentPackage ? (
                     "Pacote Atual"
+                  ) : isFree ? (
+                    "Verificar Acesso JIFU"
                   ) : (
                     "Comprar Agora"
                   )}
                 </Button>
 
-                <Button
-                  onClick={() => handleAddToCart(pkg)}
-                  disabled={isProcessing !== null || isCurrentPackage}
-                  variant="outline"
-                  className="w-full border-gold-500/50 text-gold-500 hover:bg-gold-500/10"
-                >
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Adicionar ao Carrinho
-                </Button>
+                {!isFree && !isCurrentPackage && (
+                  <Button
+                    onClick={() => handleAddToCart(pkg)}
+                    disabled={isProcessing !== null}
+                    variant="outline"
+                    className="w-full border-gold-500/50 text-gold-500 hover:bg-gold-500/10"
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Adicionar ao Carrinho
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           )
         })}
+      </div>
+
+      {/* Bootcamp MoreThanMoney como produto separado */}
+      <div className="mt-12">
+        <h3 className="text-xl font-bold mb-6 text-center">Produtos Educacionais</h3>
+        <Card className="bg-black/40 border-gray-700 max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold">Bootcamp MoreThanMoney</CardTitle>
+            <CardDescription>Formação contínua por 1 ano, acesso vitalício</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <span className="text-2xl font-bold text-white">€200</span>
+              <span className="text-gray-400"> pagamento único</span>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-gold-500 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-300">Formação contínua por 1 ano completo</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-gold-500 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-300">Acesso vitalício ao conteúdo</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-gold-500 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-300">Atualizações e novos módulos incluídos</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-gold-500 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-300">Certificado de conclusão</span>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={() => {
+                addItem({
+                  id: "bootcamp-mtm",
+                  name: "Bootcamp MoreThanMoney",
+                  price: 200,
+                  quantity: 1,
+                  type: "bootcamp",
+                  details: { duration: "Vitalício" },
+                })
+                router.push("/checkout")
+              }}
+              className="w-full bg-gold-600 hover:bg-gold-700 text-black font-semibold"
+            >
+              Comprar Bootcamp
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
       <div className="mt-8 bg-black/30 border border-gray-700 rounded-lg p-4">
@@ -228,7 +331,7 @@ export default function MembershipPackages() {
             <ul className="list-disc pl-5 space-y-1">
               <li>As alterações de pacote entram em vigor imediatamente</li>
               <li>Ao fazer upgrade, você será cobrado apenas pela diferença proporcional ao período restante</li>
-              <li>Ao fazer downgrade, você receberá crédito proporcional ao período restante</li>
+              <li>O plano Educação requer comprovação de acesso JIFU ativo</li>
               <li>Para cancelar sua assinatura, entre em contato com nosso suporte</li>
             </ul>
           </div>

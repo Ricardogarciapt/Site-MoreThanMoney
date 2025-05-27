@@ -11,6 +11,7 @@ interface BuyButtonProps {
   duration?: string
   className?: string
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive"
+  packageId?: string
 }
 
 export function BuyButton({
@@ -20,17 +21,18 @@ export function BuyButton({
   duration,
   className,
   variant = "default",
+  packageId,
 }: BuyButtonProps) {
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
     const item: CartItem = {
-      id: uuidv4(),
+      id: packageId || uuidv4(),
       name: productName,
       price: productPrice,
       quantity: 1,
       type: productType,
-      details: duration ? { duration } : undefined,
+      details: duration ? { duration, packageId } : { packageId },
     }
 
     addItem(item)
@@ -38,7 +40,7 @@ export function BuyButton({
 
   return (
     <Button onClick={handleAddToCart} className={className} variant={variant}>
-      Comprar Agora
+      {productPrice === 0 ? "Verificar Acesso JIFU" : "Comprar Agora"}
     </Button>
   )
 }
