@@ -27,9 +27,7 @@ export default function FloatingCTA() {
   if (!isVisible) return null
 
   return (
-    <div
-      className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${isMinimized ? "scale-75" : "scale-100"}`}
-    >
+    <div className={`fixed bottom-6 left-6 z-50 transition-all duration-300 ${isMinimized ? "scale-75" : "scale-100"}`}>
       {!isMinimized ? (
         <div className="bg-gradient-to-r from-gold-500 to-gold-600 rounded-lg shadow-2xl p-4 max-w-sm border border-gold-400">
           <button

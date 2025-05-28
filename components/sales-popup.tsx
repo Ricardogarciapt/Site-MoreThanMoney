@@ -87,7 +87,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="bg-gradient-to-br from-black via-gray-900 to-black border-gold-500 max-w-3xl w-full relative overflow-hidden">
+      <Card className="bg-gradient-to-br from-black via-gray-900 to-black border-gold-500 max-w-xl w-full relative overflow-hidden">
         {/* Close Button */}
         <button
           onClick={handleClose}
@@ -103,31 +103,31 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-gold-400 to-gold-600 mx-auto mb-4">
             <Zap className="w-8 h-8 text-black" />
           </div>
-          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
             🔥 ESPERA! OFERTA ESPECIAL 🔥
           </CardTitle>
           <p className="text-xl text-gray-300 mt-2">Antes de sair, vê esta oferta incrível!</p>
         </CardHeader>
 
-        <CardContent className="relative z-10">
+        <CardContent className="relative z-10 p-2">
           {/* Countdown Timer */}
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 text-center">
+          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="w-5 h-5 text-red-400" />
               <span className="text-red-400 font-semibold">Esta oferta expira em:</span>
             </div>
-            <div className="text-3xl font-bold text-red-400">{formatTime(timeLeft)}</div>
+            <div className="text-2xl font-bold text-red-400">{formatTime(timeLeft)}</div>
           </div>
 
           {/* Offer Details */}
-          <div className="space-y-6 mb-6">
+          <div className="space-y-4 mb-4">
             <div className="text-center">
               <h3 className="text-2xl font-bold text-white mb-3">
                 Pack Completo: JIFU + Scanner MTM + Bootcamp + Mentoria
               </h3>
               <div className="flex items-center justify-center gap-4">
                 <span className="text-2xl text-gray-400 line-through">€1,299</span>
-                <span className="text-4xl font-bold text-gold-400">€299</span>
+                <span className="text-3xl font-bold text-gold-400">€299</span>
                 <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">-77%</span>
               </div>
               <div className="text-green-400 font-semibold mt-2">Economia de €1,000!</div>
@@ -155,7 +155,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           </div>
 
           {/* Social Proof */}
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
               <span className="text-green-400 font-semibold">73 pessoas compraram hoje</span>
@@ -167,7 +167,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           <div className="space-y-3">
             <Button
               onClick={handleAcceptOffer}
-              className="w-full bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black font-bold py-4 text-lg transform transition-transform duration-300 hover:scale-105"
+              className="w-full bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black font-bold py-3 text-lg transform transition-transform duration-300 hover:scale-105"
             >
               🚀 SIM! QUERO ESTA OFERTA AGORA
             </Button>

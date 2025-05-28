@@ -264,9 +264,9 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         </Alert>
       )}
 
-      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/95 backdrop-blur-sm py-1 px-2 border-b border-gold-500/30">
+      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/95 backdrop-blur-sm py-1 px-2 pb-4 border-b border-gold-500/30">
         {/* Scanners existentes */}
-        <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gold-500/50">
+        <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-gold-500/50">
           {Object.keys(scannerStudies).map((key) => {
             const logo = scannerLogos[key]
             const Icon = logo.icon
@@ -298,7 +298,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
 
       <div
         ref={containerRef}
-        className="w-full h-full pt-10"
+        className="w-full h-full pt-16"
         style={{ visibility: widgetLoaded ? "visible" : "hidden" }}
       />
       <button

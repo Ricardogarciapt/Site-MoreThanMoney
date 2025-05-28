@@ -1,5 +1,13 @@
 "use server"
 
+/**
+ * YouTube API Server Actions
+ *
+ * IMPORTANTE: Estas funções executam APENAS no servidor para manter
+ * a chave da API do YouTube segura. Nunca exponha YOUTUBE_API_KEY
+ * no cliente usando NEXT_PUBLIC_.
+ */
+
 import { type Module, type VideoItem, organizeVideosByModules } from "@/lib/youtube-service"
 
 // Constantes
@@ -40,8 +48,18 @@ let playlistCache: {
   timestamp: 0,
 }
 
+// Função para validar se estamos no servidor
+function validateServerSide() {
+  if (typeof window !== "undefined") {
+    throw new Error("YouTube API key deve ser usado apenas no servidor")
+  }
+}
+
 // Função para buscar os dados da playlist (executada no servidor)
 export async function fetchPlaylistData(forceRefresh = false): Promise<Module[]> {
+  // Validar que estamos no servidor
+  validateServerSide()
+
   const now = Date.now()
 
   // Verifica se há dados em cache e se ainda são válidos
@@ -125,6 +143,9 @@ export async function fetchPlaylistData(forceRefresh = false): Promise<Module[]>
 
 // Função para buscar a imagem de capa da playlist (executada no servidor)
 export async function fetchPlaylistThumbnail(): Promise<string> {
+  // Validar que estamos no servidor
+  validateServerSide()
+
   try {
     // Obtém a chave da API do ambiente do servidor (não exposta ao cliente)
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY

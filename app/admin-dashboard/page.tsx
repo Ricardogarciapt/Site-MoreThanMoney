@@ -24,6 +24,9 @@ import {
   Download,
   Upload,
   Palette,
+  MessageSquare,
+  Database,
+  Mail,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -291,6 +294,30 @@ export default function AdminDashboardPage() {
       href: "/admin-dashboard/courses-manager",
       color: "from-indigo-500 to-indigo-600",
       stats: "Bootcamp + JIFU",
+    },
+    {
+      title: "Bot Telegram",
+      description: "Configure bot e leitura de tópicos",
+      icon: MessageSquare,
+      href: "/admin-dashboard/telegram-bot",
+      color: "from-blue-400 to-blue-500",
+      stats: "Bot ativo",
+    },
+    {
+      title: "Portfólios Notion",
+      description: "Sincronizar com base de dados Notion",
+      icon: Database,
+      href: "/admin-dashboard/notion-sync",
+      color: "from-gray-500 to-gray-600",
+      stats: "Sincronizado",
+    },
+    {
+      title: "Email Marketing",
+      description: "Campanhas e automações de email",
+      icon: Mail,
+      href: "/admin-dashboard/email-campaigns",
+      color: "from-pink-500 to-pink-600",
+      stats: "Campanhas ativas",
     },
   ]
 

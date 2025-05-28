@@ -1,23 +1,39 @@
 import type React from "react"
-import { AuthProvider } from "@/contexts/auth-context"
-import { Inter } from "next/font/google"
+import type { Metadata } from "next"
+import Sidebar from "@/components/admin-sidebar"
+import { MessageSquare, Mail } from "lucide-react"
 
-const inter = Inter({ subsets: ["latin"] })
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Admin dashboard for managing the application.",
+}
 
-export default function AdminLayout({
-  children,
-}: {
+interface RootLayoutProps {
   children: React.ReactNode
-}) {
+}
+
+const AdminDashboardLayout: React.FC<RootLayoutProps> = ({ children }) => {
+  const navItems = [
+    {
+      title: "Email Campaigns",
+      href: "/admin-dashboard/email-campaigns",
+      icon: Mail,
+      description: "Manage email marketing campaigns",
+    },
+    {
+      title: "Telegram Bot",
+      href: "/admin-dashboard/telegram-test",
+      icon: MessageSquare,
+      description: "Testar integração com Telegram",
+    },
+  ]
+
   return (
-    <div className={`${inter.className} min-h-screen bg-gray-100`}>
-      <AuthProvider>
-        {/* Aqui você pode adicionar componentes específicos do admin como sidebar, header, etc. */}
-        <div className="flex">
-          {/* Conteúdo principal */}
-          <main className="flex-1">{children}</main>
-        </div>
-      </AuthProvider>
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar navItems={navItems} />
+      <div className="flex-1 p-4 overflow-auto">{children}</div>
     </div>
   )
 }
+
+export default AdminDashboardLayout
