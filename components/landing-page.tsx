@@ -1,140 +1,89 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, Star, TrendingUp, Users, Award } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import ParticleBackground from "@/components/particle-background"
+import Link from "next/link"
 
 export default function LandingPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [videoPlaying, setVideoPlaying] = useState(false)
 
-  const handleGetStarted = () => {
-    setIsLoading(true)
-    window.location.href = "/register"
+  // Efeito para animar os botões
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const buttons = document.querySelectorAll(".cta-button")
+      buttons.forEach((button) => {
+        button.classList.add("animate-pulse")
+        setTimeout(() => {
+          button.classList.remove("animate-pulse")
+        }, 1000)
+      })
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleWatchVideo = () => {
+    setVideoPlaying(true)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
-      {/* Hero Section */}
-      <section className="relative px-4 py-20 text-center">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-6 text-4xl font-bold text-white md:text-6xl">Transforme Seu Futuro Financeiro</h1>
-          <p className="mb-8 text-xl text-gray-300 md:text-2xl">
-            Plataforma completa de educação financeira e trading automatizado
+    <div className="relative min-h-screen w-full">
+      {/* Particle Background */}
+      <ParticleBackground />
+
+      {/* Logo */}
+      <div className="absolute top-4 left-4 z-30">
+        <div className="animate-logo-fade-in">
+          <Image
+            src="/logo-new.png"
+            alt="MoreThanMoney Logo"
+            width={220}
+            height={180}
+            className="object-contain animate-logo-slide-in"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Content */}
+      <section className="relative min-h-screen flex items-center justify-center z-20">
+        <div className="container mx-auto px-4 py-20 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gold-gradient">MoreThanMoney</h1>
+          <p className="text-xl md:text-2xl text-white mb-12 max-w-3xl mx-auto">
+            Não precisas de te frustrar mais, chegou a tua hora. Investe com Inteligência
           </p>
-          <Button
-            onClick={handleGetStarted}
-            disabled={isLoading}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-lg"
-          >
-            {isLoading ? "Carregando..." : "Começar Agora"}
-          </Button>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-white">Por que escolher MoreThanMoney?</h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="p-6 text-center">
-                <TrendingUp className="mx-auto mb-4 h-12 w-12 text-yellow-500" />
-                <h3 className="mb-2 text-xl font-semibold text-white">Trading Automatizado</h3>
-                <p className="text-gray-300">Sistemas de trading automatizado com resultados comprovados</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="p-6 text-center">
-                <Users className="mx-auto mb-4 h-12 w-12 text-yellow-500" />
-                <h3 className="mb-2 text-xl font-semibold text-white">Comunidade Exclusiva</h3>
-                <p className="text-gray-300">Acesso a uma comunidade de traders experientes</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="p-6 text-center">
-                <Award className="mx-auto mb-4 h-12 w-12 text-yellow-500" />
-                <h3 className="mb-2 text-xl font-semibold text-white">Educação Premium</h3>
-                <p className="text-gray-300">Cursos e materiais educativos de alta qualidade</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="px-4 py-16 bg-gray-800/50">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-white">O que você vai conseguir</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {[
-              "Resultados consistentes no trading",
-              "Conhecimento financeiro sólido",
-              "Estratégias comprovadas",
-              "Suporte especializado",
-              "Ferramentas profissionais",
-              "Comunidade ativa",
-            ].map((benefit, index) => (
-              <div key={index} className="flex items-center">
-                <CheckCircle className="mr-3 h-6 w-6 text-green-500" />
-                <span className="text-white">{benefit}</span>
+          {!videoPlaying ? (
+            <Button
+              onClick={handleWatchVideo}
+              className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg cta-button transform transition-transform duration-300 hover:scale-105"
+            >
+              Conhece a Plataforma
+            </Button>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div className="relative w-full max-w-4xl mx-auto aspect-video bg-black/50 border border-gold-500/30 rounded-xl overflow-hidden mb-6">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/7Ip2w9bKxVw?autoplay=1"
+                  title="MoreThanMoney Presentation"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0"
+                ></iframe>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-white">O que nossos membros dizem</h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                name: "Rafael Bastos",
-                text: "Resultados incríveis em poucos meses. Recomendo!",
-              },
-              {
-                name: "Sandra Oliveira",
-                text: "A melhor plataforma de trading que já usei.",
-              },
-              {
-                name: "André Dias",
-                text: "Educação de qualidade e suporte excepcional.",
-              },
-            ].map((testimonial, index) => (
-              <Card key={index} className="bg-gray-800 border-gray-700">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                    ))}
-                  </div>
-                  <p className="mb-4 text-gray-300">"{testimonial.text}"</p>
-                  <p className="font-semibold text-white">{testimonial.name}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="px-4 py-20 text-center">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">Pronto para começar sua jornada?</h2>
-          <p className="mb-8 text-xl text-gray-300">
-            Junte-se a milhares de pessoas que já transformaram suas vidas financeiras
-          </p>
-          <Button
-            onClick={handleGetStarted}
-            disabled={isLoading}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-lg"
-          >
-            {isLoading ? "Carregando..." : "Começar Agora"}
-          </Button>
+              <Link href="/new-landing">
+                <Button className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg cta-button transform transition-transform duration-300 hover:scale-105 animate-pulse">
+                  Vê as nossas ofertas!
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </div>
