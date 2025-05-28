@@ -38,48 +38,47 @@ export default function AffiliateManagerPage() {
 
   // Efeito para buscar usuários do localStorage
   useEffect(() => {
-    const loadAffiliateData = () => {
-      try {
-        if (typeof window === "undefined") return
+    if (typeof window !== "undefined") {
+      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
 
-        const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
-        const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
-        const allCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
+      // Filtrar apenas usuários que podem ser afiliados
+      const eligibleUsers = registeredUsers.filter((u: any) => canBeAffiliate(u.role || "Membro"))
 
-        // Rest of the existing logic remains the same...
-        const eligibleUsers = registeredUsers.filter((u: any) => canBeAffiliate(u.role || "Membro"))
+      // Buscar informações de afiliados do localStorage
+      const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
 
-        const mappedAffiliates = eligibleUsers.map((user: any) => {
-          const existingAffiliate = storedAffiliates.find((a: any) => a.username === user.username)
-          const userCommissions = getAffiliateCommissions(user.username)
-          const totalCommission = userCommissions.reduce((sum, comm) => {
-            return sum + (comm.status !== "cancelled" ? comm.amount : 0)
-          }, 0)
-          const pendingCommission = userCommissions.reduce((sum, comm) => {
-            return sum + (comm.status === "pending" ? comm.amount : 0)
-          }, 0)
+      // Mapear usuários elegíveis para o formato de afiliados
+      const mappedAffiliates = eligibleUsers.map((user: any) => {
+        // Verificar se já existe como afiliado
+        const existingAffiliate = storedAffiliates.find((a: any) => a.username === user.username)
 
-          return {
-            username: user.username,
-            name: user.name,
-            email: user.email || "",
-            role: user.role || "Membro",
-            affiliateCode: existingAffiliate?.affiliateCode || "",
-            totalCommission,
-            pendingCommission,
-          }
-        })
+        // Buscar comissões do afiliado
+        const userCommissions = getAffiliateCommissions(user.username)
+        const totalCommission = userCommissions.reduce((sum, comm) => {
+          return sum + (comm.status !== "cancelled" ? comm.amount : 0)
+        }, 0)
 
-        setAffiliates(mappedAffiliates)
-        setCommissions(allCommissions)
-      } catch (error) {
-        console.error("Error loading affiliate data:", error)
-        setAffiliates([])
-        setCommissions([])
-      }
+        const pendingCommission = userCommissions.reduce((sum, comm) => {
+          return sum + (comm.status === "pending" ? comm.amount : 0)
+        }, 0)
+
+        return {
+          username: user.username,
+          name: user.name,
+          email: user.email || "",
+          role: user.role || "Membro",
+          affiliateCode: existingAffiliate?.affiliateCode || "",
+          totalCommission,
+          pendingCommission,
+        }
+      })
+
+      setAffiliates(mappedAffiliates)
+
+      // Buscar todas as comissões
+      const allCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
+      setCommissions(allCommissions)
     }
-
-    loadAffiliateData()
   }, [])
 
   // Redirecionar se não for autenticado ou admin
@@ -102,61 +101,57 @@ export default function AffiliateManagerPage() {
 
   // Gerar código de afiliado para um usuário
   const generateCodeForUser = (username: string) => {
-    try {
-      const newCode = generateAffiliateCode(username)
+    const newCode = generateAffiliateCode(username)
 
-      const updatedAffiliates = affiliates.map((affiliate) => {
-        if (affiliate.username === username) {
-          return { ...affiliate, affiliateCode: newCode }
-        }
-        return affiliate
-      })
+    // Atualizar afiliados no estado
+    const updatedAffiliates = affiliates.map((affiliate) => {
+      if (affiliate.username === username) {
+        return { ...affiliate, affiliateCode: newCode }
+      }
+      return affiliate
+    })
 
-      setAffiliates(updatedAffiliates)
+    setAffiliates(updatedAffiliates)
 
-      if (typeof window !== "undefined") {
-        const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
-        const existingIndex = storedAffiliates.findIndex((a: any) => a.username === username)
+    // Salvar no localStorage
+    if (typeof window !== "undefined") {
+      const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
+      const existingIndex = storedAffiliates.findIndex((a: any) => a.username === username)
 
-        if (existingIndex >= 0) {
-          storedAffiliates[existingIndex].affiliateCode = newCode
-        } else {
-          storedAffiliates.push({ username, affiliateCode: newCode })
-        }
-
-        localStorage.setItem("affiliates", JSON.stringify(storedAffiliates))
+      if (existingIndex >= 0) {
+        storedAffiliates[existingIndex].affiliateCode = newCode
+      } else {
+        storedAffiliates.push({ username, affiliateCode: newCode })
       }
 
-      setSuccessMessage(`Código de afiliado gerado com sucesso para ${username}`)
-      setTimeout(() => setSuccessMessage(""), 3000)
-    } catch (error) {
-      console.error("Error generating affiliate code:", error)
+      localStorage.setItem("affiliates", JSON.stringify(storedAffiliates))
     }
+
+    setSuccessMessage(`Código de afiliado gerado com sucesso para ${username}`)
+    setTimeout(() => setSuccessMessage(""), 3000)
   }
 
   // Remover código de afiliado
   const removeAffiliateCode = (username: string) => {
-    try {
-      const updatedAffiliates = affiliates.map((affiliate) => {
-        if (affiliate.username === username) {
-          return { ...affiliate, affiliateCode: "" }
-        }
-        return affiliate
-      })
-
-      setAffiliates(updatedAffiliates)
-
-      if (typeof window !== "undefined") {
-        const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
-        const filteredAffiliates = storedAffiliates.filter((a: any) => a.username !== username)
-        localStorage.setItem("affiliates", JSON.stringify(filteredAffiliates))
+    // Atualizar afiliados no estado
+    const updatedAffiliates = affiliates.map((affiliate) => {
+      if (affiliate.username === username) {
+        return { ...affiliate, affiliateCode: "" }
       }
+      return affiliate
+    })
 
-      setSuccessMessage(`Código de afiliado removido com sucesso para ${username}`)
-      setTimeout(() => setSuccessMessage(""), 3000)
-    } catch (error) {
-      console.error("Error removing affiliate code:", error)
+    setAffiliates(updatedAffiliates)
+
+    // Salvar no localStorage
+    if (typeof window !== "undefined") {
+      const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
+      const filteredAffiliates = storedAffiliates.filter((a: any) => a.username !== username)
+      localStorage.setItem("affiliates", JSON.stringify(filteredAffiliates))
     }
+
+    setSuccessMessage(`Código de afiliado removido com sucesso para ${username}`)
+    setTimeout(() => setSuccessMessage(""), 3000)
   }
 
   // Marcar comissão como paga

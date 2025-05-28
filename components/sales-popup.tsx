@@ -109,9 +109,9 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           <p className="text-xl text-gray-300 mt-2">Antes de sair, vê esta oferta incrível!</p>
         </CardHeader>
 
-        <CardContent className="relative z-10 p-2">
+        <CardContent className="relative z-10 p-3">
           {/* Countdown Timer */}
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-center">
+          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="w-5 h-5 text-red-400" />
               <span className="text-red-400 font-semibold">Esta oferta expira em:</span>
@@ -120,7 +120,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           </div>
 
           {/* Offer Details */}
-          <div className="space-y-4 mb-4">
+          <div className="space-y-6 mb-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold text-white mb-3">
                 Pack Completo: JIFU + Scanner MTM + Bootcamp + Mentoria
@@ -155,7 +155,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           </div>
 
           {/* Social Proof */}
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
               <span className="text-green-400 font-semibold">73 pessoas compraram hoje</span>
