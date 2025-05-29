@@ -103,7 +103,7 @@ export default function AffiliateDashboard() {
 
       setAffiliateLinks({
         main: `${baseUrl}?ref=${username}`,
-        jifu: config.affiliateLinks?.jifuAffiliateLink || "https://ricardogarcia.jifu.com",
+        jifu: config.affiliateLinks?.jifuAffiliateLink || "https://shop.jifu.com/ricardogarcia/one-enrollment?eslug=livecustomer",
         scanner: `${baseUrl}/scanner?ref=${username}`,
         copytrading: `${baseUrl}/copytrading?ref=${username}`,
       })
