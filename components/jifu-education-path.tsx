@@ -12,7 +12,7 @@ export default function JifuEducationPath() {
   const videoRef = useRef<HTMLIFrameElement>(null)
   const { config } = useConfigStore()
   const [jifuAffiliateLink, setJifuAffiliateLink] = useState(
-    config.affiliateLinks?.jifuAffiliateLink || "https://ricardogarcia.jifu.com",
+    config.affiliateLinks?.jifuAffiliateLink || "https://shop.jifu.com/ricardogarcia/one-enrollment?eslug=livecustomer",
   )
 
   // Atualizar o link quando a configuração mudar
