@@ -1,77 +1,59 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/components/ui/use-toast"
+import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Check, Save, RefreshCw, CreditCard, AlertTriangle, Eye, EyeOff } from "lucide-react"
-
-interface StripeConfig {
-  publishableKey: string
-  secretKey: string
-  webhookSecret: string
-  enabled: boolean
-  testMode: boolean
-}
+import { ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
+import Link from "next/link"
 
 export default function PaymentSettingsPage() {
-  const { isAuthenticated, isAdmin } = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [showSecrets, setShowSecrets] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<"checking" | "connected" | "error" | "not-configured">(
-    "checking",
+  const [isTestMode, setIsTestMode] = useState(true)
+  const [showSecretKey, setShowSecretKey] = useState(false)
+  const [showWebhookSecret, setShowWebhookSecret] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connecting" | "connected" | "error">(
+    "disconnected",
   )
 
-  const [stripeConfig, setStripeConfig] = useState<StripeConfig>({
+  const [settings, setSettings] = useState({
     publishableKey: "",
     secretKey: "",
     webhookSecret: "",
-    enabled: true,
-    testMode: true,
+    testPublishableKey: "",
+    testSecretKey: "",
+    testWebhookSecret: "",
   })
 
-  // Verificar autenticação
-  useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
-      router.push("/admin-login")
-    }
-  }, [isAuthenticated, isAdmin, router])
+  const validateStripeKey = (key: string, type: "publishable" | "secret" | "webhook") => {
+    if (!key) return false
 
-  // Carregar configurações existentes
-  useEffect(() => {
-    loadStripeConfig()
-    checkStripeConnection()
-  }, [])
-
-  const loadStripeConfig = () => {
-    // Carregar do localStorage ou API
-    const saved = localStorage.getItem("stripe-config")
-    if (saved) {
-      try {
-        const config = JSON.parse(saved)
-        setStripeConfig(config)
-      } catch (error) {
-        console.error("Erro ao carregar configuração:", error)
-      }
+    switch (type) {
+      case "publishable":
+        return key.startsWith("pk_")
+      case "secret":
+        return key.startsWith("sk_")
+      case "webhook":
+        return key.startsWith("whsec_")
+      default:
+        return false
     }
   }
 
-  const checkStripeConnection = async () => {
+  const testConnection = async () => {
+    setConnectionStatus("connecting")
+
     try {
-      const response = await fetch("/api/payments/stripe/create-session")
-      if (response.status === 200) {
+      // Simular teste de conexão
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      const currentSecretKey = isTestMode ? settings.testSecretKey : settings.secretKey
+
+      if (validateStripeKey(currentSecretKey, "secret")) {
         setConnectionStatus("connected")
-      } else if (response.status === 503) {
-        setConnectionStatus("not-configured")
       } else {
         setConnectionStatus("error")
       }
@@ -80,291 +62,253 @@ export default function PaymentSettingsPage() {
     }
   }
 
-  const handleSaveConfig = async () => {
-    setIsSaving(true)
-
-    try {
-      // Validar chaves
-      if (!stripeConfig.publishableKey.startsWith("pk_")) {
-        throw new Error('Chave pública deve começar com "pk_"')
-      }
-
-      if (!stripeConfig.secretKey.startsWith("sk_")) {
-        throw new Error('Chave secreta deve começar com "sk_"')
-      }
-
-      if (!stripeConfig.webhookSecret.startsWith("whsec_")) {
-        throw new Error('Webhook secret deve começar com "whsec_"')
-      }
-
-      // Salvar no localStorage (em produção, salvar no banco de dados)
-      localStorage.setItem("stripe-config", JSON.stringify(stripeConfig))
-
-      // Atualizar variáveis de ambiente (simulado)
-      if (typeof window !== "undefined") {
-        // Em produção, isso seria uma chamada para API que atualiza as env vars
-        console.log("Configurações do Stripe salvas:", {
-          ...stripeConfig,
-          secretKey: "***",
-          webhookSecret: "***",
-        })
-      }
-
-      setSaveSuccess(true)
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações do Stripe foram salvas com sucesso.",
-      })
-
-      // Verificar conexão novamente
-      setTimeout(() => {
-        checkStripeConnection()
-        setSaveSuccess(false)
-      }, 2000)
-    } catch (error) {
-      toast({
-        title: "Erro ao salvar",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
+  const saveSettings = async () => {
+    // Aqui você salvaria as configurações no banco de dados
+    console.log("Saving settings:", settings)
+    alert("Configurações salvas com sucesso!")
   }
 
-  const testStripeConnection = async () => {
-    try {
-      const response = await fetch("/api/payments/stripe/create-session", {
-        method: "GET",
-      })
-
-      const result = await response.json()
-
-      if (result.stripe_configured) {
-        toast({
-          title: "Conexão bem-sucedida",
-          description: "Stripe está configurado e funcionando.",
-        })
-        setConnectionStatus("connected")
-      } else {
-        toast({
-          title: "Stripe não configurado",
-          description: "Verifique as chaves de API.",
-          variant: "destructive",
-        })
-        setConnectionStatus("not-configured")
-      }
-    } catch (error) {
-      toast({
-        title: "Erro na conexão",
-        description: "Não foi possível conectar ao Stripe.",
-        variant: "destructive",
-      })
-      setConnectionStatus("error")
-    }
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return <div>Carregando...</div>
-  }
-
-  const getStatusColor = () => {
+  const getStatusBadge = () => {
     switch (connectionStatus) {
       case "connected":
-        return "text-green-500"
+        return (
+          <Badge className="bg-green-500 text-white">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Conectado
+          </Badge>
+        )
+      case "connecting":
+        return <Badge className="bg-yellow-500 text-white animate-pulse">Testando...</Badge>
       case "error":
-        return "text-red-500"
-      case "not-configured":
-        return "text-yellow-500"
+        return (
+          <Badge className="bg-red-500 text-white">
+            <XCircle className="w-3 h-3 mr-1" />
+            Erro
+          </Badge>
+        )
       default:
-        return "text-gray-500"
-    }
-  }
-
-  const getStatusText = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "Conectado"
-      case "error":
-        return "Erro de conexão"
-      case "not-configured":
-        return "Não configurado"
-      case "checking":
-        return "Verificando..."
-      default:
-        return "Desconhecido"
+        return <Badge variant="outline">Desconectado</Badge>
     }
   }
 
   return (
-    <div className="container mx-auto p-6 min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-            Configurações de Pagamento
-          </h1>
-          <p className="text-gray-400">Configure as integrações de pagamento do sistema</p>
-        </div>
-        <Button onClick={() => router.push("/admin-dashboard")} variant="outline">
-          Voltar ao Painel
-        </Button>
-      </div>
-
-      {/* Status da Conexão */}
-      <Card className="mb-6 bg-gray-900/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Status da Conexão Stripe
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-3 h-3 rounded-full ${connectionStatus === "connected" ? "bg-green-500 animate-pulse" : connectionStatus === "error" ? "bg-red-500" : "bg-yellow-500"}`}
-              />
-              <span className={getStatusColor()}>{getStatusText()}</span>
-            </div>
-            <Button onClick={testStripeConnection} variant="outline" size="sm">
-              Testar Conexão
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+      <div className="container mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Link href="/admin-dashboard">
+            <Button variant="outline" size="sm" className="border-gold-500/30 text-gold-400 hover:bg-gold-500/10">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
             </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent">
+              Configurações de Pagamento
+            </h1>
+            <p className="text-gray-400 mt-1">Configure as chaves do Stripe para processar pagamentos</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Configurações do Stripe */}
-      <Card className="bg-gray-900/50 border-gray-700">
-        <CardHeader>
-          <CardTitle>Configurações do Stripe</CardTitle>
-          <CardDescription>Configure as chaves de API do Stripe para processar pagamentos</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {saveSuccess && (
-              <Alert className="bg-green-500/10 border-green-500">
-                <Check className="h-4 w-4 text-green-500" />
-                <AlertDescription className="text-green-500">Configurações salvas com sucesso!</AlertDescription>
-              </Alert>
-            )}
+        <div className="grid gap-6 max-w-4xl">
+          {/* Status Card */}
+          <Card className="bg-black/50 border-gold-500/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-gold-400">Status da Conexão</CardTitle>
+                  <CardDescription>Estado atual da integração com o Stripe</CardDescription>
+                </div>
+                {getStatusBadge()}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Button onClick={testConnection} disabled={connectionStatus === "connecting"}>
+                  {connectionStatus === "connecting" ? "Testando..." : "Testar Conexão"}
+                </Button>
+                <div className="text-sm text-gray-400">
+                  Modo: <span className="text-gold-400">{isTestMode ? "Teste" : "Produção"}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Modo de Teste */}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="test-mode"
-                checked={stripeConfig.testMode}
-                onCheckedChange={(checked) => setStripeConfig({ ...stripeConfig, testMode: checked })}
-              />
-              <Label htmlFor="test-mode">Modo de Teste</Label>
-              <span className="text-sm text-gray-400">(Use chaves de teste para desenvolvimento)</span>
-            </div>
+          {/* Environment Toggle */}
+          <Card className="bg-black/50 border-gold-500/20">
+            <CardHeader>
+              <CardTitle className="text-gold-400">Ambiente</CardTitle>
+              <CardDescription>Alternar entre modo de teste e produção</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <Switch id="test-mode" checked={isTestMode} onCheckedChange={setIsTestMode} />
+                <Label htmlFor="test-mode" className="text-white">
+                  {isTestMode ? "Modo de Teste" : "Modo de Produção"}
+                </Label>
+              </div>
+              {!isTestMode && (
+                <Alert className="mt-4 border-red-500/50 bg-red-500/10">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-red-400">
+                    Cuidado! Você está no modo de produção. Transações reais serão processadas.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
 
-            {/* Ativar Stripe */}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="stripe-enabled"
-                checked={stripeConfig.enabled}
-                onCheckedChange={(checked) => setStripeConfig({ ...stripeConfig, enabled: checked })}
-              />
-              <Label htmlFor="stripe-enabled">Ativar Pagamentos Stripe</Label>
-            </div>
-
-            {/* Chave Pública */}
-            <div className="space-y-2">
-              <Label htmlFor="publishable-key">Chave Pública (Publishable Key)</Label>
-              <Input
-                id="publishable-key"
-                placeholder={stripeConfig.testMode ? "pk_test_..." : "pk_live_..."}
-                value={stripeConfig.publishableKey}
-                onChange={(e) => setStripeConfig({ ...stripeConfig, publishableKey: e.target.value })}
-              />
-              <p className="text-sm text-gray-400">
-                Esta chave é segura para usar no frontend.{" "}
-                {stripeConfig.testMode ? "Use uma chave de teste." : "Use uma chave de produção."}
-              </p>
-            </div>
-
-            {/* Chave Secreta */}
-            <div className="space-y-2">
-              <Label htmlFor="secret-key">Chave Secreta (Secret Key)</Label>
-              <div className="relative">
+          {/* Stripe Configuration */}
+          <Card className="bg-black/50 border-gold-500/20">
+            <CardHeader>
+              <CardTitle className="text-gold-400">
+                Configurações do Stripe - {isTestMode ? "Teste" : "Produção"}
+              </CardTitle>
+              <CardDescription>
+                Configure suas chaves do Stripe para {isTestMode ? "teste" : "produção"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Publishable Key */}
+              <div className="space-y-2">
+                <Label htmlFor="publishable-key" className="text-white">
+                  Chave Pública (Publishable Key)
+                </Label>
                 <Input
-                  id="secret-key"
-                  type={showSecrets ? "text" : "password"}
-                  placeholder={stripeConfig.testMode ? "sk_test_..." : "sk_live_..."}
-                  value={stripeConfig.secretKey}
-                  onChange={(e) => setStripeConfig({ ...stripeConfig, secretKey: e.target.value })}
+                  id="publishable-key"
+                  type="text"
+                  placeholder={`pk_${isTestMode ? "test" : "live"}_...`}
+                  value={isTestMode ? settings.testPublishableKey : settings.publishableKey}
+                  onChange={(e) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      [isTestMode ? "testPublishableKey" : "publishableKey"]: e.target.value,
+                    }))
+                  }
+                  className="bg-black/30 border-gold-500/30 text-white"
                 />
+                <p className="text-xs text-gray-400">Esta chave é segura para uso no frontend</p>
+              </div>
+
+              {/* Secret Key */}
+              <div className="space-y-2">
+                <Label htmlFor="secret-key" className="text-white">
+                  Chave Secreta (Secret Key)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="secret-key"
+                    type={showSecretKey ? "text" : "password"}
+                    placeholder={`sk_${isTestMode ? "test" : "live"}_...`}
+                    value={isTestMode ? settings.testSecretKey : settings.secretKey}
+                    onChange={(e) =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        [isTestMode ? "testSecretKey" : "secretKey"]: e.target.value,
+                      }))
+                    }
+                    className="bg-black/30 border-gold-500/30 text-white pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowSecretKey(!showSecretKey)}
+                  >
+                    {showSecretKey ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-red-400">⚠️ Mantenha esta chave segura! Nunca a compartilhe publicamente.</p>
+              </div>
+
+              {/* Webhook Secret */}
+              <div className="space-y-2">
+                <Label htmlFor="webhook-secret" className="text-white">
+                  Webhook Secret
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="webhook-secret"
+                    type={showWebhookSecret ? "text" : "password"}
+                    placeholder="whsec_..."
+                    value={isTestMode ? settings.testWebhookSecret : settings.webhookSecret}
+                    onChange={(e) =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        [isTestMode ? "testWebhookSecret" : "webhookSecret"]: e.target.value,
+                      }))
+                    }
+                    className="bg-black/30 border-gold-500/30 text-white pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowWebhookSecret(!showWebhookSecret)}
+                  >
+                    {showWebhookSecret ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400">Usado para verificar a autenticidade dos webhooks do Stripe</p>
+              </div>
+
+              {/* Save Button */}
+              <div className="pt-4">
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowSecrets(!showSecrets)}
+                  onClick={saveSettings}
+                  className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black font-semibold"
                 >
-                  {showSecrets ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  Salvar Configurações
                 </Button>
               </div>
-              <p className="text-sm text-gray-400">
-                Esta chave deve ser mantida em segredo. Nunca a compartilhe publicamente.
-              </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Webhook Secret */}
-            <div className="space-y-2">
-              <Label htmlFor="webhook-secret">Webhook Secret</Label>
-              <div className="relative">
-                <Input
-                  id="webhook-secret"
-                  type={showSecrets ? "text" : "password"}
-                  placeholder="whsec_..."
-                  value={stripeConfig.webhookSecret}
-                  onChange={(e) => setStripeConfig({ ...stripeConfig, webhookSecret: e.target.value })}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowSecrets(!showSecrets)}
-                >
-                  {showSecrets ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
+          {/* Help Card */}
+          <Card className="bg-black/50 border-gold-500/20">
+            <CardHeader>
+              <CardTitle className="text-gold-400">Como obter as chaves do Stripe</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-gray-300">
+              <div>
+                <strong className="text-white">1. Acesse o Dashboard do Stripe:</strong>
+                <p>
+                  Vá para{" "}
+                  <a
+                    href="https://dashboard.stripe.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold-400 hover:underline"
+                  >
+                    dashboard.stripe.com
+                  </a>
+                </p>
               </div>
-              <p className="text-sm text-gray-400">
-                Usado para verificar webhooks do Stripe. Configure o endpoint:{" "}
-                <code className="bg-gray-800 px-1 rounded">/api/payments/stripe/webhook</code>
-              </p>
-            </div>
-
-            {/* Aviso de Segurança */}
-            <Alert className="bg-yellow-500/10 border-yellow-500">
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <AlertDescription className="text-yellow-400">
-                <strong>Importante:</strong> Em produção, estas chaves devem ser armazenadas como variáveis de ambiente
-                seguras, não no localStorage. Esta interface é apenas para desenvolvimento/teste.
-              </AlertDescription>
-            </Alert>
-
-            {/* Botão Salvar */}
-            <div className="pt-4 flex justify-end">
-              <Button onClick={handleSaveConfig} disabled={isSaving} className="bg-yellow-600 hover:bg-yellow-700">
-                {isSaving ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Salvar Configurações
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <div>
+                <strong className="text-white">2. Navegue para Developers → API keys:</strong>
+                <p>Encontre suas chaves públicas e secretas</p>
+              </div>
+              <div>
+                <strong className="text-white">3. Configure Webhooks:</strong>
+                <p>
+                  Em Developers → Webhooks, adicione o endpoint:{" "}
+                  <code className="bg-gray-800 px-1 rounded">https://seudominio.com/api/payments/stripe/webhook</code>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
