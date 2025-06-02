@@ -2,10 +2,11 @@
 const nextConfig = {
   // Otimizações de produção
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ["@supabase/supabase-js", "lucide-react"],
-    bundlePagesRouterDependencies: true, // Added from updates
+    bundlePagesRouterDependencies: true,
   },
+  
+  // Removi optimizeCss que depende do critters
   
   // Compressão
   compress: true,
@@ -73,17 +74,17 @@ const nextConfig = {
     formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    unoptimized: true, // Added from updates
+    unoptimized: true,
   },
   
   // ESLint config
   eslint: {
-    ignoreDuringBuilds: true, // Added from updates
+    ignoreDuringBuilds: true,
   },
   
   // TypeScript config
   typescript: {
-    ignoreBuildErrors: true, // Added from updates
+    ignoreBuildErrors: true,
   },
 }
 
