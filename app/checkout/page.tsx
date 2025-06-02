@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -17,13 +17,12 @@ interface CartItem {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
 
   useEffect(() => {
-    // Load cart items from localStorage or URL params
+    // Load cart items from localStorage
     const items = JSON.parse(localStorage.getItem("cartItems") || "[]")
     setCartItems(items)
 

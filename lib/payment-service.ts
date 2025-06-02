@@ -86,3 +86,81 @@ export async function getStripeSession(sessionId: string): Promise<Stripe.Checko
     return null
   }
 }
+
+// Classe principal do serviço de pagamentos (simplificada)
+export class PaymentService {
+  private static instance: PaymentService
+
+  public static getInstance(): PaymentService {
+    if (!PaymentService.instance) {
+      PaymentService.instance = new PaymentService()
+    }
+    return PaymentService.instance
+  }
+
+  // Verificar se o Stripe está configurado
+  isStripeConfigured(): boolean {
+    return !!(process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  }
+
+  // Criar sessão de pagamento
+  async createPaymentSession(
+    products: PaymentProduct[],
+    successUrl: string,
+    cancelUrl: string,
+    customerEmail?: string,
+  ): Promise<PaymentSession> {
+    return createStripeSession(products, successUrl, cancelUrl, customerEmail)
+  }
+
+  // Verificar status do pagamento
+  async checkPaymentStatus(sessionId: string): Promise<{
+    status: "pending" | "completed" | "failed" | "cancelled"
+    details?: any
+  }> {
+    try {
+      const session = await getStripeSession(sessionId)
+      if (!session) {
+        return { status: "failed" }
+      }
+
+      const statusMap: Record<string, "pending" | "completed" | "failed" | "cancelled"> = {
+        complete: "completed",
+        expired: "cancelled",
+        open: "pending",
+      }
+
+      return {
+        status: statusMap[session.status] || "failed",
+        details: session,
+      }
+    } catch (error) {
+      console.error("Error checking payment status:", error)
+      return { status: "failed" }
+    }
+  }
+
+  // Verificar se o serviço está disponível
+  async checkServiceHealth(): Promise<boolean> {
+    return this.isStripeConfigured()
+  }
+}
+
+// Exportar instância singleton
+export const paymentService = PaymentService.getInstance()
+
+// Funções utilitárias
+export function formatCurrency(amount: number, currency = "EUR"): string {
+  return new Intl.NumberFormat("pt-PT", {
+    style: "currency",
+    currency: currency,
+  }).format(amount)
+}
+
+export function calculateTax(amount: number, taxRate = 0.23): number {
+  return amount * taxRate
+}
+
+export function calculateTotal(subtotal: number, tax = 0): number {
+  return subtotal + tax
+}
