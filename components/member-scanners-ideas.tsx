@@ -15,7 +15,7 @@ export function MemberScannersIdeas() {
   const recentIdeas = getRecentIdeas(3)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Scanners e Ideias</h2>
         <Link href="/scanners-and-ideas">
@@ -43,49 +43,17 @@ export function MemberScannersIdeas() {
 
         <TabsContent value="scanners" className="mt-0">
           {/* Scanner principal */}
-          <Card className="bg-black/30 border-gray-800 mb-8">
+          <Card className="bg-black/30 border-gray-800 mb-8 relative z-0">
             <CardContent className="p-0">
-              <div className="relative">
-                <div className="aspect-video h-[600px] w-full overflow-hidden rounded-md pointer-events-auto">
-                  <div className="w-full h-full overflow-auto" style={{ pointerEvents: "auto" }}>
+              <div className="relative z-0">
+                <div className="aspect-video h-[600px] w-full overflow-hidden rounded-md pointer-events-auto relative z-0">
+                  <div className="w-full h-full overflow-auto relative z-0" style={{ pointerEvents: "auto" }}>
                     <TradingViewWidget />
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white border border-gold-500/30 z-10"
-                  style={{ pointerEvents: "auto" }}
-                  onClick={() => {
-                    const widget = document.querySelector(".tradingview-widget-container")
-                    if (widget) {
-                      if (widget.classList.contains("fullscreen")) {
-                        widget.classList.remove("fullscreen")
-                        widget.style.position = ""
-                        widget.style.top = ""
-                        widget.style.left = ""
-                        widget.style.width = ""
-                        widget.style.height = ""
-                        widget.style.zIndex = ""
-                        widget.style.backgroundColor = ""
-                      } else {
-                        widget.classList.add("fullscreen")
-                        widget.style.position = "fixed"
-                        widget.style.top = "0"
-                        widget.style.left = "0"
-                        widget.style.width = "100vw"
-                        widget.style.height = "100vh"
-                        widget.style.zIndex = "9999"
-                        widget.style.backgroundColor = "black"
-                      }
-                    }
-                  }}
-                >
-                  🔍
-                </Button>
               </div>
             </CardContent>
-            <CardFooter className="px-4 py-3 bg-black/50 flex justify-between">
+            <CardFooter className="px-4 py-3 bg-black/50 flex justify-between relative z-10">
               <div>
                 <h4 className="font-medium text-gold-500">Scanner MTM ao Vivo</h4>
                 <p className="text-xs text-gray-400">Estruturas de mercado em tempo real</p>

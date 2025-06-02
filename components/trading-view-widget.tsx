@@ -256,7 +256,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   }, [selectedStudies])
 
   return (
-    <div className="w-full h-[800px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden">
+    <div className="w-full h-[800px] relative bg-gray-900 border border-gold-500/30 rounded-lg overflow-hidden mb-4">
       {error && (
         <Alert className="absolute top-2 left-2 right-2 z-20 bg-red-500/20 border-red-500">
           <AlertCircle className="h-4 w-4 text-red-500" />
@@ -264,9 +264,9 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
         </Alert>
       )}
 
-      <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800/95 backdrop-blur-sm py-1 px-2 pb-4 border-b border-gold-500/30">
+      <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-gray-800/98 via-gray-900/98 to-gray-800/98 backdrop-blur-md py-3 px-4 pb-6 border-b border-gold-500/40 shadow-lg shadow-black/20">
         {/* Scanners existentes */}
-        <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-gold-500/50">
+        <div className="flex flex-nowrap gap-3 overflow-x-auto pb-3 mb-2 scrollbar-thin scrollbar-thumb-gold-500/60 scrollbar-track-gray-700/30">
           {Object.keys(scannerStudies).map((key) => {
             const logo = scannerLogos[key]
             const Icon = logo.icon
@@ -279,9 +279,9 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
                 variant="ghost"
                 className={`transition-all duration-300 transform hover:scale-105 ${
                   isChecked
-                    ? `${logo.bgColor} text-white shadow-lg shadow-black/50`
-                    : "bg-gray-700/80 text-gray-300 hover:bg-gray-600/80"
-                } border border-gray-600/50 hover:border-gray-500 px-1 py-1 rounded-md flex items-center gap-1 text-xs whitespace-nowrap flex-shrink-0`}
+                    ? `${logo.bgColor} text-white shadow-xl shadow-black/60 ring-2 ring-gold-400/50`
+                    : "bg-gray-700/90 text-gray-300 hover:bg-gray-600/90 hover:shadow-lg hover:shadow-black/40"
+                } border border-gray-600/60 hover:border-gray-500/80 px-3 py-2 rounded-lg flex items-center gap-2 text-sm whitespace-nowrap flex-shrink-0 backdrop-blur-sm`}
               >
                 <Checkbox
                   checked={isChecked}
@@ -298,7 +298,7 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
 
       <div
         ref={containerRef}
-        className="w-full h-full pt-16"
+        className="w-full h-full pt-20"
         style={{ visibility: widgetLoaded ? "visible" : "hidden" }}
       />
       <button

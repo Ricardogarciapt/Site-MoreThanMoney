@@ -86,8 +86,14 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
   if (!isVisible) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="bg-gradient-to-br from-black via-gray-900 to-black border-gold-500 max-w-xl w-full relative overflow-hidden">
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={handleClose}
+    >
+      <Card
+        className="bg-gradient-to-br from-black via-gray-900 to-black border-gold-500 max-w-md w-full relative overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close Button */}
         <button
           onClick={handleClose}
@@ -109,7 +115,7 @@ export default function SalesPopup({ delay = 45000, showOnExit = true }: SalesPo
           <p className="text-xl text-gray-300 mt-2">Antes de sair, vê esta oferta incrível!</p>
         </CardHeader>
 
-        <CardContent className="relative z-10 p-3">
+        <CardContent className="relative z-10 p-4">
           {/* Countdown Timer */}
           <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
