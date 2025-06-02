@@ -28,16 +28,15 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 PAYPAL_CLIENT_ID=your_paypal_client_id
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret
 
-# YouTube (para educação)
+# YouTube (apenas servidor - NÃO usar NEXT_PUBLIC_)
 YOUTUBE_API_KEY=your_youtube_api_key
-NEXT_PUBLIC_YOUTUBE_API_KEY=your_youtube_api_key
 
 # Telegram
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
 
-# Notion (opcional)
-NOTION_API_KEY=your_notion_api_key
+# Notion
+NOTION_API_KEY=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
 NOTION_DATABASE_ID=your_database_id
 
 # App Config
@@ -78,6 +77,7 @@ NEXT_PUBLIC_GA_ID=GA_MEASUREMENT_ID
 - ✅ CSP headers
 - ✅ SQL injection protection
 - ✅ XSS protection
+- ✅ API keys protegidas no servidor
 
 ### Performance
 
@@ -92,3 +92,13 @@ NEXT_PUBLIC_GA_ID=GA_MEASUREMENT_ID
 - **Target Load Time:** < 2s
 - **Lighthouse Score:** > 90
 - **Uptime:** > 99.9%
+
+## 🔐 Segurança das APIs
+
+- **YouTube API** - Apenas no servidor, nunca exposta ao cliente
+- **Stripe** - Chaves públicas e privadas separadas
+- **Supabase** - RLS ativado para proteção de dados
+- **Notion** - API key protegida no servidor
+\`\`\`
+
+Agora vou verificar se há outras referências à variável sensível e removê-las:

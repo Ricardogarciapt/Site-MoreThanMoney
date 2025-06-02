@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -55,6 +55,68 @@ export function PortfoliosIntelligent() {
   const [loading, setLoading] = useState(true)
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null)
   const [showAssetDetails, setShowAssetDetails] = useState(false)
+
+  // Função para copiar portfólio para clipboard
+  const copyPortfolioToClipboard = useCallback(async (portfolio: Portfolio) => {
+    if (!portfolio) return
+
+    const portfolioText = `
+📊 PORTFÓLIO MORETHANMONEY - ${portfolio.name}
+
+📈 INFORMAÇÕES GERAIS:
+• Tipo: ${portfolio.type === "crypto" ? "Criptomoedas" : portfolio.type === "stocks" ? "Ações" : "Misto"}
+• Nível de Risco: ${getRiskLabel(portfolio.riskLevel)}
+• Descrição: ${portfolio.description}
+
+💰 PERFORMANCE:
+• Diário: ${portfolio.performance.daily > 0 ? "+" : ""}${portfolio.performance.daily.toFixed(2)}%
+• Semanal: ${portfolio.performance.weekly > 0 ? "+" : ""}${portfolio.performance.weekly.toFixed(2)}%
+• Mensal: ${portfolio.performance.monthly > 0 ? "+" : ""}${portfolio.performance.monthly.toFixed(2)}%
+• Anual: ${portfolio.performance.yearly > 0 ? "+" : ""}${portfolio.performance.yearly.toFixed(2)}%
+
+🎯 ALOCAÇÃO DE ATIVOS:
+${portfolio.assets
+  .map(
+    (asset) =>
+      `• ${asset.name} (${asset.ticker}): ${asset.allocation}% - ${asset.change > 0 ? "+" : ""}${asset.change.toFixed(2)}%`,
+  )
+  .join("\n")}
+
+📅 ÚLTIMA ATUALIZAÇÃO: ${formatDate(portfolio.lastUpdated)}
+⏰ PRÓXIMA ATUALIZAÇÃO: ${getDaysUntilNextUpdate(portfolio.nextUpdate)} dias
+
+⚠️ AVISO IMPORTANTE:
+Este portfólio é uma sugestão de investimento da MoreThanMoney e não constitui aconselhamento financeiro personalizado. Invista de acordo com seu perfil de risco e objetivos financeiros.
+
+🌐 MoreThanMoney - Mais que dinheiro, conhecimento!
+    `.trim()
+
+    try {
+      await navigator.clipboard.writeText(portfolioText)
+      // Mostrar feedback visual
+      const button = document.querySelector("[data-copy-button]") as HTMLButtonElement
+      if (button) {
+        const originalText = button.textContent
+        button.textContent = "Copiado!"
+        button.style.backgroundColor = "#10B981"
+        setTimeout(() => {
+          button.textContent = originalText
+          button.style.backgroundColor = ""
+        }, 2000)
+      }
+    } catch (err) {
+      console.error("Erro ao copiar para clipboard:", err)
+      // Fallback para browsers mais antigos
+      const textArea = document.createElement("textarea")
+      textArea.value = portfolioText
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textArea)
+
+      alert("Portfólio copiado para o clipboard!")
+    }
+  }, [])
 
   // Função para buscar dados dos portfólios
   useEffect(() => {
@@ -350,7 +412,13 @@ export function PortfoliosIntelligent() {
                   <Button variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10">
                     <PieChart className="h-4 w-4 mr-2" /> Ver Análise Completa
                   </Button>
-                  <Button className="bg-amber-600 hover:bg-amber-700 text-black">Copiar Portfólio</Button>
+                  <Button
+                    data-copy-button
+                    className="bg-amber-600 hover:bg-amber-700 text-black"
+                    onClick={() => copyPortfolioToClipboard(selectedPortfolio)}
+                  >
+                    Copiar Portfólio
+                  </Button>
                 </CardFooter>
               </Card>
 

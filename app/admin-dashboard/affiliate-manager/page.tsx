@@ -6,17 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check, Plus, RefreshCcw, Search, Trash2, Users } from "lucide-react"
-import {
-  canBeAffiliate,
-  generateAffiliateCode,
-  type CommissionHistory,
-  getAffiliateCommissions,
-  updateCommissionStatus,
-} from "@/lib/affiliate-system"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 interface AffiliateUser {
+  id: string
   username: string
   name: string
   email: string
@@ -26,58 +20,130 @@ interface AffiliateUser {
   pendingCommission: number
 }
 
+interface Commission {
+  id: string
+  affiliateUsername: string
+  customerUsername: string
+  productName: string
+  amount: number
+  status: "pending" | "paid" | "cancelled"
+  date: string
+}
+
 export default function AffiliateManagerPage() {
   const { user, isAuthenticated, isAdmin } = useAuth()
   const router = useRouter()
   const [affiliates, setAffiliates] = useState<AffiliateUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState<"affiliates" | "commissions">("affiliates")
-  const [commissions, setCommissions] = useState<CommissionHistory[]>([])
+  const [commissions, setCommissions] = useState<Commission[]>([])
   const [selectedAffiliate, setSelectedAffiliate] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState("")
+  const [loading, setLoading] = useState(true)
 
-  // Efeito para buscar usuários do localStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+  // Função para verificar se um usuário pode ser afiliado
+  const canBeAffiliate = (role: string): boolean => {
+    const eligibleRoles = ["VIP", "Premium", "Gold", "Platinum"]
+    return eligibleRoles.includes(role)
+  }
 
-      // Filtrar apenas usuários que podem ser afiliados
-      const eligibleUsers = registeredUsers.filter((u: any) => canBeAffiliate(u.role || "Membro"))
+  // Função para gerar código de afiliado
+  const generateAffiliateCode = (username: string): string => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let code = username.substring(0, 3).toUpperCase()
 
-      // Buscar informações de afiliados do localStorage
-      const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
+    for (let i = 0; i < 5; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
 
-      // Mapear usuários elegíveis para o formato de afiliados
-      const mappedAffiliates = eligibleUsers.map((user: any) => {
-        // Verificar se já existe como afiliado
-        const existingAffiliate = storedAffiliates.find((a: any) => a.username === user.username)
+    return code
+  }
 
-        // Buscar comissões do afiliado
-        const userCommissions = getAffiliateCommissions(user.username)
-        const totalCommission = userCommissions.reduce((sum, comm) => {
-          return sum + (comm.status !== "cancelled" ? comm.amount : 0)
-        }, 0)
+  // Função para obter comissões de um afiliado
+  const getAffiliateCommissions = (username: string): Commission[] => {
+    if (typeof window === "undefined") return []
 
-        const pendingCommission = userCommissions.reduce((sum, comm) => {
-          return sum + (comm.status === "pending" ? comm.amount : 0)
-        }, 0)
+    try {
+      const storedCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
+      return storedCommissions.filter((comm: Commission) => comm.affiliateUsername === username)
+    } catch (error) {
+      console.error("Error getting affiliate commissions:", error)
+      return []
+    }
+  }
 
-        return {
-          username: user.username,
-          name: user.name,
-          email: user.email || "",
-          role: user.role || "Membro",
-          affiliateCode: existingAffiliate?.affiliateCode || "",
-          totalCommission,
-          pendingCommission,
+  // Função para atualizar status da comissão
+  const updateCommissionStatus = (commissionId: string, status: "pending" | "paid" | "cancelled"): boolean => {
+    if (typeof window === "undefined") return false
+
+    try {
+      const storedCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
+      const updatedCommissions = storedCommissions.map((comm: Commission) => {
+        if (comm.id === commissionId) {
+          return { ...comm, status }
         }
+        return comm
       })
 
-      setAffiliates(mappedAffiliates)
+      localStorage.setItem("commissionHistory", JSON.stringify(updatedCommissions))
+      return true
+    } catch (error) {
+      console.error("Error updating commission status:", error)
+      return false
+    }
+  }
 
-      // Buscar todas as comissões
-      const allCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
-      setCommissions(allCommissions)
+  // Carregar dados dos afiliados
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLoading(true)
+
+      try {
+        const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+
+        // Filtrar apenas usuários que podem ser afiliados
+        const eligibleUsers = registeredUsers.filter((u: any) => canBeAffiliate(u.role || "Membro"))
+
+        // Buscar informações de afiliados do localStorage
+        const storedAffiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
+
+        // Mapear usuários elegíveis para o formato de afiliados
+        const mappedAffiliates = eligibleUsers.map((user: any) => {
+          // Verificar se já existe como afiliado
+          const existingAffiliate = storedAffiliates.find((a: any) => a.username === user.username)
+
+          // Buscar comissões do afiliado
+          const userCommissions = getAffiliateCommissions(user.username)
+          const totalCommission = userCommissions.reduce((sum, comm) => {
+            return sum + (comm.status !== "cancelled" ? comm.amount : 0)
+          }, 0)
+
+          const pendingCommission = userCommissions.reduce((sum, comm) => {
+            return sum + (comm.status === "pending" ? comm.amount : 0)
+          }, 0)
+
+          return {
+            id: user.id || user.username,
+            username: user.username,
+            name: user.name,
+            email: user.email || "",
+            role: user.role || "Membro",
+            affiliateCode: existingAffiliate?.affiliateCode || "",
+            totalCommission,
+            pendingCommission,
+          }
+        })
+
+        setAffiliates(mappedAffiliates)
+
+        // Buscar todas as comissões
+        const allCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
+        setCommissions(allCommissions)
+      } catch (error) {
+        console.error("Error loading affiliate data:", error)
+      } finally {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -162,7 +228,7 @@ export default function AffiliateManagerPage() {
       // Atualizar lista de comissões
       const updatedCommissions = commissions.map((comm) => {
         if (comm.id === commissionId) {
-          return { ...comm, status: "paid" }
+          return { ...comm, status: "paid" as const }
         }
         return comm
       })
@@ -207,6 +273,17 @@ export default function AffiliateManagerPage() {
             </Link>
           </CardFooter>
         </Card>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gold-500 mx-auto"></div>
+          <p className="text-gold-400 mt-4">Carregando dados dos afiliados...</p>
+        </div>
       </div>
     )
   }
