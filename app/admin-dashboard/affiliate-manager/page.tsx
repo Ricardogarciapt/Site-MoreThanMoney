@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check, Plus, RefreshCcw, Search, Trash2, Users } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Suspense } from "react"
 
 interface AffiliateUser {
   id: string
@@ -30,7 +31,8 @@ interface Commission {
   date: string
 }
 
-export default function AffiliateManagerPage() {
+// Client Component
+const AffiliateManagerClientComponent = () => {
   const { user, isAuthenticated, isAdmin } = useAuth()
   const router = useRouter()
   const [affiliates, setAffiliates] = useState<AffiliateUser[]>([])
@@ -527,6 +529,33 @@ export default function AffiliateManagerPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+    </div>
+  )
+}
+
+// Server Component
+export default function AffiliateManagerPage() {
+  return (
+    <div className="min-h-screen bg-black py-8">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Gestão de Afiliados</h1>
+          <p className="text-gray-400">Gerencie os códigos de afiliado e comissões dos membros MoreThanMoney.</p>
+        </div>
+
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center bg-black">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gold-500 mx-auto"></div>
+                <p className="text-gold-400 mt-4">Carregando dados dos afiliados...</p>
+              </div>
+            </div>
+          }
+        >
+          <AffiliateManagerClientComponent />
+        </Suspense>
 
         <div className="mt-6">
           <Link href="/admin-dashboard">
