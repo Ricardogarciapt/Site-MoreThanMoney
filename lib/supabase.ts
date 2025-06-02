@@ -9,12 +9,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables")
 }
 
+// Configuração para produção
+const isProd = process.env.NODE_ENV === "production"
+const prodDomain = "morethanmoney.pt"
+
 // Client para operações públicas (client-side)
 export const supabase: SupabaseClient<Database> = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    ...(isProd && {
+      cookieOptions: {
+        domain: prodDomain,
+        sameSite: "lax",
+        secure: true,
+      },
+    }),
   },
   db: {
     schema: "public",
