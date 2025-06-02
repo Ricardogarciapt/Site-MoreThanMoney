@@ -23,9 +23,13 @@ const navItems = [
 
 const AdminDashboardLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar navItems={navItems} />
-      <div className="flex-1 p-4">{children}</div>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <div className="flex flex-1">
+        <Sidebar navItems={navItems} />
+        <main className="flex-1 flex flex-col">
+          <div className="flex-1 p-4 pb-20">{children}</div>
+        </main>
+      </div>
     </div>
   )
 }

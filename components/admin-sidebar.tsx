@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ navItems }) => {
   const allNavItems = [...defaultNavItems, ...navItems]
 
   return (
-    <div className="w-64 bg-white shadow-lg border-r">
+    <div className="w-64 bg-white shadow-lg border-r flex-shrink-0 h-screen sticky top-0">
       <div className="p-6 border-b">
         <h2 className="text-xl font-bold text-gray-800">Admin Dashboard</h2>
       </div>
