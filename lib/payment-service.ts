@@ -113,13 +113,13 @@ export class PaymentService {
   // Verificar status do pagamento
   async checkPaymentStatus(
     paymentId: string,
-    provider: "stripe" | "paypal",
+    provider: "stripe" = "stripe",
   ): Promise<{
     status: "pending" | "completed" | "failed" | "cancelled"
     details?: any
   }> {
     try {
-      const response = await fetch(`/api/payments/${provider}/status/${paymentId}`)
+      const response = await fetch(`/api/payments/stripe/status/${paymentId}`)
 
       if (!response.ok) {
         throw new Error("Erro ao verificar status")

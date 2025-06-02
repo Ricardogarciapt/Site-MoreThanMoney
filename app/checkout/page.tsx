@@ -25,7 +25,7 @@ export default function CheckoutPage() {
     }
   }, [user, router])
 
-  const handlePayment = async (method: "stripe" | "paypal") => {
+  const handleStripePayment = async () => {
     if (!user) {
       toast({
         title: "Login necessário",
@@ -58,18 +58,12 @@ export default function CheckoutPage() {
         },
       }
 
-      let result
-      if (method === "stripe") {
-        result = await paymentService.processStripePayment(paymentData)
-      } else {
-        result = await paymentService.processPayPalPayment(paymentData)
-      }
+      const result = await paymentService.processStripePayment(paymentData)
 
       if (!result.success) {
         throw new Error(result.error || "Erro no pagamento")
       }
 
-      // Se chegou aqui, o pagamento foi iniciado com sucesso
       toast({
         title: "Redirecionando...",
         description: "Você será redirecionado para completar o pagamento.",
@@ -135,19 +129,11 @@ export default function CheckoutPage() {
               </div>
               <Separator className="my-4" />
               <Button
-                onClick={() => handlePayment("stripe")}
+                onClick={handleStripePayment}
                 disabled={isProcessing}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-yellow-600 hover:bg-yellow-700"
               >
-                {isProcessing ? "Processando..." : "Pagar com Cartão (Stripe)"}
-              </Button>
-
-              <Button
-                onClick={() => handlePayment("paypal")}
-                disabled={isProcessing}
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
-              >
-                {isProcessing ? "Processando..." : "Pagar com PayPal"}
+                {isProcessing ? "Processando..." : "Pagar com Cartão"}
               </Button>
             </CardContent>
           </Card>
