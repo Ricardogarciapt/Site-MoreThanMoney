@@ -73,23 +73,26 @@ export default function AffiliateManagerPage() {
   }
 
   // Função para atualizar status da comissão
-  const updateCommissionStatus = (commissionId: string, status: "pending" | "paid" | "cancelled"): boolean => {
-    if (typeof window === "undefined") return false
+  const updateCommissionStatus = (commissionId: string, newStatus: "pending" | "paid" | "cancelled") => {
+    if (typeof window === "undefined") return
 
     try {
       const storedCommissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
       const updatedCommissions = storedCommissions.map((comm: Commission) => {
         if (comm.id === commissionId) {
-          return { ...comm, status }
+          return { ...comm, status: newStatus }
         }
         return comm
       })
 
       localStorage.setItem("commissionHistory", JSON.stringify(updatedCommissions))
-      return true
+
+      // Atualizar o estado local
+      setCommissions(updatedCommissions)
+      setSuccessMessage(`Comissão marcada como ${newStatus === "paid" ? "paga" : newStatus} com sucesso`)
+      setTimeout(() => setSuccessMessage(""), 3000)
     } catch (error) {
       console.error("Error updating commission status:", error)
-      return false
     }
   }
 
@@ -166,7 +169,7 @@ export default function AffiliateManagerPage() {
   )
 
   // Gerar código de afiliado para um usuário
-  const generateCodeForUser = (username: string) => {
+  const handleGenerateCode = (username: string) => {
     const newCode = generateAffiliateCode(username)
 
     // Atualizar afiliados no estado
@@ -198,7 +201,7 @@ export default function AffiliateManagerPage() {
   }
 
   // Remover código de afiliado
-  const removeAffiliateCode = (username: string) => {
+  const handleRemoveCode = (username: string) => {
     // Atualizar afiliados no estado
     const updatedAffiliates = affiliates.map((affiliate) => {
       if (affiliate.username === username) {
@@ -221,23 +224,8 @@ export default function AffiliateManagerPage() {
   }
 
   // Marcar comissão como paga
-  const markCommissionAsPaid = (commissionId: string) => {
-    const success = updateCommissionStatus(commissionId, "paid")
-
-    if (success) {
-      // Atualizar lista de comissões
-      const updatedCommissions = commissions.map((comm) => {
-        if (comm.id === commissionId) {
-          return { ...comm, status: "paid" as const }
-        }
-        return comm
-      })
-
-      setCommissions(updatedCommissions)
-
-      setSuccessMessage(`Comissão marcada como paga com sucesso`)
-      setTimeout(() => setSuccessMessage(""), 3000)
-    }
+  const handleMarkAsPaid = (commissionId: string) => {
+    updateCommissionStatus(commissionId, "paid")
   }
 
   // Filtrar comissões por afiliado selecionado
@@ -388,7 +376,7 @@ export default function AffiliateManagerPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => generateCodeForUser(affiliate.username)}
+                                    onClick={() => handleGenerateCode(affiliate.username)}
                                     className="h-8 px-2 border-gold-500 text-gold-400 hover:bg-gold-500/10"
                                   >
                                     <RefreshCcw className="h-4 w-4 mr-1" />
@@ -397,7 +385,7 @@ export default function AffiliateManagerPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => removeAffiliateCode(affiliate.username)}
+                                    onClick={() => handleRemoveCode(affiliate.username)}
                                     className="h-8 px-2 border-red-500 text-red-400 hover:bg-red-500/10"
                                   >
                                     <Trash2 className="h-4 w-4 mr-1" />
@@ -408,7 +396,7 @@ export default function AffiliateManagerPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => generateCodeForUser(affiliate.username)}
+                                  onClick={() => handleGenerateCode(affiliate.username)}
                                   className="h-8 px-2 border-green-500 text-green-400 hover:bg-green-500/10"
                                 >
                                   <Plus className="h-4 w-4 mr-1" />
@@ -515,7 +503,7 @@ export default function AffiliateManagerPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => markCommissionAsPaid(commission.id)}
+                                  onClick={() => handleMarkAsPaid(commission.id)}
                                   className="h-8 px-2 border-green-500 text-green-400 hover:bg-green-500/10"
                                 >
                                   <Check className="h-4 w-4 mr-1" />
