@@ -1,6 +1,16 @@
 "use client"
 
+import type React from "react"
+
 export default function AffiliateManagerPage() {
+  const handleMouseOver = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.currentTarget.style.backgroundColor = "rgba(217, 119, 6, 0.1)"
+  }
+
+  const handleMouseOut = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.currentTarget.style.backgroundColor = "transparent"
+  }
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "black", padding: "2rem" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", color: "white" }}>
@@ -173,12 +183,8 @@ export default function AffiliateManagerPage() {
               backgroundColor: "transparent",
               transition: "background-color 0.2s",
             }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(217, 119, 6, 0.1)"
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent"
-            }}
+            onMouseOver={handleMouseOver}
+            onMouseOut={handleMouseOut}
           >
             ← Voltar para o Painel
           </a>
