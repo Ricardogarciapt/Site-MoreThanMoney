@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check, Search, Shield, User, Users } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 
 // Lista de roles disponíveis
 const availableRoles = [
@@ -34,7 +35,7 @@ interface UserData {
   role?: string
 }
 
-export default function UserRolesPage() {
+function UserRolesPageComponent() {
   const { user, isAuthenticated, isAdmin, updateUserRole } = useAuth()
   const router = useRouter()
   const [users, setUsers] = useState<UserData[]>([])
@@ -42,29 +43,40 @@ export default function UserRolesPage() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
 
   // Carregar usuários do localStorage
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
-      const formattedUsers = registeredUsers.map((u: any) => ({
-        username: u.username,
-        name: u.name,
-        email: u.email,
-        role: u.role || "Membro",
-      }))
-      setUsers(formattedUsers)
+    const loadUsers = () => {
+      try {
+        if (typeof window !== "undefined") {
+          const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
+          const formattedUsers = registeredUsers.map((u: any) => ({
+            username: u.username,
+            name: u.name,
+            email: u.email,
+            role: u.role || "Membro",
+          }))
+          setUsers(formattedUsers)
+        }
+      } catch (error) {
+        console.error("Error loading users:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    loadUsers()
   }, [])
 
   // Redirecionar se não for autenticado ou admin
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push("/")
-    } else if (!isAdmin) {
+    } else if (!isLoading && !isAdmin) {
       router.push("/member-area")
     }
-  }, [isAuthenticated, isAdmin, router])
+  }, [isAuthenticated, isAdmin, router, isLoading])
 
   // Filtrar usuários com base no termo de pesquisa
   const filteredUsers = users.filter(
@@ -82,9 +94,9 @@ export default function UserRolesPage() {
   }
 
   // Atualizar role do usuário
-  const handleUpdateRole = () => {
+  const handleUpdateRole = async () => {
     if (selectedUser && selectedRole) {
-      const success = updateUserRole(selectedUser.username, selectedRole)
+      const success = await updateUserRole(selectedUser.username, selectedRole)
 
       if (success) {
         // Atualizar a lista de usuários
@@ -98,6 +110,18 @@ export default function UserRolesPage() {
         }, 3000)
       }
     }
+  }
+
+  // Mostrar loading enquanto carrega
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gold-400 font-medium">Carregando...</p>
+        </div>
+      </div>
+    )
   }
 
   // Se não for admin, não mostrar conteúdo
@@ -266,3 +290,8 @@ export default function UserRolesPage() {
     </div>
   )
 }
+
+// Export the component with dynamic import to prevent SSR
+export default dynamic(() => Promise.resolve(UserRolesPageComponent), {
+  ssr: false,
+})
