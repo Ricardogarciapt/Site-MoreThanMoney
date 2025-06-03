@@ -32,11 +32,9 @@ function isRateLimited(ip: string, limit = 100, windowMs: number = 15 * 60 * 100
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
 
-  // Adicionar headers de segurança
+  // Adicionar headers de segurança básicos
   response.headers.set("X-Frame-Options", "DENY")
   response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-  response.headers.set("X-XSS-Protection", "1; mode=block")
 
   // Rate limiting para APIs
   if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -68,5 +66,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/admin/:path*", "/admin-dashboard/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/api/:path*", "/admin/:path*", "/admin-dashboard/:path*"],
 }
