@@ -1,12 +1,11 @@
 "use client"
 
 import type React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Home, Settings, Users, BarChart3, CreditCard, type LucideIcon } from "lucide-react"
+import { Home, type LucideIcon } from "lucide-react"
 
 interface NavItem {
   title: string
@@ -26,37 +25,19 @@ const defaultNavItems: NavItem[] = [
     icon: Home,
     description: "Overview and statistics",
   },
-  {
-    title: "Statistics",
-    href: "/admin-dashboard/statistics",
-    icon: BarChart3,
-    description: "View platform statistics",
-  },
-  {
-    title: "User Roles",
-    href: "/admin-dashboard/user-roles",
-    icon: Users,
-    description: "Manage user permissions",
-  },
-  {
-    title: "Payment Settings",
-    href: "/admin-dashboard/payment-settings",
-    icon: CreditCard,
-    description: "Configure payment settings",
-  },
-  {
-    title: "Site Settings",
-    href: "/admin-dashboard/site-settings",
-    icon: Settings,
-    description: "Configure site settings",
-  },
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({ navItems = [] }) => {
   const pathname = usePathname()
+  const router = useRouter()
 
   // Safely combine nav items with null check
   const allNavItems = [...defaultNavItems, ...(navItems || [])]
+
+  const handleNavigation = (href: string) => {
+    console.log("Navegando para:", href)
+    router.push(href)
+  }
 
   return (
     <div className="w-64 bg-white shadow-lg border-r flex-shrink-0 h-screen sticky top-0">
@@ -71,25 +52,25 @@ const Sidebar: React.FC<SidebarProps> = ({ navItems = [] }) => {
             const Icon = item.icon
 
             return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3 h-auto p-3",
-                    isActive && "bg-blue-600 text-white hover:bg-blue-700",
+              <Button
+                key={item.href}
+                variant={isActive ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start gap-3 h-auto p-3",
+                  isActive && "bg-blue-600 text-white hover:bg-blue-700",
+                )}
+                onClick={() => handleNavigation(item.href)}
+              >
+                <Icon className="h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-medium">{item.title}</div>
+                  {item.description && (
+                    <div className={cn("text-xs opacity-70", isActive ? "text-blue-100" : "text-gray-500")}>
+                      {item.description}
+                    </div>
                   )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <div className="text-left">
-                    <div className="font-medium">{item.title}</div>
-                    {item.description && (
-                      <div className={cn("text-xs opacity-70", isActive ? "text-blue-100" : "text-gray-500")}>
-                        {item.description}
-                      </div>
-                    )}
-                  </div>
-                </Button>
-              </Link>
+                </div>
+              </Button>
             )
           })}
         </div>

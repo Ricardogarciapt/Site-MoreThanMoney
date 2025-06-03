@@ -1,330 +1,212 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/components/ui/use-toast"
-import { useConfigStore } from "@/lib/config-service"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Check, Save, RefreshCw } from "lucide-react"
+import { Settings, Save, Palette, Globe, Shield } from "lucide-react"
 
 export default function SiteSettingsClient() {
-  const { isAuthenticated, isAdmin } = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
-  const { config, updateConfig } = useConfigStore()
-  const [activeTab, setActiveTab] = useState("general")
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [tradingViewCode, setTradingViewCode] = useState(config.tradingViewCustomCode || "")
-  const [copytradingEnabled, setCopytradingEnabled] = useState(config.copytrading?.enabled || false)
-  const [masterAccount, setMasterAccount] = useState({
-    brokerName: config.copytrading?.masterAccount?.brokerName || "InfinoxLimited",
-    accountNumber: config.copytrading?.masterAccount?.accountNumber || "87047541",
-    serverName: config.copytrading?.masterAccount?.serverName || "InfinoxLimited-MT5Live",
-    password: config.copytrading?.masterAccount?.password || "Superacao2022#",
+  const [settings, setSettings] = useState({
+    siteName: "MoreThanMoney",
+    siteDescription: "Plataforma de Trading e Educação Financeira",
+    primaryColor: "#f9b208",
+    secondaryColor: "#000000",
+    enableRegistration: true,
+    enableTelegram: true,
+    enablePayments: true,
+    maintenanceMode: false,
   })
 
-  // Verificar autenticação
-  useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
-      router.push("/admin-login")
-    }
-  }, [isAuthenticated, isAdmin, router])
+  const [saving, setSaving] = useState(false)
 
-  // Atualizar estado local quando a configuração global mudar
-  useEffect(() => {
-    setTradingViewCode(config.tradingViewCustomCode || "")
-    setCopytradingEnabled(config.copytrading?.enabled || false)
-    setMasterAccount({
-      brokerName: config.copytrading?.masterAccount?.brokerName || "InfinoxLimited",
-      accountNumber: config.copytrading?.masterAccount?.accountNumber || "87047541",
-      serverName: config.copytrading?.masterAccount?.serverName || "InfinoxLimited-MT5Live",
-      password: config.copytrading?.masterAccount?.password || "Superacao2022#",
-    })
-  }, [config])
-
-  const handleSaveTradingViewCode = () => {
-    setIsSaving(true)
-
-    try {
-      // Validar o código antes de salvar
-      new Function("container", "isAuthenticated", "pineScriptScanner", tradingViewCode)
-
-      // Atualizar a configuração
-      updateConfig({ tradingViewCustomCode: tradingViewCode })
-
-      setSaveSuccess(true)
-      toast({
-        title: "Código salvo",
-        description: "O código do TradingView foi salvo com sucesso.",
-      })
-
-      setTimeout(() => setSaveSuccess(false), 3000)
-    } catch (error: any) {
-      toast({
-        title: "Erro ao salvar",
-        description: `Erro de sintaxe no código: ${error.message}`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleSaveCopytradingSettings = () => {
-    setIsSaving(true)
-
-    try {
-      // Atualizar a configuração
-      updateConfig({
-        copytrading: {
-          enabled: copytradingEnabled,
-          masterAccount: masterAccount,
-        },
-      })
-
-      setSaveSuccess(true)
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações de copytrading foram salvas com sucesso.",
-      })
-
-      setTimeout(() => setSaveSuccess(false), 3000)
-    } catch (error: any) {
-      toast({
-        title: "Erro ao salvar",
-        description: `Erro ao salvar configurações: ${error.message}`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return <div>Carregando...</div>
+  const handleSave = async () => {
+    setSaving(true)
+    // Simular salvamento
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    localStorage.setItem("siteSettings", JSON.stringify(settings))
+    setSaving(false)
+    alert("Configurações salvas com sucesso!")
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Configurações do Site</h1>
-          <p className="text-gray-500">Gerencie as configurações globais do site</p>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black p-6">
+      <div className="container mx-auto max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
+            <Settings className="mr-3 text-gold-400" />
+            Configurações do Site
+          </h1>
+          <p className="text-gray-400">Personalize a aparência e funcionalidades da plataforma</p>
         </div>
-        <Button onClick={() => router.push("/admin-dashboard")} variant="outline">
-          Voltar ao Painel
-        </Button>
+
+        <div className="grid gap-6">
+          {/* Configurações Gerais */}
+          <Card className="bg-black/50 border-gray-800/50 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Globe className="mr-2 text-blue-400" />
+                Configurações Gerais
+              </CardTitle>
+              <CardDescription className="text-gray-400">Informações básicas do site</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="siteName" className="text-gray-300">
+                  Nome do Site
+                </Label>
+                <Input
+                  id="siteName"
+                  value={settings.siteName}
+                  onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+              <div>
+                <Label htmlFor="siteDescription" className="text-gray-300">
+                  Descrição do Site
+                </Label>
+                <Textarea
+                  id="siteDescription"
+                  value={settings.siteDescription}
+                  onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configurações de Aparência */}
+          <Card className="bg-black/50 border-gray-800/50 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Palette className="mr-2 text-purple-400" />
+                Aparência
+              </CardTitle>
+              <CardDescription className="text-gray-400">Cores e tema da plataforma</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="primaryColor" className="text-gray-300">
+                    Cor Primária
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="primaryColor"
+                      type="color"
+                      value={settings.primaryColor}
+                      onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
+                      className="w-16 h-10 bg-gray-800 border-gray-700"
+                    />
+                    <Input
+                      value={settings.primaryColor}
+                      onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="secondaryColor" className="text-gray-300">
+                    Cor Secundária
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="secondaryColor"
+                      type="color"
+                      value={settings.secondaryColor}
+                      onChange={(e) => setSettings({ ...settings, secondaryColor: e.target.value })}
+                      className="w-16 h-10 bg-gray-800 border-gray-700"
+                    />
+                    <Input
+                      value={settings.secondaryColor}
+                      onChange={(e) => setSettings({ ...settings, secondaryColor: e.target.value })}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configurações de Funcionalidades */}
+          <Card className="bg-black/50 border-gray-800/50 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Shield className="mr-2 text-green-400" />
+                Funcionalidades
+              </CardTitle>
+              <CardDescription className="text-gray-400">Ativar/desativar recursos da plataforma</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-gray-300">Permitir Registros</Label>
+                  <p className="text-sm text-gray-500">Permitir que novos usuários se registrem</p>
+                </div>
+                <Switch
+                  checked={settings.enableRegistration}
+                  onCheckedChange={(checked) => setSettings({ ...settings, enableRegistration: checked })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-gray-300">Integração Telegram</Label>
+                  <p className="text-sm text-gray-500">Ativar funcionalidades do Telegram</p>
+                </div>
+                <Switch
+                  checked={settings.enableTelegram}
+                  onCheckedChange={(checked) => setSettings({ ...settings, enableTelegram: checked })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-gray-300">Sistema de Pagamentos</Label>
+                  <p className="text-sm text-gray-500">Ativar Stripe e outros gateways</p>
+                </div>
+                <Switch
+                  checked={settings.enablePayments}
+                  onCheckedChange={(checked) => setSettings({ ...settings, enablePayments: checked })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-gray-300">Modo Manutenção</Label>
+                  <p className="text-sm text-gray-500">Desativar o site para manutenção</p>
+                </div>
+                <Switch
+                  checked={settings.maintenanceMode}
+                  onCheckedChange={(checked) => setSettings({ ...settings, maintenanceMode: checked })}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Botão Salvar */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black font-semibold"
+            >
+              {saving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar Configurações
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="tradingview">TradingView</TabsTrigger>
-          <TabsTrigger value="copytrading">Copytrading</TabsTrigger>
-        </TabsList>
-
-        {/* Aba Geral */}
-        <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações Gerais</CardTitle>
-              <CardDescription>Configurações básicas do site</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="site-name">Nome do Site</Label>
-                    <Input id="site-name" defaultValue={config.name} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contact-email">Email de Contato</Label>
-                    <Input id="contact-email" defaultValue={config.contactEmail} />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="footer-text">Texto do Rodapé</Label>
-                  <Input id="footer-text" defaultValue={config.footerText} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Recursos Ativos</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {config.features.map((feature) => (
-                      <div key={feature.id} className="flex items-center space-x-2">
-                        <Switch id={feature.id} defaultChecked={feature.enabled} />
-                        <Label htmlFor={feature.id}>{feature.name}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <Button>Salvar Configurações</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Aba TradingView */}
-        <TabsContent value="tradingview">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações do TradingView</CardTitle>
-              <CardDescription>Personalize o código do widget TradingView</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {saveSuccess && (
-                  <Alert className="bg-green-500/10 border-green-500">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <AlertDescription className="text-green-500">Código salvo com sucesso!</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
-                  <p className="text-sm text-yellow-400">
-                    <strong>Atenção:</strong> Editar o código diretamente pode causar problemas de funcionamento.
-                    Certifique-se de testar suas alterações antes de salvar.
-                  </p>
-                  <p className="text-sm text-yellow-400 mt-2">
-                    O código deve criar e inicializar um widget TradingView. Você tem acesso às variáveis:
-                    <code className="bg-black/30 px-1 mx-1 rounded">container</code>,
-                    <code className="bg-black/30 px-1 mx-1 rounded">isAuthenticated</code> e
-                    <code className="bg-black/30 px-1 mx-1 rounded">pineScriptScanner</code>.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tradingview-code">Código Personalizado</Label>
-                  <textarea
-                    id="tradingview-code"
-                    rows={15}
-                    className="w-full p-4 font-mono text-sm bg-black/10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={tradingViewCode}
-                    onChange={(e) => setTradingViewCode(e.target.value)}
-                    spellCheck="false"
-                  />
-                </div>
-
-                <div className="pt-4 flex justify-end">
-                  <Button onClick={handleSaveTradingViewCode} disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Salvar Código
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Aba Copytrading */}
-        <TabsContent value="copytrading">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações de Copytrading</CardTitle>
-              <CardDescription>Configure o sistema de copytrading</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {saveSuccess && (
-                  <Alert className="bg-green-500/10 border-green-500">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <AlertDescription className="text-green-500">Configurações salvas com sucesso!</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="copytrading-enabled"
-                    checked={copytradingEnabled}
-                    onCheckedChange={setCopytradingEnabled}
-                  />
-                  <Label htmlFor="copytrading-enabled">Ativar Sistema de Copytrading</Label>
-                </div>
-
-                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-md">
-                  <h3 className="text-lg font-medium mb-2">Conta Mestre</h3>
-                  <p className="text-sm text-blue-400 mb-4">
-                    Esta é a conta principal de onde as operações serão copiadas para as contas dos clientes.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="master-broker">Broker</Label>
-                      <Input
-                        id="master-broker"
-                        value={masterAccount.brokerName}
-                        onChange={(e) => setMasterAccount({ ...masterAccount, brokerName: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="master-server">Servidor</Label>
-                      <Input
-                        id="master-server"
-                        value={masterAccount.serverName}
-                        onChange={(e) => setMasterAccount({ ...masterAccount, serverName: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="master-account">Número da Conta</Label>
-                      <Input
-                        id="master-account"
-                        value={masterAccount.accountNumber}
-                        onChange={(e) => setMasterAccount({ ...masterAccount, accountNumber: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="master-password">Senha</Label>
-                      <Input
-                        id="master-password"
-                        type="password"
-                        value={masterAccount.password}
-                        onChange={(e) => setMasterAccount({ ...masterAccount, password: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 flex justify-end">
-                  <Button onClick={handleSaveCopytradingSettings} disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Salvar Configurações
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }

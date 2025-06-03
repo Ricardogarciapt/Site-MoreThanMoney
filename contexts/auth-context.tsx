@@ -64,21 +64,31 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const adminUser = ADMIN_USERS.find((admin) => admin.username === username && admin.password === password)
+      console.log("Tentativa de login:", { username, password: "***" })
+
+      // Verificar admin users primeiro
+      const adminUser = ADMIN_USERS.find(
+        (admin) => admin.username.toLowerCase() === username.toLowerCase() && admin.password === password,
+      )
+
       if (adminUser) {
+        console.log("Admin user encontrado:", adminUser.username)
         const adminUserData: AuthUser = {
-          id: `admin-${adminUser.username}`, // Consider a more robust ID generation
+          id: `admin-${adminUser.username}`,
           username: adminUser.username,
           name: adminUser.name,
           is_admin: true,
           role: "Admin",
         }
         setUser(adminUserData)
-        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(adminUserData))
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(adminUserData))
+        }
         return true
       }
 
-      if (username === "demo" && password === "password") {
+      // Verificar usuário demo
+      if (username.toLowerCase() === "demo" && password === "password") {
         const demoUser: AuthUser = {
           id: "demo-user",
           username: "demo",
@@ -87,10 +97,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           role: "Membro",
         }
         setUser(demoUser)
-        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(demoUser))
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(demoUser))
+        }
         return true
       }
 
+      // Tentar login via API
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -100,12 +113,16 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
-        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(userData))
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(userData))
+        }
         return true
       }
+
+      console.log("Login falhou - resposta da API:", response.status)
       return false
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("Erro no login:", error)
       return false
     }
   }
