@@ -38,25 +38,13 @@ export const supabase: SupabaseClient<Database> = createClient(supabaseUrl, supa
 })
 
 // Admin client para operações server-side com privilégios elevados
-let adminKey = supabaseServiceRoleKey;
-if (!adminKey) {
-  console.warn("SUPABASE_SERVICE_ROLE_KEY is not set. supabaseAdmin might not have sufficient privileges for all operations. Falling back to anon key for initialization structure, but this is likely an issue.");
-  adminKey = supabaseAnonKey; // Fallback to keep structure, but highlight this is not ideal for privileged ops
-}
-// It's better to throw an error if service_role is essential:
-// if (!supabaseServiceRoleKey) {
-//   throw new Error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is not set. Admin client cannot be initialized securely.");
-// }
-// export const supabaseAdmin: SupabaseClient<Database> = createClient(supabaseUrl, supabaseServiceRoleKey!, { ... });
-
-
-// For now, let's keep the original fallback but with a strong warning:
 if (!supabaseServiceRoleKey) {
-    console.error("CRITICAL WARNING: SUPABASE_SERVICE_ROLE_KEY is not set. supabaseAdmin is using supabaseAnonKey, which will likely lead to permission errors for admin operations.");
+  console.error("CRITICAL WARNING: SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations may fail.")
 }
+
 export const supabaseAdmin: SupabaseClient<Database> = createClient(
   supabaseUrl,
-  supabaseServiceRoleKey || supabaseAnonKey, // Retain original but with prior warning
+  supabaseServiceRoleKey || supabaseAnonKey,
   {
     auth: {
       autoRefreshToken: false,
