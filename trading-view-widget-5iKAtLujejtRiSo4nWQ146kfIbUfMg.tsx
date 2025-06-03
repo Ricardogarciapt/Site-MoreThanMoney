@@ -123,17 +123,12 @@ export default function TradingViewWidget({ scannerType = "MoreThanMoney" }) {
   const isLoadingScanner = useRef(false)
   const { config } = useConfigStore()
   const [selectedStudies, setSelectedStudies] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const last = localStorage.getItem("activeStudies")
-      return last ? JSON.parse(last) : [scannerType]
-    }
-    return [scannerType]
+    const last = localStorage.getItem("activeStudies")
+    return last ? JSON.parse(last) : [scannerType]
   })
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("activeStudies", JSON.stringify(selectedStudies))
-    }
+    localStorage.setItem("activeStudies", JSON.stringify(selectedStudies))
   }, [selectedStudies])
 
   const handleFullScreen = () => {
