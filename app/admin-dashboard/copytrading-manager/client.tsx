@@ -77,7 +77,7 @@ export default function CopytradingManagerClient() {
 
       // Adicionar log
       addLog("Dados carregados com sucesso")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao carregar dados:", error)
       addLog(`Erro ao carregar dados: ${error.message}`)
     } finally {
@@ -126,7 +126,7 @@ export default function CopytradingManagerClient() {
         title: "Status atualizado",
         description: `O status da conta foi atualizado para ${status}.`,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao atualizar status:", error)
       addLog(`Erro ao atualizar status: ${error.message}`)
       toast({
@@ -148,7 +148,7 @@ export default function CopytradingManagerClient() {
         title: "Sincronização concluída",
         description: "As operações foram sincronizadas com sucesso.",
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na sincronização:", error)
       addLog(`Erro na sincronização: ${error.message}`)
       toast({
@@ -174,7 +174,7 @@ export default function CopytradingManagerClient() {
         title: "Configurações salvas",
         description: "As configurações da conta mestre foram salvas com sucesso.",
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar configurações:", error)
       addLog(`Erro ao salvar configurações: ${error.message}`)
       toast({
@@ -304,7 +304,7 @@ export default function CopytradingManagerClient() {
                             <Badge
                               variant={
                                 account.status === "active"
-                                  ? "success"
+                                  ? "default"
                                   : account.status === "error"
                                     ? "destructive"
                                     : account.status === "pending"

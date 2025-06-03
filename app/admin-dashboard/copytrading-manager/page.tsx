@@ -1,5 +1,5 @@
-import CopytradingManagerClient from "./client"
+import CopytradingManagerClientWrapper from "./client-wrapper"
 
 export default function CopytradingManagerPage() {
-  return <CopytradingManagerClient />
+  return <CopytradingManagerClientWrapper />
 }
