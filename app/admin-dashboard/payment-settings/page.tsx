@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic"
 import { Suspense } from "react"
+import ClientWrapper from "./client-wrapper"
 
 // Loading component
 function PaymentSettingsLoading() {
@@ -19,24 +19,11 @@ function PaymentSettingsLoading() {
   )
 }
 
-// Payment settings content
-const PaymentSettingsContent = dynamic(() => import("./payment-settings-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gold-400 font-medium">Carregando configurações de pagamento...</p>
-      </div>
-    </div>
-  ),
-})
-
 // Main page component
 export default function PaymentSettingsPage() {
   return (
     <Suspense fallback={<PaymentSettingsLoading />}>
-      <PaymentSettingsContent />
+      <ClientWrapper />
     </Suspense>
   )
 }
