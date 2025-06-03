@@ -52,9 +52,21 @@ export function middleware(request: NextRequest) {
     response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate")
   }
 
+  // Add header to skip static optimization for admin routes
+  if (request.nextUrl.pathname.startsWith("/admin-dashboard")) {
+    const headers = new Headers(request.headers)
+    headers.set("x-skip-static", "1")
+
+    return NextResponse.next({
+      request: {
+        headers,
+      },
+    })
+  }
+
   return response
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/admin/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/api/:path*", "/admin/:path*", "/admin-dashboard/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
 }
