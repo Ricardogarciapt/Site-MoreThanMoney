@@ -1,19 +1,17 @@
-"use client"
 import dynamic from "next/dynamic"
 
-// Import the component dynamically to prevent SSR
-const AdminDashboardComponent = dynamic(() => import("./admin-dashboard-client"), {
+// Force dynamic rendering
+export const revalidate = 0
+
+const AdminDashboardClient = dynamic(() => import("./admin-dashboard-client"), {
   ssr: false,
   loading: () => (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gold-400 font-medium">Carregando painel administrativo...</p>
-      </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gold-500"></div>
     </div>
   ),
 })
 
 export default function AdminDashboardPage() {
-  return <AdminDashboardComponent />
+  return <AdminDashboardClient />
 }

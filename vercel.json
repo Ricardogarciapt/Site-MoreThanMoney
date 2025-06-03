@@ -1,37 +1,26 @@
 {
-  "version": 2,
-  "regions": ["fra1"],
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "buildCommand": "npm run build-force",
+  "framework": "nextjs",
   "functions": {
-    "app/api/**": {
+    "app/api/**/*.ts": {
       "maxDuration": 30
     }
   },
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/admin-dashboard/(.*)",
       "headers": [
         {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://morethanmoney.pt"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET,POST,PUT,DELETE,OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-Requested-With, Content-Type, Authorization"
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }
   ],
   "rewrites": [
     {
-      "source": "/health",
-      "destination": "/api/health"
+      "source": "/admin-dashboard/:path*",
+      "destination": "/admin-dashboard/:path*"
     }
   ]
 }
