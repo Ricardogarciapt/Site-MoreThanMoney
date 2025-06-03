@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  navItems: NavItem[]
+  navItems?: NavItem[]
 }
 
 const defaultNavItems: NavItem[] = [
@@ -52,9 +52,11 @@ const defaultNavItems: NavItem[] = [
   },
 ]
 
-const Sidebar: React.FC<SidebarProps> = ({ navItems }) => {
+const Sidebar: React.FC<SidebarProps> = ({ navItems = [] }) => {
   const pathname = usePathname()
-  const allNavItems = [...defaultNavItems, ...navItems]
+
+  // Safely combine nav items with null check
+  const allNavItems = [...defaultNavItems, ...(navItems || [])]
 
   return (
     <div className="w-64 bg-white shadow-lg border-r flex-shrink-0 h-screen sticky top-0">

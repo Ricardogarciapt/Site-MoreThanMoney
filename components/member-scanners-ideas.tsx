@@ -7,12 +7,19 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight, TrendingUp, BarChart3, LineChart, DollarSign } from "lucide-react"
 import TradingViewWidget from "./trading-view-widget"
-import { getRecentIdeas } from "@/lib/telegram-ideas"
+import { useTelegramMessages } from "@/hooks/use-telegram-messages"
 import { portfolioData } from "@/lib/portfolio-service"
 
 export function MemberScannersIdeas() {
   const [activeTab, setActiveTab] = useState("scanners")
-  const recentIdeas = getRecentIdeas(3)
+  const {
+    messages: recentIdeas,
+    loading,
+    error,
+  } = useTelegramMessages({
+    limit: 3,
+    refreshInterval: 300000, // 5 minutes
+  })
 
   return (
     <div className="space-y-6 mt-8">
@@ -84,44 +91,65 @@ export function MemberScannersIdeas() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {recentIdeas.map((idea) => (
-                <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between mb-1">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          idea.category === "forex"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : idea.category === "crypto"
-                              ? "bg-purple-500/20 text-purple-400"
-                              : "bg-yellow-500/20 text-yellow-400"
-                        }`}
-                      >
-                        {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
-                      </span>
-                    </div>
-                    <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <p className="text-sm text-gray-400 line-clamp-2">
-                      {idea.content.length > 100 ? idea.content.substring(0, 100) + "..." : idea.content}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="w-full flex justify-between items-center">
-                      <div className="text-xs text-gold-500">{idea.author}</div>
-                      <span className="text-xs text-gray-500">
-                        {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
-                      </span>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="bg-black/30 border-gray-800 animate-pulse">
+                    <CardHeader className="pb-2">
+                      <div className="h-4 bg-gray-700 rounded w-1/3 mb-2"></div>
+                      <div className="h-5 bg-gray-700 rounded w-2/3"></div>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                      <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-400">Erro ao carregar ideias: {error}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recentIdeas.map((idea) => (
+                  <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between mb-1">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            idea.category === "forex"
+                              ? "bg-blue-500/20 text-blue-400"
+                              : idea.category === "crypto"
+                                ? "bg-purple-500/20 text-purple-400"
+                                : "bg-yellow-500/20 text-yellow-400"
+                          }`}
+                        >
+                          {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
+                        </span>
+                      </div>
+                      <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <p className="text-sm text-gray-400 line-clamp-2">
+                        {idea.content.length > 100 ? idea.content.substring(0, 100) + "..." : idea.content}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="pt-0">
+                      <div className="w-full flex justify-between items-center">
+                        <div className="text-xs text-gold-500">{idea.author}</div>
+                        <span className="text-xs text-gray-500">
+                          {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                        </span>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Seção de Portfólios abaixo das Ideias */}
@@ -221,44 +249,65 @@ export function MemberScannersIdeas() {
         </TabsContent>
 
         <TabsContent value="ideas" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentIdeas.map((idea) => (
-              <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between mb-1">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        idea.category === "forex"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : idea.category === "crypto"
-                            ? "bg-purple-500/20 text-purple-400"
-                            : "bg-yellow-500/20 text-yellow-400"
-                      }`}
-                    >
-                      {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
-                    </span>
-                  </div>
-                  <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <p className="text-sm text-gray-400 line-clamp-2">
-                    {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
-                  </p>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <div className="w-full flex justify-between items-center">
-                    <div className="text-xs text-gold-500">{idea.author}</div>
-                    <span className="text-xs text-gray-500">
-                      {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
-                    </span>
-                  </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="bg-black/30 border-gray-800 animate-pulse">
+                  <CardHeader className="pb-2">
+                    <div className="h-4 bg-gray-700 rounded w-1/3 mb-2"></div>
+                    <div className="h-5 bg-gray-700 rounded w-2/3"></div>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-400">Erro ao carregar ideias: {error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentIdeas.map((idea) => (
+                <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between mb-1">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          idea.category === "forex"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : idea.category === "crypto"
+                              ? "bg-purple-500/20 text-purple-400"
+                              : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
+                      </span>
+                    </div>
+                    <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <div className="w-full flex justify-between items-center">
+                      <div className="text-xs text-gold-500">{idea.author}</div>
+                      <span className="text-xs text-gray-500">
+                        {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                      </span>
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
           <div className="mt-4 text-center">
             <Link href="/trading-ideas">
               <Button className="bg-gold-600 hover:bg-gold-700 text-black">Ver Todas as Ideias</Button>

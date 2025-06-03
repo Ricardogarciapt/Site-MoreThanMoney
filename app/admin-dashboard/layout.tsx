@@ -1,39 +1,37 @@
 import type React from "react"
-import { Suspense } from "react"
-import AdminSidebar from "@/components/admin-sidebar"
+import type { Metadata } from "next"
+import Sidebar from "@/components/admin-sidebar"
+import { MessageSquare } from "lucide-react"
 
-// Force dynamic rendering
-export const dynamic = "force-dynamic"
-export const revalidate = 0
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Admin dashboard for managing the application.",
+}
 
-function AdminLayoutLoading() {
+interface RootLayoutProps {
+  children: React.ReactNode
+}
+
+const navItems = [
+  {
+    title: "Telegram Bot",
+    href: "/admin-dashboard/telegram-test",
+    icon: MessageSquare,
+    description: "Testar integração com Telegram",
+  },
+]
+
+const AdminDashboardLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-black">
-      <div className="w-64 bg-gray-900 animate-pulse"></div>
-      <div className="flex-1 p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-800 rounded mb-4"></div>
-          <div className="h-4 bg-gray-800 rounded mb-2"></div>
-          <div className="h-4 bg-gray-800 rounded mb-2"></div>
-        </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <div className="flex flex-1">
+        <Sidebar navItems={navItems} />
+        <main className="flex-1 flex flex-col">
+          <div className="flex-1 p-4 pb-20">{children}</div>
+        </main>
       </div>
     </div>
   )
 }
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex h-screen bg-black text-white">
-      <Suspense fallback={<div className="w-64 bg-gray-900 animate-pulse"></div>}>
-        <AdminSidebar />
-      </Suspense>
-      <main className="flex-1 overflow-auto">
-        <Suspense fallback={<AdminLayoutLoading />}>{children}</Suspense>
-      </main>
-    </div>
-  )
-}
+export default AdminDashboardLayout

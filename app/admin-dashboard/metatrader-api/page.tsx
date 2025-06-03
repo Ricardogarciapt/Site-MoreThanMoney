@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import dynamic from "next/dynamic"
+import ClientWrapper from "./client-wrapper"
 
 // Tipos
 interface MetaTraderConfig {
@@ -126,7 +127,7 @@ const subscribers: Subscriber[] = [
   },
 ]
 
-const MetaTraderAPIComponent = dynamic(() => import("./metatrader-api-client"), {
+const MetatraderApiClient = dynamic(() => import("./metatrader-api-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -138,7 +139,7 @@ const MetaTraderAPIComponent = dynamic(() => import("./metatrader-api-client"), 
   ),
 })
 
-export default function MetaTraderAPIPage() {
+export default function MetatraderApiPage() {
   const { isAuthenticated, isAdmin } = useAuth()
   const router = useRouter()
 
@@ -152,5 +153,5 @@ export default function MetaTraderAPIPage() {
     return <div>Carregando...</div>
   }
 
-  return <MetaTraderAPIComponent />
+  return <ClientWrapper />
 }

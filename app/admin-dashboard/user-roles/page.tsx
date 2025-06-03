@@ -1,31 +1,7 @@
-"use client"
 import dynamic from "next/dynamic"
+import ClientWrapper from "./client-wrapper"
 
-// Lista de roles disponíveis
-const availableRoles = [
-  "Membro",
-  "Membro VIP",
-  "Distribuidor",
-  "Educador",
-  "Liderança",
-  "Rising Star",
-  "Silver Manager",
-  "Gold Manager",
-  "Platinum Manager",
-  "Elite",
-  "Director",
-  "Diamond",
-  "Presidential",
-]
-
-interface UserData {
-  username: string
-  name: string
-  email?: string
-  role?: string
-}
-
-const UserRolesPageComponent = dynamic(() => import("./user-roles-client"), {
+const UserRolesClient = dynamic(() => import("./user-roles-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -38,5 +14,5 @@ const UserRolesPageComponent = dynamic(() => import("./user-roles-client"), {
 })
 
 export default function UserRolesPage() {
-  return <UserRolesPageComponent />
+  return <ClientWrapper />
 }

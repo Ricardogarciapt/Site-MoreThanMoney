@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, XCircle, MessageSquare, Users, Settings, RefreshCw } from "lucide-react"
 import dynamic from "next/dynamic"
+import ClientWrapper from "./client-wrapper"
 
-const TelegramTestComponent = dynamic(() => import("./telegram-test-client"), {
+const TelegramTestClient = dynamic(() => import("./telegram-test-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -36,7 +37,7 @@ interface TelegramStatus {
   error?: string
 }
 
-function TelegramTestClient() {
+function TelegramTestClientComponent() {
   const [status, setStatus] = useState<TelegramStatus>({ connected: false })
   const [messages, setMessages] = useState<TelegramMessage[]>([])
   const [loading, setLoading] = useState(false)
@@ -258,5 +259,5 @@ function TelegramTestClient() {
 }
 
 export default function TelegramTestPage() {
-  return <TelegramTestComponent />
+  return <ClientWrapper />
 }

@@ -5,8 +5,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/components/ui/use-toast"
+import ClientWrapper from "./client-wrapper"
 
-const CoursesManagerComponent = dynamic(() => import("./courses-manager-client"), {
+const CoursesManagerClient = dynamic(() => import("./courses-manager-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -125,5 +126,5 @@ export default function CoursesManagerPage() {
     return <div>Carregando...</div>
   }
 
-  return <CoursesManagerComponent />
+  return <ClientWrapper />
 }

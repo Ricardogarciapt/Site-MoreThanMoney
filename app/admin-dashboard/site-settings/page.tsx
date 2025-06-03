@@ -6,8 +6,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/components/ui/use-toast"
 import { useConfigStore } from "@/lib/config-service"
 import dynamic from "next/dynamic"
+import ClientWrapper from "./client-wrapper"
 
-const SiteSettingsComponent = dynamic(() => import("./site-settings-client"), {
+const SiteSettingsClient = dynamic(() => import("./site-settings-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -117,5 +118,5 @@ export default function SiteSettingsPage() {
     return <div>Carregando...</div>
   }
 
-  return <SiteSettingsComponent />
+  return <ClientWrapper />
 }
