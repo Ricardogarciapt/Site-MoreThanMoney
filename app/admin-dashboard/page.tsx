@@ -275,7 +275,7 @@ export default function AdminDashboardPage() {
       title: "Gestão de Afiliados",
       description: "Gerencie códigos e comissões",
       icon: UserCheck,
-      href: "/admin-dashboard/affiliate-manager",
+      href: "/admin/affiliates",
       color: "from-orange-500 to-orange-600",
       stats: `€${stats.totalRevenue.toFixed(2)} em comissões`,
     },

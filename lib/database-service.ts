@@ -146,6 +146,22 @@ export class DatabaseService {
     }
   }
 
+  async getUserByEmail(email: string): Promise<User | null> {
+    try {
+      const { data, error } = await supabaseAdmin.from("users").select("*").eq("email", email).single()
+      if (error) {
+        if (error.code === "PGRST116") {
+          // Not found
+          return null
+        }
+        return this.handleError(error, "getUserByEmail")
+      }
+      return data
+    } catch (error) {
+      return this.handleError(error, "getUserByEmail")
+    }
+  }
+
   async getAllUsers(): Promise<User[]> {
     try {
       const { data, error } = await supabaseAdmin.from("users").select("*").order("created_at", { ascending: false })

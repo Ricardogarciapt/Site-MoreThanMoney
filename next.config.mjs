@@ -3,7 +3,6 @@ const nextConfig = {
   // Otimizações de produção
   experimental: {
     optimizePackageImports: ["@supabase/supabase-js", "lucide-react"],
-    bundlePagesRouterDependencies: true,
   },
   
   // Compressão

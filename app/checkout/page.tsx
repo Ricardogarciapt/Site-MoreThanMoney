@@ -7,27 +7,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { ShoppingCart, CreditCard, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-
-interface CartItem {
-  id: string
-  name: string
-  price: number
-  description?: string
-}
+import type { CartItem } from "@/components/shopping-cart" // Import CartItem from shopping-cart.tsx
+import { useAuth } from "@/contexts/auth-context" // Import useAuth
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const { user } = useAuth() // Get user from AuthContext
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
 
   useEffect(() => {
     // Load cart items from localStorage
-    const items = JSON.parse(localStorage.getItem("cartItems") || "[]")
-    setCartItems(items)
-
-    const totalAmount = items.reduce((sum: number, item: CartItem) => sum + item.price, 0)
-    setTotal(totalAmount)
+    const itemsJson = localStorage.getItem("cartItems")
+    if (itemsJson) {
+      try {
+        const items = JSON.parse(itemsJson)
+        setCartItems(items)
+        const totalAmount = items.reduce((sum: number, item: CartItem) => sum + item.price, 0)
+        setTotal(totalAmount)
+      } catch (e) {
+        console.error("Failed to parse cart items from localStorage", e)
+        localStorage.removeItem("cartItems") // Clear corrupted data
+      }
+    }
   }, [])
 
   const handleStripeCheckout = async () => {
@@ -40,31 +43,42 @@ export default function CheckoutPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          products: cartItems.map((item) => ({
-            id: item.id,
+          items: cartItems.map((item: CartItem) => ({
             name: item.name,
             price: item.price,
-            currency: "eur",
+            quantity: item.quantity || 1,
+            type: item.type || "one_time", // Ensure type is 'one_time' or 'subscription'
             description: item.description,
+            // id: item.id, // Stripe uses price IDs or ad-hoc price data, not your internal item ID directly for line items
           })),
-          successUrl: `${window.location.origin}/payment/success`,
+          customerEmail: user?.email, // Pass customer email if available
+          successUrl: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/payment/cancelled`,
+          metadata: {
+            cartId: Date.now().toString(), // Example cart identifier
+            userId: user ? user.id : undefined, // Pass userId if available
+          },
         }),
       })
 
-      const { url } = await response.json()
+      const sessionData = await response.json()
 
-      if (url) {
-        window.location.href = url
+      if (sessionData.url) {
+        window.location.href = sessionData.url
+      } else {
+        console.error("Failed to create Stripe checkout session:", sessionData.error || "Unknown error")
+        // Optionally, display an error message to the user
       }
     } catch (error) {
       console.error("Error creating checkout session:", error)
+      // Optionally, display an error message to the user
     } finally {
       setLoading(false)
     }
   }
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !loading) {
+    // Avoid showing empty cart during initial load
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <Card className="w-[400px] bg-black/50 border-gold-500/30">
@@ -133,7 +147,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <Button
                   onClick={handleStripeCheckout}
-                  disabled={loading}
+                  disabled={loading || cartItems.length === 0}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12"
                 >
                   <CreditCard className="h-5 w-5 mr-2" />

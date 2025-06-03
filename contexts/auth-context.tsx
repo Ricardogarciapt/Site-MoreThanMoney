@@ -23,7 +23,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>
   register: (userData: Omit<AuthUser, "id" | "is_admin"> & { password: string }) => Promise<boolean>
   logout: () => void
-  updateUserRole: (username: string, newRole: string) => Promise<boolean>
+  updateUserRole: (username: string, newRole: string) => Promise<boolean> // username might be better as userId
   updateUserPackage: (packageId: string) => Promise<boolean>
   isLoading: boolean
 }
@@ -64,25 +64,20 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // Check admin users
       const adminUser = ADMIN_USERS.find((admin) => admin.username === username && admin.password === password)
-
       if (adminUser) {
         const adminUserData: AuthUser = {
-          id: `admin-${adminUser.username}`,
+          id: `admin-${adminUser.username}`, // Consider a more robust ID generation
           username: adminUser.username,
           name: adminUser.name,
           is_admin: true,
           role: "Admin",
         }
         setUser(adminUserData)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(adminUserData))
-        }
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(adminUserData))
         return true
       }
 
-      // Demo user
       if (username === "demo" && password === "password") {
         const demoUser: AuthUser = {
           id: "demo-user",
@@ -92,32 +87,22 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           role: "Membro",
         }
         setUser(demoUser)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(demoUser))
-        }
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(demoUser))
         return true
       }
 
-      // Try API login
-      try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        })
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      })
 
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-          if (typeof window !== "undefined") {
-            localStorage.setItem("user", JSON.stringify(userData))
-          }
-          return true
-        }
-      } catch (apiError) {
-        console.error("API login error:", apiError)
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(userData))
+        return true
       }
-
       return false
     } catch (error) {
       console.error("Login error:", error)
@@ -127,9 +112,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: Omit<AuthUser, "id" | "is_admin"> & { password: string }): Promise<boolean> => {
     try {
-      if (ADMIN_USERS.some((admin) => admin.username === userData.username)) {
-        return false
-      }
+      if (ADMIN_USERS.some((admin) => admin.username === userData.username)) return false
 
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -140,12 +123,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const newUser = await response.json()
         setUser(newUser)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(newUser))
-        }
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(newUser))
         return true
       }
-
       return false
     } catch (error) {
       console.error("Registration error:", error)
@@ -155,22 +135,29 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null)
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("user")
-    }
+    if (typeof window !== "undefined") localStorage.removeItem("user")
   }
 
   const updateUserRole = async (username: string, newRole: string): Promise<boolean> => {
+    if (!user || user.username !== username) {
+      // Basic check, ideally use userId
+      console.warn("User not authenticated or username mismatch for role update.")
+      return false
+    }
     try {
-      // For now, just update locally since we don't have the db import working
-      if (user && user.username === username) {
-        const updatedUser = { ...user, role: newRole }
-        setUser(updatedUser)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(updatedUser))
-        }
+      const response = await fetch("/api/user/update-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, newRole }), // Send userId
+      })
+
+      if (response.ok) {
+        const updatedUserData = await response.json()
+        setUser(updatedUserData) // Update local state with response from API
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(updatedUserData))
         return true
       }
+      console.error("Failed to update user role via API:", await response.text())
       return false
     } catch (error) {
       console.error("Error updating user role:", error)
@@ -180,14 +167,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserPackage = async (packageId: string): Promise<boolean> => {
     if (!user) return false
-
     try {
-      const updatedUser = { ...user, package: packageId }
-      setUser(updatedUser)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("user", JSON.stringify(updatedUser))
+      const response = await fetch("/api/user/update-package", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, packageId }),
+      })
+
+      if (response.ok) {
+        const updatedUserData = await response.json()
+        setUser(updatedUserData) // Update local state with response from API
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(updatedUserData))
+        return true
       }
-      return true
+      console.error("Failed to update user package via API:", await response.text())
+      return false
     } catch (error) {
       console.error("Error updating user package:", error)
       return false
