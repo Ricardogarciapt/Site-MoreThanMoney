@@ -1,6 +1,5 @@
 "use client"
 
-import dynamic from "next/dynamic"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -64,19 +63,7 @@ const userGrowthData = [
   { name: "Jul", novos: 120, ativos: 280 },
 ]
 
-const StatisticsComponent = dynamic(() => import("./statistics-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gold-400 font-medium">Carregando estatísticas...</p>
-      </div>
-    </div>
-  ),
-})
-
-export default function StatisticsPage() {
+export default function StatisticsClient() {
   const [dateRange, setDateRange] = useState("7d")
 
   return (
