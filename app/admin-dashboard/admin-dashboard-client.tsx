@@ -1,9 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  Lock,
   Home,
   LogOut,
   Users,
@@ -19,11 +21,12 @@ import {
   Zap,
   MessageSquare,
 } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function AdminDashboardClient() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const router = useRouter()
-  const [adminUser, setAdminUser] = useState<string | null>(null)
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeMembers: 0,
@@ -32,16 +35,11 @@ export default function AdminDashboardClient() {
   })
   const [loading, setLoading] = useState(true)
 
-  // Carregar dados do admin e estatísticas
+  // Carregar estatísticas
   useEffect(() => {
-    const loadData = () => {
+    const loadStats = () => {
       try {
         if (typeof window !== "undefined") {
-          // Carregar usuário admin
-          const storedAdminUser = localStorage.getItem("adminUser")
-          setAdminUser(storedAdminUser)
-
-          // Carregar estatísticas
           const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
           const affiliates = JSON.parse(localStorage.getItem("affiliates") || "[]")
           const commissions = JSON.parse(localStorage.getItem("commissionHistory") || "[]")
@@ -54,34 +52,27 @@ export default function AdminDashboardClient() {
           })
         }
       } catch (error) {
-        console.error("Error loading data:", error)
+        console.error("Error loading stats:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    loadData()
+    // Simular um pequeno delay para evitar problemas de hidratação
+    const timer = setTimeout(loadStats, 100)
+    return () => clearTimeout(timer)
   }, [])
 
-  // Função para logout
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
-    localStorage.removeItem("adminUser")
-    router.push("/admin-login")
-  }
+  // Redirecionar se não for autenticado ou admin
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/admin-login")
+    } else if (!loading && !isAdmin) {
+      router.push("/")
+    }
+  }, [isAuthenticated, isAdmin, router, loading])
 
-  // Função para navegar para módulos
-  const navigateToModule = (href: string) => {
-    console.log("Navegando para:", href)
-    router.push(href)
-  }
-
-  // Função para voltar para a home
-  const navigateToHome = () => {
-    router.push("/")
-  }
-
-  // Mostrar loading enquanto carrega dados
+  // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
@@ -89,6 +80,30 @@ export default function AdminDashboardClient() {
           <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gold-400 font-medium">Carregando painel administrativo...</p>
         </div>
+      </div>
+    )
+  }
+
+  // Se não for admin, mostrar tela de acesso restrito
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
+        <Card className="w-[400px] bg-black/50 border-gold-500/30 backdrop-blur-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 p-3 bg-gold-500/20 rounded-full w-fit">
+              <Lock className="h-8 w-8 text-gold-500" />
+            </div>
+            <CardTitle className="text-2xl text-white">Acesso Restrito</CardTitle>
+            <CardDescription className="text-gray-400">Esta área é exclusiva para administradores.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Link href="/admin-login">
+              <Button className="w-full bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black font-semibold">
+                Fazer Login como Admin
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -122,7 +137,7 @@ export default function AdminDashboardClient() {
       title: "Gestão de Afiliados",
       description: "Gerencie códigos e comissões",
       icon: UserCheck,
-      href: "/admin-dashboard/affiliate-manager",
+      href: "/admin/affiliates",
       color: "from-orange-500 to-orange-600",
       stats: `€${stats.totalRevenue.toFixed(2)} em comissões`,
     },
@@ -216,20 +231,17 @@ export default function AdminDashboardClient() {
             </div>
             <div className="flex items-center space-x-3">
               <div className="text-right mr-3">
-                <p className="text-sm font-medium text-white">{adminUser || "Administrador"}</p>
+                <p className="text-sm font-medium text-white">{user?.name}</p>
                 <p className="text-xs text-gray-400">Administrador</p>
               </div>
+              <Link href="/">
+                <Button variant="outline" size="sm" className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10">
+                  <Home className="h-4 w-4 mr-2" />
+                  Ver Site
+                </Button>
+              </Link>
               <Button
-                onClick={navigateToHome}
-                variant="outline"
-                size="sm"
-                className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10"
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Ver Site
-              </Button>
-              <Button
-                onClick={handleLogout}
+                onClick={logout}
                 variant="outline"
                 size="sm"
                 className="border-red-500/50 text-red-400 hover:bg-red-500/10"
@@ -245,7 +257,7 @@ export default function AdminDashboardClient() {
       <main className="container mx-auto px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Bem-vindo de volta, {adminUser || "Administrador"}! 👋</h2>
+          <h2 className="text-3xl font-bold text-white mb-2">Bem-vindo de volta, {user?.name?.split(" ")[0]}! 👋</h2>
           <p className="text-gray-400">Gerencie sua plataforma MoreThanMoney com facilidade e eficiência.</p>
         </div>
 
@@ -274,39 +286,39 @@ export default function AdminDashboardClient() {
         {/* Admin Modules */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {adminModules.map((module, index) => (
-            <Card
-              key={index}
-              onClick={() => navigateToModule(module.href)}
-              className="group bg-black/50 border-gray-800/50 backdrop-blur-xl hover:border-gold-500/50 transition-all duration-300 hover:scale-105 cursor-pointer h-full"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div
-                    className={`p-3 rounded-lg bg-gradient-to-r ${module.color} group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <module.icon className="h-6 w-6 text-white" />
+            <Link key={index} href={module.href}>
+              <Card className="group bg-black/50 border-gray-800/50 backdrop-blur-xl hover:border-gold-500/50 transition-all duration-300 hover:scale-105 cursor-pointer h-full">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div
+                      className={`p-3 rounded-lg bg-gradient-to-r ${module.color} group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <module.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full">{module.stats}</span>
                   </div>
-                  <span className="text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full">{module.stats}</span>
-                </div>
-                <CardTitle className="text-white group-hover:text-gold-400 transition-colors">{module.title}</CardTitle>
-                <CardDescription className="text-gray-400 text-sm">{module.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-gold-400 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
-                    Acessar módulo
-                  </span>
-                  <svg
-                    className="ml-1 h-4 w-4 text-gold-400 group-hover:translate-x-1 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </CardContent>
-            </Card>
+                  <CardTitle className="text-white group-hover:text-gold-400 transition-colors">
+                    {module.title}
+                  </CardTitle>
+                  <CardDescription className="text-gray-400 text-sm">{module.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gold-400 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
+                      Acessar módulo
+                    </span>
+                    <svg
+                      className="ml-1 h-4 w-4 text-gold-400 group-hover:translate-x-1 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 

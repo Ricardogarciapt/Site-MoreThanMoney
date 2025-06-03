@@ -1,6 +1,0 @@
-# Ignore build errors
-.next/
-node_modules/
-*.log
-.env*
-!.env.example

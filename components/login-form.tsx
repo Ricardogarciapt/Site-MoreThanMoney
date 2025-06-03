@@ -23,8 +23,6 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log("Formulário submetido:", { username, password: "***" })
-
     // Validação básica
     if (!username.trim()) {
       setError("Nome de usuário é obrigatório")
@@ -36,24 +34,25 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       return
     }
 
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres")
+      return
+    }
+
     setError("")
     setIsLoading(true)
 
     try {
-      console.log("Tentando fazer login...")
-      const success = await login(username.trim(), password)
-      console.log("Resultado do login:", success)
-
+      const success = await login(username, password)
       if (success) {
-        console.log("Login bem-sucedido, redirecionando...")
         onSuccess?.()
         router.push("/member-area")
       } else {
         setError("Credenciais inválidas. Verifique seu nome de usuário e senha.")
       }
     } catch (err) {
-      console.error("Erro no handleSubmit:", err)
       setError("Ocorreu um erro ao fazer login. Tente novamente mais tarde.")
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
@@ -108,16 +107,6 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
                 Registre-se aqui
               </a>
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setUsername("admin")
-                setPassword("Superacao2022#")
-              }}
-              className="text-xs text-gray-500 hover:text-gold-400 mt-2"
-            >
-              Preencher credenciais de admin (para teste)
-            </button>
           </div>
         </form>
       </CardContent>
