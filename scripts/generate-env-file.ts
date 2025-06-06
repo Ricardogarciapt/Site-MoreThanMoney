@@ -1,0 +1,36 @@
+// Script para gerar arquivo .env.local para desenvolvimento
+const fs = require("fs")
+
+const envContent = `# Stripe (Pagamentos)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_51RTQzjJ7AovKm8m2brgzKYnWLl6NrBSAhBY5g516y9GYUH7jfMLm1jNiaTY01ywPohGIFSvMk84Fwgw98lNqkcp100m1iblSAy
+STRIPE_SECRET_KEY=mk_1RTjBoJ7AovKm8m2zaaJTotK
+STRIPE_WEBHOOK_SECRET=whsec_SHaO2EgUdrJBfosRBbjDEZjg4MObHxrR
+
+# Supabase (Base de Dados)
+NEXT_PUBLIC_SUPABASE_URL=https://mllycoenhpjfceyvaqxz.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sbHljb2VuaHBqZmNleXZhcXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NDUyMjYsImV4cCI6MjA2NDAyMTIyNn0.bM-wNUUll7UggDvVfJYk10aecQUs4q8w47q4IoL3Gb4
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sbHljb2VuaHBqZmNleXZhcXh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODQ0NTIyNiwiZXhwIjoyMDY0MDIxMjI2fQ.B2Y6hyYLAQubeyk9bC3HF8c1mCL9sj8GvqJ7W8G6aMY
+
+# NextAuth
+NEXTAUTH_SECRET=morethanmoney_secure_auth_secret_key_2024
+NEXTAUTH_URL=http://localhost:3000
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=7926573487:AAFAbQSWYOOSkLteucaj82Xk_v1xpT-B3ok
+TELEGRAM_CHANNEL_ID=-1002486420436
+TELEGRAM_WEBHOOK_SECRET=telegram_webhook_secret_key
+
+# Analytics
+NEXT_PUBLIC_GA_ID=G-S8J5PC8615
+
+# YouTube API
+YOUTUBE_API_KEY=AIzaSyAjO5G-lZKW2gd0DAD3hMQ6PaeIAyXn5po
+
+# Notion Integration
+NOTION_API_KEY=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
+NOTION_DATABASE_ID=MorethanMoney
+`
+
+// Escrever o arquivo .env.local
+fs.writeFileSync(".env.local", envContent)
+console.log("Arquivo .env.local gerado com sucesso!")

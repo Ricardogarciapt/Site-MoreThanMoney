@@ -1,93 +1,43 @@
-import Stripe from "stripe"
+// Serviço de pagamentos com verificações de segurança
+import { loadStripe } from "@stripe/stripe-js"
 
-// Initialize Stripe with environment variables
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
-})
+// Chave pública do Stripe configurada diretamente
+const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
-export interface PaymentSession {
-  id: string
-  url: string | null
-  status: string
-}
+// Inicializar Stripe
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 
-export interface PaymentProduct {
+// Tipos para pagamentos
+export interface PaymentItem {
   id: string
   name: string
   price: number
+  quantity: number
+  type?: string
+}
+
+export interface PaymentData {
+  items: PaymentItem[]
+  customerInfo: {
+    name: string
+    email: string
+    phone?: string
+  }
+  totalAmount: number
   currency: string
-  description?: string
+  successUrl: string
+  cancelUrl: string
+  metadata?: Record<string, string>
 }
 
-// Create Stripe checkout session
-export async function createStripeSession(
-  products: PaymentProduct[],
-  successUrl: string,
-  cancelUrl: string,
-  customerEmail?: string,
-): Promise<PaymentSession> {
-  try {
-    const lineItems = products.map((product) => ({
-      price_data: {
-        currency: product.currency,
-        product_data: {
-          name: product.name,
-          description: product.description,
-        },
-        unit_amount: Math.round(product.price * 100), // Convert to cents
-      },
-      quantity: 1,
-    }))
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer_email: customerEmail,
-      metadata: {
-        products: JSON.stringify(products.map((p) => ({ id: p.id, name: p.name }))),
-      },
-    })
-
-    return {
-      id: session.id,
-      url: session.url,
-      status: session.status || "pending",
-    }
-  } catch (error) {
-    console.error("Error creating Stripe session:", error)
-    throw new Error("Failed to create payment session")
-  }
+export interface PaymentResult {
+  success: boolean
+  paymentId?: string
+  error?: string
+  redirectUrl?: string
 }
 
-// Verify Stripe webhook signature
-export function verifyStripeWebhook(body: string, signature: string): Stripe.Event | null {
-  try {
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-    if (!webhookSecret) {
-      throw new Error("Stripe webhook secret not configured")
-    }
-
-    return stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (error) {
-    console.error("Error verifying Stripe webhook:", error)
-    return null
-  }
-}
-
-// Get payment session details
-export async function getStripeSession(sessionId: string): Promise<Stripe.Checkout.Session | null> {
-  try {
-    return await stripe.checkout.sessions.retrieve(sessionId)
-  } catch (error) {
-    console.error("Error retrieving Stripe session:", error)
-    return null
-  }
-}
-
-// Classe principal do serviço de pagamentos (simplificada)
+// Classe principal do serviço de pagamentos
 export class PaymentService {
   private static instance: PaymentService
 
@@ -99,50 +49,99 @@ export class PaymentService {
   }
 
   // Verificar se o Stripe está configurado
-  isStripeConfigured(): boolean {
-    return !!(process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  private isStripeConfigured(): boolean {
+    return !!stripePublicKey && !!stripePromise
   }
 
-  // Criar sessão de pagamento
-  async createPaymentSession(
-    products: PaymentProduct[],
-    successUrl: string,
-    cancelUrl: string,
-    customerEmail?: string,
-  ): Promise<PaymentSession> {
-    return createStripeSession(products, successUrl, cancelUrl, customerEmail)
+  // Processar pagamento com Stripe
+  async processStripePayment(paymentData: PaymentData): Promise<PaymentResult> {
+    try {
+      // Verificar se o Stripe está configurado
+      if (!this.isStripeConfigured()) {
+        throw new Error("Stripe não está configurado. Verifique as chaves de API.")
+      }
+
+      // Validar dados obrigatórios
+      if (!paymentData.items || paymentData.items.length === 0) {
+        throw new Error("Carrinho vazio")
+      }
+
+      if (!paymentData.customerInfo.email) {
+        throw new Error("Email é obrigatório")
+      }
+
+      const response = await fetch("/api/payments/stripe/create-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paymentData),
+      })
+
+      const session = await response.json()
+
+      if (!response.ok) {
+        throw new Error(session.error || "Erro ao criar sessão de pagamento")
+      }
+
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error("Stripe não foi carregado")
+      }
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      return {
+        success: true,
+        paymentId: session.id,
+      }
+    } catch (error) {
+      console.error("Erro no pagamento Stripe:", error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Erro desconhecido",
+      }
+    }
   }
 
   // Verificar status do pagamento
-  async checkPaymentStatus(sessionId: string): Promise<{
+  async checkPaymentStatus(paymentId: string): Promise<{
     status: "pending" | "completed" | "failed" | "cancelled"
     details?: any
   }> {
     try {
-      const session = await getStripeSession(sessionId)
-      if (!session) {
-        return { status: "failed" }
+      const response = await fetch(`/api/payments/stripe/status/${paymentId}`)
+
+      if (!response.ok) {
+        throw new Error("Erro ao verificar status")
       }
 
-      const statusMap: Record<string, "pending" | "completed" | "failed" | "cancelled"> = {
-        complete: "completed",
-        expired: "cancelled",
-        open: "pending",
-      }
+      const result = await response.json()
 
       return {
-        status: statusMap[session.status] || "failed",
-        details: session,
+        status: result.status,
+        details: result.details,
       }
     } catch (error) {
-      console.error("Error checking payment status:", error)
+      console.error("Erro ao verificar status:", error)
       return { status: "failed" }
     }
   }
 
   // Verificar se o serviço está disponível
   async checkServiceHealth(): Promise<boolean> {
-    return this.isStripeConfigured()
+    try {
+      const response = await fetch("/api/payments/stripe/health")
+      return response.status === 200
+    } catch {
+      return false
+    }
   }
 }
 

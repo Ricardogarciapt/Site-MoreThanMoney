@@ -7,11 +7,32 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, ExternalLink, Users, DollarSign, Download, Share2, FileText, BarChart3 } from "lucide-react"
+import {
+  Copy,
+  ExternalLink,
+  Users,
+  DollarSign,
+  Download,
+  Share2,
+  FileText,
+  BarChart3,
+  Edit,
+  Plus,
+  Trash,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
 import { MembershipRequired } from "@/components/membership-required"
 import { useConfigStore } from "@/lib/config-service"
 import { useToast } from "@/components/ui/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Simulação de banco de dados para afiliados
 const mockAffiliateData = {
@@ -44,6 +65,7 @@ const mockAffiliateData = {
       size: "728x90",
       campaign: "Scanner",
       url: "/affiliate-materials/banner1.jpg",
+      downloadUrl: "https://drive.google.com/file/d/1abc123/view?usp=sharing",
     },
     {
       id: 2,
@@ -52,6 +74,7 @@ const mockAffiliateData = {
       size: "300x250",
       campaign: "JIFU",
       url: "/affiliate-materials/banner2.jpg",
+      downloadUrl: "https://drive.google.com/file/d/2def456/view?usp=sharing",
     },
     {
       id: 3,
@@ -60,10 +83,32 @@ const mockAffiliateData = {
       size: "250x250",
       campaign: "Copytrading",
       url: "/affiliate-materials/banner3.jpg",
+      downloadUrl: "https://drive.google.com/file/d/3ghi789/view?usp=sharing",
     },
-    { id: 4, name: "Email Template", type: "email", campaign: "Scanner", url: "/affiliate-materials/email1.html" },
-    { id: 5, name: "Vídeo Promocional", type: "video", campaign: "JIFU", url: "/affiliate-materials/video1.mp4" },
-    { id: 6, name: "PDF Informativo", type: "document", campaign: "Geral", url: "/affiliate-materials/info.pdf" },
+    {
+      id: 4,
+      name: "Email Template",
+      type: "email",
+      campaign: "Scanner",
+      url: "/affiliate-materials/email1.html",
+      downloadUrl: "https://drive.google.com/file/d/4jkl012/view?usp=sharing",
+    },
+    {
+      id: 5,
+      name: "Vídeo Promocional",
+      type: "video",
+      campaign: "JIFU",
+      url: "/affiliate-materials/video1.mp4",
+      downloadUrl: "https://drive.google.com/file/d/5mno345/view?usp=sharing",
+    },
+    {
+      id: 6,
+      name: "PDF Informativo",
+      type: "document",
+      campaign: "Geral",
+      url: "/affiliate-materials/info.pdf",
+      downloadUrl: "https://drive.google.com/file/d/6pqr678/view?usp=sharing",
+    },
   ],
 }
 
@@ -94,8 +139,25 @@ export default function AffiliateDashboard() {
   const [withdrawAmount, setWithdrawAmount] = useState(0)
   const [isWithdrawing, setIsWithdrawing] = useState(false)
 
+  // Admin functionality
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isEditingMaterial, setIsEditingMaterial] = useState(false)
+  const [currentMaterial, setCurrentMaterial] = useState(null)
+  const [isAddingMaterial, setIsAddingMaterial] = useState(false)
+  const [newMaterial, setNewMaterial] = useState({
+    name: "",
+    type: "banner",
+    size: "",
+    campaign: "Geral",
+    url: "",
+    downloadUrl: "",
+  })
+
   useEffect(() => {
     if (isAuthenticated && user) {
+      // Check if user is admin
+      setIsAdmin(user.role === "admin")
+
       // Gerar links de afiliado baseados no nome de usuário
       const username = user.username || (user.email ? user.email.split("@")[0] : "usuario")
       const domain = window.location.hostname
@@ -103,7 +165,7 @@ export default function AffiliateDashboard() {
 
       setAffiliateLinks({
         main: `${baseUrl}?ref=${username}`,
-        jifu: config.affiliateLinks?.jifuAffiliateLink || "https://shop.jifu.com/ricardogarcia/one-enrollment?eslug=livecustomer",
+        jifu: config.affiliateLinks?.jifuAffiliateLink || "https://ricardogarcia.jifu.com",
         scanner: `${baseUrl}/scanner?ref=${username}`,
         copytrading: `${baseUrl}/copytrading?ref=${username}`,
       })
@@ -216,6 +278,62 @@ export default function AffiliateDashboard() {
   const generateReferralLink = (baseLink, campaign) => {
     const username = user?.username || (user?.email ? user.email.split("@")[0] : "usuario")
     return `${baseLink}${baseLink.includes("?") ? "&" : "?"}ref=${username}&utm_source=affiliate&utm_medium=referral&utm_campaign=${campaign}`
+  }
+
+  // Admin functions
+  const handleEditMaterial = (material) => {
+    setCurrentMaterial({ ...material })
+    setIsEditingMaterial(true)
+  }
+
+  const handleSaveMaterial = () => {
+    if (isAddingMaterial) {
+      // Add new material
+      const newId = Math.max(...marketingMaterials.map((m) => m.id)) + 1
+      const materialToAdd = {
+        ...newMaterial,
+        id: newId,
+      }
+      setMarketingMaterials([...marketingMaterials, materialToAdd])
+      setNewMaterial({
+        name: "",
+        type: "banner",
+        size: "",
+        campaign: "Geral",
+        url: "",
+        downloadUrl: "",
+      })
+      setIsAddingMaterial(false)
+
+      toast({
+        title: "Material adicionado",
+        description: "O material de marketing foi adicionado com sucesso.",
+      })
+    } else {
+      // Update existing material
+      const updatedMaterials = marketingMaterials.map((m) => (m.id === currentMaterial.id ? currentMaterial : m))
+      setMarketingMaterials(updatedMaterials)
+      setIsEditingMaterial(false)
+
+      toast({
+        title: "Material atualizado",
+        description: "O material de marketing foi atualizado com sucesso.",
+      })
+    }
+  }
+
+  const handleDeleteMaterial = (id) => {
+    const updatedMaterials = marketingMaterials.filter((m) => m.id !== id)
+    setMarketingMaterials(updatedMaterials)
+
+    toast({
+      title: "Material removido",
+      description: "O material de marketing foi removido com sucesso.",
+    })
+  }
+
+  const handleAddNewMaterial = () => {
+    setIsAddingMaterial(true)
   }
 
   if (!isAuthenticated) {
@@ -759,9 +877,17 @@ export default function AffiliateDashboard() {
 
         <TabsContent value="materials">
           <Card>
-            <CardHeader>
-              <CardTitle>Materiais de Marketing</CardTitle>
-              <CardDescription>Acesse banners, vídeos e outros materiais para promover os produtos</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Materiais de Marketing</CardTitle>
+                <CardDescription>Acesse banners, vídeos e outros materiais para promover os produtos</CardDescription>
+              </div>
+              {isAdmin && (
+                <Button onClick={handleAddNewMaterial} className="bg-gold-600 hover:bg-gold-700 text-black">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Material
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -792,70 +918,322 @@ export default function AffiliateDashboard() {
                         {material.size && `${material.size} - `}Campanha {material.campaign}
                       </p>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" className="flex-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => copyToClipboard(material.url)}
+                        >
                           <Copy className="h-4 w-4 mr-2" />
                           Copiar Link
                         </Button>
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
+                        {material.downloadUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => window.open(material.downloadUrl, "_blank")}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Button variant="outline" size="sm" onClick={() => handleEditMaterial(material)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteMaterial(material.id)}>
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              <div className="mt-8 bg-black/30 p-4 rounded-lg border border-gold-500/20">
-                <h3 className="text-lg font-medium mb-2">Dicas para Afiliados</h3>
-                <p className="text-sm text-gray-400 mb-4">
-                  Maximize seus ganhos com estas dicas para promover os produtos.
-                </p>
+              {!isAdmin && (
+                <div className="mt-8 bg-black/30 p-4 rounded-lg border border-gold-500/20">
+                  <h3 className="text-lg font-medium mb-2">Dicas para Afiliados</h3>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Maximize seus ganhos com estas dicas para promover os produtos.
+                  </p>
 
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
-                      <span className="text-gold-500 font-bold">1</span>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                        <span className="text-gold-500 font-bold">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg mb-1">Use Redes Sociais</h4>
+                        <p className="text-gray-400">
+                          Compartilhe seus links de afiliado em suas redes sociais, especialmente em grupos relacionados
+                          a trading e investimentos.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-lg mb-1">Use Redes Sociais</h4>
-                      <p className="text-gray-400">
-                        Compartilhe seus links de afiliado em suas redes sociais, especialmente em grupos relacionados a
-                        trading e investimentos.
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
-                      <span className="text-gold-500 font-bold">2</span>
+                    <div className="flex items-start">
+                      <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                        <span className="text-gold-500 font-bold">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg mb-1">Crie Conteúdo Educativo</h4>
+                        <p className="text-gray-400">
+                          Blogs, vídeos e tutoriais sobre trading e investimentos podem atrair mais pessoas para seus
+                          links.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-lg mb-1">Crie Conteúdo Educativo</h4>
-                      <p className="text-gray-400">
-                        Blogs, vídeos e tutoriais sobre trading e investimentos podem atrair mais pessoas para seus
-                        links.
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
-                      <span className="text-gold-500 font-bold">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-lg mb-1">Use Email Marketing</h4>
-                      <p className="text-gray-400">
-                        Se você tem uma lista de emails, envie newsletters com seus links de afiliado.
-                      </p>
+                    <div className="flex items-start">
+                      <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0 mr-4 mt-0.5">
+                        <span className="text-gold-500 font-bold">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg mb-1">Use Email Marketing</h4>
+                        <p className="text-gray-400">
+                          Se você tem uma lista de emails, envie newsletters com seus links de afiliado.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Material Dialog */}
+      <Dialog open={isEditingMaterial} onOpenChange={setIsEditingMaterial}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar Material de Marketing</DialogTitle>
+            <DialogDescription>Atualize as informações do material de marketing.</DialogDescription>
+          </DialogHeader>
+
+          {currentMaterial && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">
+                  Nome
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={currentMaterial.name}
+                  onChange={(e) => setCurrentMaterial({ ...currentMaterial, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-type" className="text-right">
+                  Tipo
+                </Label>
+                <Select
+                  value={currentMaterial.type}
+                  onValueChange={(value) => setCurrentMaterial({ ...currentMaterial, type: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="banner">Banner</SelectItem>
+                    <SelectItem value="video">Vídeo</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="document">Documento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {currentMaterial.type === "banner" && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-size" className="text-right">
+                    Tamanho
+                  </Label>
+                  <Input
+                    id="edit-size"
+                    value={currentMaterial.size || ""}
+                    onChange={(e) => setCurrentMaterial({ ...currentMaterial, size: e.target.value })}
+                    className="col-span-3"
+                    placeholder="Ex: 728x90"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-campaign" className="text-right">
+                  Campanha
+                </Label>
+                <Select
+                  value={currentMaterial.campaign}
+                  onValueChange={(value) => setCurrentMaterial({ ...currentMaterial, campaign: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecione a campanha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Geral">Geral</SelectItem>
+                    <SelectItem value="Scanner">Scanner</SelectItem>
+                    <SelectItem value="JIFU">JIFU</SelectItem>
+                    <SelectItem value="Copytrading">Copytrading</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-url" className="text-right">
+                  URL
+                </Label>
+                <Input
+                  id="edit-url"
+                  value={currentMaterial.url}
+                  onChange={(e) => setCurrentMaterial({ ...currentMaterial, url: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-download-url" className="text-right">
+                  URL Download
+                </Label>
+                <Input
+                  id="edit-download-url"
+                  value={currentMaterial.downloadUrl || ""}
+                  onChange={(e) => setCurrentMaterial({ ...currentMaterial, downloadUrl: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Link para download do material"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditingMaterial(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveMaterial} className="bg-gold-600 hover:bg-gold-700 text-black">
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Material Dialog */}
+      <Dialog open={isAddingMaterial} onOpenChange={setIsAddingMaterial}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Adicionar Material de Marketing</DialogTitle>
+            <DialogDescription>Adicione um novo material de marketing para os afiliados.</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="new-name"
+                value={newMaterial.name}
+                onChange={(e) => setNewMaterial({ ...newMaterial, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-type" className="text-right">
+                Tipo
+              </Label>
+              <Select
+                value={newMaterial.type}
+                onValueChange={(value) => setNewMaterial({ ...newMaterial, type: value })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="banner">Banner</SelectItem>
+                  <SelectItem value="video">Vídeo</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="document">Documento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {newMaterial.type === "banner" && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="new-size" className="text-right">
+                  Tamanho
+                </Label>
+                <Input
+                  id="new-size"
+                  value={newMaterial.size}
+                  onChange={(e) => setNewMaterial({ ...newMaterial, size: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Ex: 728x90"
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-campaign" className="text-right">
+                Campanha
+              </Label>
+              <Select
+                value={newMaterial.campaign}
+                onValueChange={(value) => setNewMaterial({ ...newMaterial, campaign: value })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione a campanha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Geral">Geral</SelectItem>
+                  <SelectItem value="Scanner">Scanner</SelectItem>
+                  <SelectItem value="JIFU">JIFU</SelectItem>
+                  <SelectItem value="Copytrading">Copytrading</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-url" className="text-right">
+                URL
+              </Label>
+              <Input
+                id="new-url"
+                value={newMaterial.url}
+                onChange={(e) => setNewMaterial({ ...newMaterial, url: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-download-url" className="text-right">
+                URL Download
+              </Label>
+              <Input
+                id="new-download-url"
+                value={newMaterial.downloadUrl}
+                onChange={(e) => setNewMaterial({ ...newMaterial, downloadUrl: e.target.value })}
+                className="col-span-3"
+                placeholder="Link para download do material"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddingMaterial(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveMaterial} className="bg-gold-600 hover:bg-gold-700 text-black">
+              Adicionar Material
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

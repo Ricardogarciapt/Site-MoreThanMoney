@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Play, BookOpen, TrendingUp } from "lucide-react"
+import { ArrowRight, BookOpen, TrendingUp } from "lucide-react"
 import ParticleBackground from "@/components/particle-background"
 import JifuEducationPath from "@/components/jifu-education-path"
 import CopytradingPath from "@/components/copytrading-path"
@@ -15,9 +15,12 @@ import MemberRegistration from "@/components/member-registration"
 export default function NewLandingPage() {
   const [currentView, setCurrentView] = useState<
     "intro" | "pathSelection" | "education" | "automation" | "registration"
-  >("intro")
-  const [videoPlaying, setVideoPlaying] = useState(false)
+  >("pathSelection")
   const [animateCards, setAnimateCards] = useState(false)
+
+  const handleSkipToPathSelection = () => {
+    setCurrentView("pathSelection")
+  }
 
   // Efeito para animar os cards periodicamente
   useEffect(() => {
@@ -46,16 +49,6 @@ export default function NewLandingPage() {
     }
   }, [currentView])
 
-  const handleWatchVideo = () => {
-    setVideoPlaying(true)
-    // Em uma implementação real, você reproduziria o vídeo e então
-    // chamaria setCurrentView("pathSelection") quando o vídeo terminar
-    setTimeout(() => {
-      setVideoPlaying(false)
-      setCurrentView("pathSelection")
-    }, 1000) // Simulando o fim do vídeo após 1 segundo
-  }
-
   const handleSelectEducation = () => {
     setCurrentView("education")
   }
@@ -71,34 +64,6 @@ export default function NewLandingPage() {
   return (
     <>
       <ParticleBackground />
-
-      {currentView === "intro" && (
-        <section className="relative min-h-screen flex items-center justify-center">
-          <div className="container mx-auto px-4 py-20 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gold-gradient">MoreThanMoney</h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              Plataforma integrada de formação financeira e serviços de automatização com inteligência artificial,
-              especializada em Forex e Cripto.
-            </p>
-
-            {!videoPlaying ? (
-              <Button
-                onClick={handleWatchVideo}
-                className="bg-gold-600 hover:bg-gold-700 text-black font-medium px-8 py-6 text-lg"
-              >
-                <Play className="mr-2 h-5 w-5" /> Ver Apresentação
-              </Button>
-            ) : (
-              <div className="relative w-full max-w-4xl mx-auto aspect-video bg-black/50 border border-gold-500/30 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold-500 mx-auto mb-4"></div>
-                  <p className="text-gray-400">Carregando vídeo...</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {currentView === "pathSelection" && (
         <section className="relative min-h-screen flex items-center justify-center">
@@ -197,7 +162,127 @@ export default function NewLandingPage() {
         </section>
       )}
 
-      {currentView === "education" && <JifuEducationPath />}
+      {currentView === "education" && (
+        <>
+          <JifuEducationPath />
+
+          {/* Seção de Educação Adicional */}
+          <section className="relative py-20 bg-gradient-to-b from-black to-gray-900">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600">
+                  Mais Opções de Educação
+                </h2>
+                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                  Expande os teus conhecimentos com as nossas recomendações especializadas
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                {/* AI com os GEMEOS */}
+                <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative h-48 overflow-hidden">
+                      <Image src="/ai-com-osgemeos.png" alt="AI com os GEMEOS" fill className="object-cover" />
+                      <div className="absolute top-4 right-4 bg-gold-600 text-black px-3 py-1 rounded-full text-sm font-bold">
+                        $39/mês
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm text-gray-400">Mais de 400 Alunos</span>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3">AI com os GEMEOS</h3>
+                      <p className="text-gray-300 mb-4 text-sm leading-relaxed">
+                        Cada vez mais se ouve falar de IA, mas são poucos os que realmente entendem o tema e sabem
+                        aplicá-lo. Criámos esta comunidade para quem quer melhorar a sua vida pessoal e profissional com
+                        IA 🤖, mesmo sem qualquer background técnico.
+                      </p>
+                      <div className="space-y-2 mb-6">
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Fundamentos explicados de forma simples</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Tutoriais step-by-step com aplicação prática</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Desafios semanais com prémios em dinheiro 🏆</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gold-400 mb-4 italic">⭐ Sugestão MoreThanMoney</div>
+                      <Button
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                        onClick={() => window.open("https://www.skool.com/ai-com-osgemeos-9197/about", "_blank")}
+                      >
+                        Juntar-se à Comunidade
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Educação MoreThanMoney */}
+                <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm hover:border-gold-500/70 transition-all duration-300 overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative h-48 overflow-hidden">
+                      <Image
+                        src="/educacao-morethanmoney.png"
+                        alt="Educação MoreThanMoney"
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-4 right-4 bg-gold-600 text-black px-3 py-1 rounded-full text-sm font-bold">
+                        Premium
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
+                        <span className="text-sm text-gray-400">Por Ricardo Garcia</span>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3">Educação MoreThanMoney</h3>
+                      <p className="text-gray-300 mb-4 text-sm leading-relaxed">
+                        Formação completa em trading, forex e investimentos com mais de 50 horas de conteúdo premium.
+                        Aprende análise técnica, gestão de risco e estratégias avançadas com scanners AI para maximizar
+                        os teus resultados.
+                      </p>
+                      <div className="space-y-2 mb-6">
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Bootcamp completo de Trading & Forex</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Scanners AI para análise de mercado</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Estratégias de copytrading e automação</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <div className="h-1 w-1 bg-gold-500 rounded-full"></div>
+                          <span>Suporte VIP e comunidade exclusiva</span>
+                        </div>
+                      </div>
+                      <Button
+                        className="w-full bg-gold-600 hover:bg-gold-700 text-black"
+                        onClick={() => (window.location.href = "/bootcamp")}
+                      >
+                        Começar Agora
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       {currentView === "automation" && (
         <>

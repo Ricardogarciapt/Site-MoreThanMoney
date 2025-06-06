@@ -92,6 +92,33 @@ export interface SiteConfig {
   }
 }
 
+export interface EnvironmentConfig {
+  // Analytics
+  NEXT_PUBLIC_GA_ID?: string
+
+  // Payments
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?: string
+  STRIPE_SECRET_KEY?: string
+  STRIPE_WEBHOOK_SECRET?: string
+
+  // Database
+  NEXT_PUBLIC_SUPABASE_URL?: string
+  NEXT_PUBLIC_SUPABASE_ANON_KEY?: string
+  SUPABASE_SERVICE_ROLE_KEY?: string
+
+  // Integrations
+  YOUTUBE_API_KEY?: string
+  NOTION_API_KEY?: string
+  NOTION_DATABASE_ID?: string
+  TELEGRAM_BOT_TOKEN?: string
+  TELEGRAM_WEBHOOK_SECRET?: string
+
+  // General
+  NEXT_PUBLIC_BASE_URL?: string
+  NEXTAUTH_SECRET?: string
+  NEXTAUTH_URL?: string
+}
+
 // Configuração padrão
 const defaultConfig: SiteConfig = {
   name: "MoreThanMoney",
@@ -208,6 +235,8 @@ export const useConfigStore = create(
     config: SiteConfig
     updateConfig: (newConfig: Partial<SiteConfig>) => void
     resetConfig: () => void
+    environmentConfig: EnvironmentConfig
+    updateEnvironmentConfig: (newConfig: Partial<EnvironmentConfig>) => void
   }>(
     (set) => ({
       config: defaultConfig,
@@ -263,6 +292,14 @@ export const useConfigStore = create(
           },
         })),
       resetConfig: () => set({ config: defaultConfig }),
+      environmentConfig: {},
+      updateEnvironmentConfig: (newConfig) =>
+        set((state) => ({
+          environmentConfig: {
+            ...state.environmentConfig,
+            ...newConfig,
+          },
+        })),
     }),
     {
       name: "site-config", // nome para o localStorage

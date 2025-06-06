@@ -50,11 +50,11 @@ export async function fetchPlaylistData(forceRefresh = false): Promise<Module[]>
   }
 
   try {
-    // Obtém a chave da API do ambiente do servidor (NUNCA exposta ao cliente)
+    // Obtém a chave da API do ambiente do servidor (não exposta ao cliente)
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 
     if (!YOUTUBE_API_KEY) {
-      console.error("Chave da API do YouTube não configurada no servidor")
+      console.error("Chave da API do YouTube não configurada")
       return FALLBACK_DATA
     }
 
@@ -126,11 +126,11 @@ export async function fetchPlaylistData(forceRefresh = false): Promise<Module[]>
 // Função para buscar a imagem de capa da playlist (executada no servidor)
 export async function fetchPlaylistThumbnail(): Promise<string> {
   try {
-    // Obtém a chave da API do ambiente do servidor (NUNCA exposta ao cliente)
+    // Obtém a chave da API do ambiente do servidor (não exposta ao cliente)
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 
     if (!YOUTUBE_API_KEY) {
-      console.error("Chave da API do YouTube não configurada no servidor")
+      console.error("Chave da API do YouTube não configurada")
       return "/placeholder-ckgdy.png"
     }
 

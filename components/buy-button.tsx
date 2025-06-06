@@ -1,46 +1,56 @@
 "use client"
 
+import type React from "react"
+
 import { Button } from "@/components/ui/button"
-import { useCart, type CartItem } from "@/components/shopping-cart"
-import { v4 as uuidv4 } from "uuid"
+import { ShoppingCart } from "lucide-react"
+import { useCart } from "@/components/shopping-cart"
+import { toast } from "sonner"
 
 interface BuyButtonProps {
-  productType: "membership" | "bootcamp" | "scanner" | "copytrading"
+  productId: string
   productName: string
-  productPrice: number
-  duration?: string
+  price: number
+  originalPrice?: number
   className?: string
-  variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive"
-  packageId?: string
+  children?: React.ReactNode
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  size?: "default" | "sm" | "lg" | "icon"
+  type?: string
 }
 
 export function BuyButton({
-  productType,
+  productId,
   productName,
-  productPrice,
-  duration,
+  price,
+  originalPrice,
   className,
+  children,
   variant = "default",
-  packageId,
+  size = "default",
+  type = "product",
 }: BuyButtonProps) {
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
-    const item: CartItem = {
-      id: packageId || uuidv4(),
+    addItem({
+      id: productId,
       name: productName,
-      price: productPrice,
+      price: price,
       quantity: 1,
-      type: productType,
-      details: duration ? { duration, packageId } : { packageId },
-    }
-
-    addItem(item)
+      type: type,
+      details: {
+        originalPrice: originalPrice,
+        packageId: productId,
+      },
+    })
+    toast.success(`${productName} adicionado ao carrinho!`)
   }
 
   return (
-    <Button onClick={handleAddToCart} className={className} variant={variant}>
-      {productPrice === 0 ? "Verificar Acesso JIFU" : "Comprar Agora"}
+    <Button onClick={handleAddToCart} variant={variant} size={size} className={`flex items-center gap-2 ${className}`}>
+      <ShoppingCart className="h-4 w-4" />
+      {children || `Comprar - €${price}`}
     </Button>
   )
 }

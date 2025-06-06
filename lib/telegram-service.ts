@@ -1,17 +1,52 @@
+// Configuração completa para o Telegram com verificação melhorada
+import type { TelegramIdea } from "./telegram-ideas"
+import { telegramConfig } from "./telegram-config"
+
+// Configuração centralizada do Telegram com verificação de ambiente
+const telegramInfo = {
+  botToken: process.env.TELEGRAM_BOT_TOKEN || "",
+  channelId: process.env.TELEGRAM_CHANNEL_ID || "",
+  inviteLink: process.env.TELEGRAM_INVITE_LINK || "https://t.me/+2XMn1YEjfjYwYTE0",
+  channelName: process.env.TELEGRAM_CHANNEL_NAME || "MoreThanMoney Trade Ideas",
+  botUsername: process.env.TELEGRAM_BOT_USERNAME || "@MoreThanMoney_Copierbot",
+}
+
+// Verificação de configuração apenas no servidor com modo reduzido
+const isTelegramConfigured = () => {
+  const isConfigured = !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHANNEL_ID)
+
+  if (!isConfigured) {
+    console.warn("Telegram configuration is incomplete - running in reduced functionality mode")
+  }
+
+  return isConfigured
+}
+
+if (typeof window === "undefined") {
+  isTelegramConfigured()
+}
+
+// Interfaces para tipagem
 interface TelegramMessage {
   message_id: number
-  text?: string
-  date: number
-  from?: {
+  from: {
     id: number
+    is_bot: boolean
     first_name: string
     username?: string
   }
-  chat?: {
+  chat: {
     id: number
     title?: string
     type: string
   }
+  date: number
+  text?: string
+  entities?: Array<{
+    type: string
+    offset: number
+    length: number
+  }>
 }
 
 interface TelegramUpdate {
@@ -20,35 +55,16 @@ interface TelegramUpdate {
   channel_post?: TelegramMessage
 }
 
-interface TelegramResponse {
-  ok: boolean
-  result: TelegramUpdate[]
-  description?: string
-}
-
-export interface ProcessedTelegramMessage {
-  id: string
-  content: string
-  author: string
-  timestamp: string
-  type: "signal" | "analysis" | "market_update"
-  symbol?: string
-  direction?: "buy" | "sell"
-  category: "forex" | "crypto" | "commodities"
-  originalDate: Date
-}
-
+/**
+ * Serviço principal do Telegram
+ * Implementa o padrão Singleton para garantir uma única instância
+ */
 class TelegramService {
   private static instance: TelegramService
-  private botToken: string
-  private channelId: string
-  private cache: ProcessedTelegramMessage[] = []
-  private lastFetch = 0
-  private cacheTimeout: number = 5 * 60 * 1000 // 5 minutos
+  private baseUrl: string
 
   constructor() {
-    this.botToken = process.env.TELEGRAM_BOT_TOKEN || ""
-    this.channelId = "-1002055149876" // Canal MoreThanMoney VIP
+    this.baseUrl = telegramConfig.botToken ? `https://api.telegram.org/bot${telegramConfig.botToken}` : ""
   }
 
   public static getInstance(): TelegramService {
@@ -58,205 +74,336 @@ class TelegramService {
     return TelegramService.instance
   }
 
-  private extractSymbol(text: string): string | undefined {
-    // Regex para encontrar símbolos de trading comuns
+  /**
+   * Verifica se o token está configurado
+   * @returns boolean indicando se está configurado
+   */
+  private isConfigured(): boolean {
+    return !!(telegramConfig.botToken && telegramConfig.channelId)
+  }
+
+  /**
+   * Envia uma mensagem para o canal do Telegram
+   * @param text Texto da mensagem
+   * @param chatId ID do chat (opcional, usa o canal padrão se não fornecido)
+   * @returns Resposta da API do Telegram ou null se não configurado
+   */
+  async sendMessage(text: string, chatId?: string): Promise<any> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - message not sent")
+      return null
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: chatId || telegramConfig.channelId,
+          text,
+          parse_mode: "HTML",
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Obtém informações sobre o bot
+   * @returns Informações do bot ou null se não configurado
+   */
+  async getMe(): Promise<any> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - cannot get bot info")
+      return null
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/getMe`)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Erro ao verificar bot:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Configura um webhook para receber atualizações do Telegram
+   * @param webhookUrl URL do webhook
+   * @returns Resposta da API do Telegram ou null se não configurado
+   */
+  async setWebhook(webhookUrl: string): Promise<any> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - cannot set webhook")
+      return null
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/setWebhook`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: webhookUrl,
+          allowed_updates: ["message", "channel_post"],
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Erro ao configurar webhook:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Obtém atualizações do canal
+   * @param offset ID da última atualização recebida
+   * @returns Lista de atualizações ou array vazio se não configurado
+   */
+  async getUpdates(offset?: number): Promise<TelegramUpdate[]> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - cannot get updates")
+      return []
+    }
+
+    try {
+      const url = `${this.baseUrl}/getUpdates${offset ? `?offset=${offset}` : ""}`
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
+      }
+
+      const data = await response.json()
+
+      if (data.ok) {
+        return data.result
+      }
+      throw new Error(data.description || "Erro ao obter atualizações")
+    } catch (error) {
+      console.error("Erro ao obter atualizações:", error)
+      return []
+    }
+  }
+
+  /**
+   * Processa uma mensagem e extrai informações de sinais de trading
+   * @param message Mensagem do Telegram
+   * @returns Objeto com informações do sinal ou null se não for um sinal
+   */
+  processSignalMessage(message: TelegramMessage): TelegramIdea | null {
+    if (!message.text) return null
+
+    const text = message.text
+    const timestamp = new Date(message.date * 1000).toISOString()
+
+    // Detectar tipo de mensagem
+    let type: "signal" | "analysis" | "market_update" = "market_update"
+    let symbol: string | undefined
+    let direction: "buy" | "sell" | undefined
+    let category: "forex" | "crypto" | "commodities" = "forex"
+
+    // Detectar sinais de compra/venda
+    if (text.includes("🚀") || text.toLowerCase().includes("buy") || text.toLowerCase().includes("compra")) {
+      type = "signal"
+      direction = "buy"
+    } else if (text.includes("🔻") || text.toLowerCase().includes("sell") || text.toLowerCase().includes("venda")) {
+      type = "signal"
+      direction = "sell"
+    } else if (text.includes("📊") || text.includes("📈") || text.includes("📉")) {
+      type = "analysis"
+    }
+
+    // Detectar símbolo
     const symbolPatterns = [
-      /([A-Z]{3}\/[A-Z]{3})/g, // EUR/USD, GBP/USD
-      /([A-Z]{6})/g, // EURUSD, GBPUSD
-      /([A-Z]{2,4}USD)/g, // BTCUSD, ETHUSD
-      /(XAU[A-Z]{3})/g, // XAUUSD
-      /(BTC|ETH|ADA|DOT|SOL)/gi, // Crypto symbols
+      /([A-Z]{3}\/[A-Z]{3})/g, // EUR/USD
+      /([A-Z]{6})/g, // EURUSD
+      /([A-Z]{3}USD)/g, // BTCUSD
+      /(XAU\/USD|XAUUSD)/g, // Gold
+      /(WTI|BRENT)/g, // Oil
     ]
 
     for (const pattern of symbolPatterns) {
       const match = text.match(pattern)
       if (match) {
-        return match[0].toUpperCase()
+        symbol = match[0]
+        break
       }
     }
-    return undefined
-  }
 
-  private extractDirection(text: string): "buy" | "sell" | undefined {
-    const buyKeywords = ["compra", "buy", "long", "📈", "🚀", "⬆️"]
-    const sellKeywords = ["venda", "sell", "short", "📉", "⬇️"]
-
-    const lowerText = text.toLowerCase()
-
-    if (buyKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "buy"
-    }
-    if (sellKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "sell"
-    }
-    return undefined
-  }
-
-  private categorizeMessage(text: string, symbol?: string): "forex" | "crypto" | "commodities" {
+    // Detectar categoria
     if (symbol) {
-      if (
-        symbol.includes("BTC") ||
-        symbol.includes("ETH") ||
-        symbol.includes("ADA") ||
-        symbol.includes("DOT") ||
-        symbol.includes("SOL")
-      ) {
-        return "crypto"
-      }
-      if (symbol.includes("XAU") || symbol.includes("XAG") || symbol.includes("OIL")) {
-        return "commodities"
+      if (symbol.includes("BTC") || symbol.includes("ETH") || symbol.includes("crypto")) {
+        category = "crypto"
+      } else if (symbol.includes("XAU") || symbol.includes("WTI") || symbol.includes("BRENT")) {
+        category = "commodities"
       }
     }
-
-    const cryptoKeywords = ["bitcoin", "btc", "ethereum", "eth", "crypto", "cripto"]
-    const commodityKeywords = ["ouro", "gold", "prata", "silver", "petróleo", "oil"]
-
-    const lowerText = text.toLowerCase()
-
-    if (cryptoKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "crypto"
-    }
-    if (commodityKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "commodities"
-    }
-
-    return "forex"
-  }
-
-  private determineMessageType(text: string): "signal" | "analysis" | "market_update" {
-    const signalKeywords = ["sinal", "signal", "entrada", "entry", "tp", "sl", "take profit", "stop loss"]
-    const analysisKeywords = [
-      "análise",
-      "analysis",
-      "técnica",
-      "technical",
-      "suporte",
-      "support",
-      "resistência",
-      "resistance",
-    ]
-    const newsKeywords = ["notícia", "news", "fed", "banco central", "mercado", "market update"]
-
-    const lowerText = text.toLowerCase()
-
-    if (signalKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "signal"
-    }
-    if (analysisKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "analysis"
-    }
-    if (newsKeywords.some((keyword) => lowerText.includes(keyword))) {
-      return "market_update"
-    }
-
-    // Default baseado no conteúdo
-    if (text.includes("📊") || text.includes("📈") || text.includes("📉")) {
-      return "analysis"
-    }
-    if (text.includes("🚀") || text.includes("💰") || text.includes("🎯")) {
-      return "signal"
-    }
-
-    return "market_update"
-  }
-
-  private processMessage(message: TelegramMessage): ProcessedTelegramMessage {
-    const text = message.text || "Mensagem sem texto"
-    const symbol = this.extractSymbol(text)
-    const direction = this.extractDirection(text)
-    const category = this.categorizeMessage(text, symbol)
-    const type = this.determineMessageType(text)
-    const author = message.from?.first_name || "Canal MTM"
-    const timestamp = new Date(message.date * 1000)
 
     return {
       id: `tg_${message.message_id}`,
       content: text,
-      author,
-      timestamp: timestamp.toISOString(),
+      author: message.from?.first_name || "MTM Analyst",
+      timestamp,
       type,
       symbol,
       direction,
       category,
-      originalDate: timestamp,
     }
   }
 
-  public async fetchMessages(limit = 50): Promise<ProcessedTelegramMessage[]> {
-    // Verificar cache
-    const now = Date.now()
-    if (this.cache.length > 0 && now - this.lastFetch < this.cacheTimeout) {
-      return this.cache.slice(0, limit)
+  /**
+   * Obtém informações do canal
+   * @returns Informações do canal ou null se não configurado
+   */
+  async getChannelInfo(): Promise<any> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - cannot get channel info")
+      return null
     }
 
     try {
-      if (!this.botToken) {
-        console.warn("TELEGRAM_BOT_TOKEN não configurado")
-        return []
-      }
-
-      const response = await fetch(
-        `https://api.telegram.org/bot${this.botToken}/getUpdates?limit=${limit}&offset=-${limit}`,
-      )
+      const response = await fetch(`${this.baseUrl}/getChat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: telegramConfig.channelId,
+        }),
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
       }
 
-      const data: TelegramResponse = await response.json()
-
-      if (!data.ok) {
-        throw new Error(`Telegram API error: ${data.description}`)
-      }
-
-      const processedMessages = data.result
-        .filter((update) => update.message || update.channel_post)
-        .map((update) => {
-          const message = update.message || update.channel_post!
-          return this.processMessage(message)
-        })
-        .sort((a, b) => b.originalDate.getTime() - a.originalDate.getTime())
-
-      // Atualizar cache
-      this.cache = processedMessages
-      this.lastFetch = now
-
-      return processedMessages.slice(0, limit)
+      return await response.json()
     } catch (error) {
-      console.error("Erro ao buscar mensagens do Telegram:", error)
-      return []
+      console.error("Erro ao obter info do canal:", error)
+      throw error
     }
   }
 
-  public async getMessagesByType(type?: string, limit = 20): Promise<ProcessedTelegramMessage[]> {
-    const messages = await this.fetchMessages(50)
-
-    if (!type || type === "all") {
-      return messages.slice(0, limit)
+  /**
+   * Verifica se o bot é admin do canal
+   * @returns Informações sobre as permissões do bot no canal ou null se não configurado
+   */
+  async getBotPermissions(): Promise<any> {
+    if (!this.isConfigured()) {
+      console.warn("Telegram not configured - cannot get bot permissions")
+      return null
     }
 
-    return messages.filter((message) => message.type === type).slice(0, limit)
-  }
+    try {
+      const me = await this.getMe()
+      if (!me || !me.ok) {
+        throw new Error("Não foi possível obter informações do bot")
+      }
 
-  public async getMessagesByCategory(category?: string, limit = 20): Promise<ProcessedTelegramMessage[]> {
-    const messages = await this.fetchMessages(50)
+      const response = await fetch(`${this.baseUrl}/getChatMember`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: telegramConfig.channelId,
+          user_id: me.result.id,
+        }),
+      })
 
-    if (!category || category === "all") {
-      return messages.slice(0, limit)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Telegram API error: ${errorData.description || response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Erro ao verificar permissões:", error)
+      throw error
     }
-
-    return messages.filter((message) => message.category === category).slice(0, limit)
-  }
-
-  public async getRecentMessages(limit = 10): Promise<ProcessedTelegramMessage[]> {
-    const messages = await this.fetchMessages(30)
-    return messages.slice(0, limit)
-  }
-
-  public clearCache(): void {
-    this.cache = []
-    this.lastFetch = 0
   }
 }
 
+// Exporta a instância singleton do serviço
 export const telegramService = TelegramService.getInstance()
+
+// Função auxiliar para enviar mensagens (compatível com a sugestão do usuário)
+export async function sendTelegramMessage(message: string): Promise<any> {
+  if (!isTelegramConfigured()) {
+    console.warn("Telegram message not sent: configuration incomplete")
+    return { success: false, message: "Telegram not configured" }
+  }
+
+  try {
+    return await telegramService.sendMessage(message)
+  } catch (error) {
+    console.error("Error sending Telegram message:", error)
+    return { success: false, error }
+  }
+}
+
+export async function getTelegramStatus() {
+  if (!isTelegramConfigured()) {
+    return {
+      configured: false,
+      status: "not_configured",
+      message:
+        "Telegram bot is not configured. Please add TELEGRAM_BOT_TOKEN and TELEGRAM_CHANNEL_ID environment variables.",
+    }
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getMe`)
+
+    if (!response.ok) {
+      return {
+        configured: true,
+        status: "error",
+        message: `Error connecting to Telegram API: ${response.statusText}`,
+      }
+    }
+
+    const data = await response.json()
+    return {
+      configured: true,
+      status: "ok",
+      botInfo: data.result,
+      message: `Connected to Telegram bot: @${data.result.username}`,
+    }
+  } catch (error) {
+    return {
+      configured: true,
+      status: "error",
+      message: `Error connecting to Telegram API: ${error instanceof Error ? error.message : String(error)}`,
+    }
+  }
+}
+
+// Exporta as configurações do Telegram para compatibilidade com o código existente
+export const TELEGRAM_CONFIG = telegramConfig

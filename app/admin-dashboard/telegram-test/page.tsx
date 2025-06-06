@@ -6,19 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, XCircle, MessageSquare, Users, Settings, RefreshCw } from "lucide-react"
-import dynamic from "next/dynamic"
-
-const TelegramTestClient = dynamic(() => import("./telegram-test-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gold-400 font-medium">Carregando teste do Telegram...</p>
-      </div>
-    </div>
-  ),
-})
 
 interface TelegramMessage {
   id: number
@@ -36,7 +23,7 @@ interface TelegramStatus {
   error?: string
 }
 
-function TelegramTestClientComponent() {
+export default function TelegramTestPage() {
   const [status, setStatus] = useState<TelegramStatus>({ connected: false })
   const [messages, setMessages] = useState<TelegramMessage[]>([])
   const [loading, setLoading] = useState(false)
@@ -253,17 +240,6 @@ function TelegramTestClientComponent() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  )
-}
-
-export default function TelegramTestPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gold-400 font-medium">Carregando teste do Telegram...</p>
-      </div>
     </div>
   )
 }

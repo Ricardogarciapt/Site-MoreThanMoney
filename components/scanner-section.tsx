@@ -1,13 +1,28 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, BarChart2 } from "lucide-react"
+import { ArrowRight, BarChart2, Play } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ScannerPricing from "@/components/scanner-pricing"
+import { videoManager } from "@/lib/videos-manager"
 
 export default function ScannerSection() {
+  const [videoPlaying, setVideoPlaying] = useState(false)
+  const [videoConfig, setVideoConfig] = useState<any>(null)
+
+  useEffect(() => {
+    // Carregar configuração do vídeo
+    const config = videoManager.getVideoByLocation("home-scanner-section")
+    setVideoConfig(config)
+  }, [])
+
+  const handlePlayVideo = () => {
+    setVideoPlaying(true)
+  }
+
   return (
     <>
       <section className="relative py-20" role="region" aria-labelledby="scanner-title">
@@ -17,11 +32,11 @@ export default function ScannerSection() {
               className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600"
               id="scanner-title"
             >
-              Scanner MTM
+              Conhece tudo sobre os Scanner&apos;s
             </h2>
             <p className="text-xl text-gray-300 mb-12">
-              Acesso ao nosso scanner exclusivo com tecnologia de inteligência artificial para identificar as melhores
-              oportunidades de mercado.
+              Acesso aos nossos scanners exclusivos com tecnologia de inteligência artificial para identificar as
+              melhores oportunidades de mercado.
             </p>
           </div>
 
@@ -34,7 +49,7 @@ export default function ScannerSection() {
                   </div>
                   <h3 className="text-2xl font-bold mb-4 text-center md:text-left">Scanner MTM V3.4</h3>
                   <p className="text-gray-300 mb-6">
-                    O Nosso scanner proprietário identifica estruturas de mercado e pontos de entrada com alta
+                    Os Nossos scanners proprietários identificam estruturas de mercado e pontos de entrada com alta
                     probabilidade de sucesso. Ideal para traders de todos os níveis.
                   </p>
                   <ul className="space-y-2 mb-6">
@@ -54,15 +69,42 @@ export default function ScannerSection() {
                 </div>
 
                 <div className="md:w-1/2 space-y-6">
-                  <div className="rounded-lg overflow-hidden border border-gold-500/30">
-                    <Image
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xqhsTkunXOZGdcBsEBg0ANgZqd50v5.png"
-                      alt="Scanner MTM Preview"
-                      width={600}
-                      height={400}
-                      className="w-full"
-                    />
-                  </div>
+                  {!videoPlaying ? (
+                    <div
+                      className="relative rounded-lg overflow-hidden border border-gold-500/30 cursor-pointer"
+                      onClick={handlePlayVideo}
+                    >
+                      <div className="aspect-video bg-gray-900 relative">
+                        <Image
+                          src="/scanner-preview.png"
+                          alt="Scanner MTM Preview"
+                          fill
+                          className="object-cover opacity-70"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-gold-600 hover:bg-gold-700 text-black rounded-full p-4 transition-colors">
+                            <Play className="h-8 w-8" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-lg overflow-hidden border border-gold-500/30">
+                      {videoConfig ? (
+                        <iframe
+                          src={`${videoConfig.embedUrl}?autoplay=1`}
+                          title={videoConfig.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                        ></iframe>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                          <p className="text-gray-400">Carregando vídeo...</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex flex-col space-y-4">
                     <Link href="/scanner">

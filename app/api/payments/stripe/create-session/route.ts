@@ -3,12 +3,16 @@ import { type NextRequest, NextResponse } from "next/server"
 // Verificar se estamos em runtime (não durante build)
 const isRuntime = typeof window === "undefined" && process.env.NODE_ENV !== "test"
 
+// Chaves do Stripe (configuradas diretamente)
+const STRIPE_SECRET_KEY =
+  "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"
+
 // Inicializar Stripe apenas se as chaves estiverem disponíveis
 let stripe: any = null
 
-if (isRuntime && process.env.STRIPE_SECRET_KEY) {
+if (isRuntime && STRIPE_SECRET_KEY) {
   const Stripe = require("stripe")
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  stripe = new Stripe(STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
   })
 }
@@ -87,7 +91,7 @@ export async function POST(request: NextRequest) {
 
 // Função para verificar saúde da API
 export async function GET() {
-  const isConfigured = !!process.env.STRIPE_SECRET_KEY
+  const isConfigured = !!STRIPE_SECRET_KEY
 
   return NextResponse.json({
     status: "ok",

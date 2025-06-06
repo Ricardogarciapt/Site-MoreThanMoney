@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useVideoManager } from "@/lib/videos-manager"
 
 export default function ScannerAccessSection() {
   const router = useRouter()
+  const videoManager = useVideoManager()
+  const scannerVideo = videoManager.getVideoByLocation("scanner-access-section")
 
   const handleRequestAccess = () => {
     router.push("/scanner")
@@ -30,34 +33,46 @@ export default function ScannerAccessSection() {
 
         {/* Vídeo de apresentação */}
         <div className="max-w-4xl mx-auto mb-10 rounded-xl overflow-hidden shadow-2xl border-2 border-gold-500/30">
-          <div className="aspect-video bg-black/50 flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="w-20 h-20 bg-gold-500/80 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-10 w-10 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <p className="text-gold-500 text-lg">Conhece tudo sobre os Scanner's</p>
-              <p className="text-gray-400 text-sm mt-2">Em breve disponível</p>
+          {scannerVideo && scannerVideo.active ? (
+            <div className="aspect-video">
+              <iframe
+                src={scannerVideo.embedUrl}
+                title={scannerVideo.title}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
             </div>
-          </div>
+          ) : (
+            <div className="aspect-video bg-black/50 flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="w-20 h-20 bg-gold-500/80 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-black"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-gold-500 text-lg">Conhece tudo sobre os Scanner's</p>
+                <p className="text-gray-400 text-sm mt-2">Vídeo não configurado</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto">

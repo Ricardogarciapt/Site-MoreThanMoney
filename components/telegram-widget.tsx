@@ -1,13 +1,15 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { telegramConfig } from "@/lib/telegram-service"
 
 interface TelegramWidgetProps {
-  channelUrl: string
+  channelUrl?: string
 }
 
 export default function TelegramWidget({ channelUrl }: TelegramWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const finalChannelUrl = channelUrl || telegramConfig.inviteLink
 
   useEffect(() => {
     // Função para criar o widget do Telegram
@@ -19,7 +21,7 @@ export default function TelegramWidget({ channelUrl }: TelegramWidgetProps) {
 
       // Criar elemento iframe
       const iframe = document.createElement("iframe")
-      iframe.src = `https://t.me/widget/share?url=${encodeURIComponent(channelUrl)}`
+      iframe.src = `https://t.me/widget/share?url=${encodeURIComponent(finalChannelUrl)}`
       iframe.width = "100%"
       iframe.height = "500"
       iframe.frameBorder = "0"
@@ -57,9 +59,9 @@ export default function TelegramWidget({ channelUrl }: TelegramWidgetProps) {
             <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
             <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
           </svg>
-          <h3 class="text-white text-xl font-bold mb-2">Canal MoreThanMoney VIP</h3>
+          <h3 class="text-white text-xl font-bold mb-2">${telegramConfig.channelName}</h3>
           <p class="text-gray-300 mb-4">Acompanhe análises e sinais em tempo real no nosso canal exclusivo do Telegram.</p>
-          <a href="${channelUrl}" 
+          <a href="${finalChannelUrl}" 
              target="_blank" 
              rel="noopener noreferrer" 
              class="inline-block px-6 py-2 bg-[#0088cc] text-white font-medium rounded hover:bg-[#0077b5] transition-colors">
@@ -77,7 +79,7 @@ export default function TelegramWidget({ channelUrl }: TelegramWidgetProps) {
         containerRef.current.innerHTML = ""
       }
     }
-  }, [channelUrl])
+  }, [finalChannelUrl])
 
   return (
     <div

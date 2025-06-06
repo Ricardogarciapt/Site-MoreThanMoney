@@ -1,117 +1,144 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js"
-import type { Database } from "./database.types"
+import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Função para obter as variáveis de ambiente
+function getEnvVar(key: string, fallback?: string): string {
+  // Primeiro tenta do process.env
+  if (process.env[key]) {
+    return process.env[key]!
+  }
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
+  // Se não encontrar e estiver no cliente, tenta do localStorage
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(`env_${key}`)
+    if (stored) {
+      return stored
+    }
+  }
+
+  // Se tiver fallback, usa ele
+  if (fallback) {
+    return fallback
+  }
+
+  throw new Error(`Environment variable ${key} is not set`)
 }
 
-// Configuração para produção
-const isProd = process.env.NODE_ENV === "production"
-const prodDomain = "morethanmoney.pt"
+// URLs e chaves do Supabase
+const supabaseUrl = getEnvVar("NEXT_PUBLIC_SUPABASE_URL")
+const supabaseAnonKey = getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-// Client para operações públicas (client-side)
-export const supabase: SupabaseClient<Database> = createClient(supabaseUrl, supabaseAnonKey, {
+// Cliente público do Supabase (para uso no frontend)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Cliente com service role (para uso no backend/API routes)
+export const supabaseAdmin = createClient(supabaseUrl, getEnvVar("SUPABASE_SERVICE_ROLE_KEY"), {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    ...(isProd && {
-      cookieOptions: {
-        domain: prodDomain,
-        sameSite: "lax",
-        secure: true,
-      },
-    }),
-  },
-  db: {
-    schema: "public",
-  },
-  global: {
-    headers: {
-      "x-application-name": "MoreThanMoney",
-    },
+    autoRefreshToken: false,
+    persistSession: false,
   },
 })
 
-// Admin client para operações server-side com privilégios elevados
-if (!supabaseServiceRoleKey) {
-  console.error("CRITICAL WARNING: SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations may fail.")
+// Tipos para as tabelas do Supabase
+export interface User {
+  id: string
+  email: string
+  name: string
+  role: "user" | "admin" | "member"
+  membership_type?: string
+  created_at: string
+  updated_at: string
 }
 
-export const supabaseAdmin: SupabaseClient<Database> = createClient(
-  supabaseUrl,
-  supabaseServiceRoleKey || supabaseAnonKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-    db: {
-      schema: "public",
-    },
-    global: {
-      headers: {
-        "x-application-name": "MoreThanMoney-Admin",
+export interface TradingIdea {
+  id: string
+  title: string
+  description: string
+  symbol: string
+  direction: "buy" | "sell"
+  entry_price: number
+  stop_loss?: number
+  take_profit?: number
+  status: "active" | "closed" | "cancelled"
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Portfolio {
+  id: string
+  name: string
+  description: string
+  performance: number
+  risk_level: "low" | "medium" | "high"
+  created_at: string
+  updated_at: string
+}
+
+// Funções utilitárias para autenticação
+export const auth = {
+  signUp: async (email: string, password: string, userData?: any) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: userData,
       },
-    },
+    })
+    return { data, error }
   },
-)
 
-// Cache de conexão para produção
-let connectionCache: { timestamp: number; isHealthy: boolean } | null = null
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
+  signIn: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    return { data, error }
+  },
 
-export async function testConnection(): Promise<boolean> {
-  // Usar cache em produção
-  if (process.env.NODE_ENV === "production" && connectionCache) {
-    const now = Date.now()
-    if (now - connectionCache.timestamp < CACHE_DURATION) {
-      return connectionCache.isHealthy
-    }
-  }
+  signOut: async () => {
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  },
 
-  try {
-    const { error } = await supabase.from("users").select("count").limit(1)
-    const isHealthy = !error
-
-    // Atualizar cache
-    connectionCache = {
-      timestamp: Date.now(),
-      isHealthy,
-    }
-
-    if (!isHealthy) {
-      console.error("Supabase connection error:", error)
-    }
-
-    return isHealthy
-  } catch (error) {
-    console.error("Supabase connection failed:", error)
-    connectionCache = {
-      timestamp: Date.now(),
-      isHealthy: false,
-    }
-    return false
-  }
+  getCurrentUser: async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
+    return { user, error }
+  },
 }
 
-// Health check para monitoring
-export async function healthCheck() {
-  const startTime = Date.now()
-  const isConnected = await testConnection()
-  const responseTime = Date.now() - startTime
+// Funções para gerenciar usuários (admin)
+export const userService = {
+  getUsers: async () => {
+    const { data, error } = await supabaseAdmin.from("users").select("*").order("created_at", { ascending: false })
+    return { data, error }
+  },
 
-  return {
-    status: isConnected ? "healthy" : "unhealthy",
-    responseTime,
-    timestamp: new Date().toISOString(),
-    database: {
-      connected: isConnected,
-      url: supabaseUrl,
-    },
-  }
+  updateUserRole: async (userId: string, role: string) => {
+    const { data, error } = await supabaseAdmin.from("users").update({ role }).eq("id", userId)
+    return { data, error }
+  },
+}
+
+// Funções para trading ideas
+export const tradingIdeasService = {
+  getIdeas: async () => {
+    const { data, error } = await supabase.from("trading_ideas").select("*").order("created_at", { ascending: false })
+    return { data, error }
+  },
+
+  createIdea: async (idea: Omit<TradingIdea, "id" | "created_at" | "updated_at">) => {
+    const { data, error } = await supabase.from("trading_ideas").insert(idea).select()
+    return { data, error }
+  },
+}
+
+// Funções para portfólios
+export const portfolioService = {
+  getPortfolios: async () => {
+    const { data, error } = await supabase.from("portfolios").select("*").order("created_at", { ascending: false })
+    return { data, error }
+  },
 }

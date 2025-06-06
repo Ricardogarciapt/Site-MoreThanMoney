@@ -1,104 +1,30 @@
-# MoreThanMoney - Plataforma de Trading e Investimentos
+# sitemorethanmoney
 
-## 🚀 Deployment em Produção
+*Automatically synced with your [v0.dev](https://v0.dev) deployments*
 
-### Pré-requisitos
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/ricardosubtilgarcia-8872s-projects/v0-sitemorethanmoney-pe)
+[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/Fi16dpXbw9N)
 
-1. **Vercel Account** configurado
-2. **Supabase Project** ativo
-3. **Stripe Account** (para pagamentos)
-4. **PayPal Business Account** (para pagamentos)
+## Overview
 
-### Variáveis de Ambiente (Produção)
+This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
+Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
-Configure no Vercel Dashboard:
+## Deployment
 
-\`\`\`bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://mllycoenhpjfceyvaqxz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+Your project is live at:
 
-# Stripe
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+**[https://vercel.com/ricardosubtilgarcia-8872s-projects/v0-sitemorethanmoney-pe](https://vercel.com/ricardosubtilgarcia-8872s-projects/v0-sitemorethanmoney-pe)**
 
-# PayPal
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+## Build your app
 
-# YouTube (apenas servidor - NÃO usar NEXT_PUBLIC_)
-YOUTUBE_API_KEY=your_youtube_api_key
+Continue building your app on:
 
-# Telegram
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
+**[https://v0.dev/chat/projects/Fi16dpXbw9N](https://v0.dev/chat/projects/Fi16dpXbw9N)**
 
-# Notion
-NOTION_API_KEY=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
-NOTION_DATABASE_ID=your_database_id
+## How It Works
 
-# App Config
-NEXT_PUBLIC_BASE_URL=https://morethanmoney.pt
-NEXT_PUBLIC_GA_ID=GA_MEASUREMENT_ID
-\`\`\`
-
-### Deploy Steps
-
-1. **Preparar código:**
-   \`\`\`bash
-   npm run type-check
-   npm run build
-   \`\`\`
-
-2. **Deploy para Vercel:**
-   \`\`\`bash
-   npm run deploy:production
-   \`\`\`
-
-3. **Configurar domínio personalizado no Vercel**
-
-4. **Configurar webhooks:**
-   - Stripe: `https://morethanmoney.pt/api/payments/stripe/webhook`
-   - PayPal: `https://morethanmoney.pt/api/payments/paypal/webhook`
-
-### Monitoramento
-
-- **Health Check:** `https://morethanmoney.pt/health`
-- **Logs:** Vercel Dashboard
-- **Database:** Supabase Dashboard
-
-### Segurança
-
-- ✅ HTTPS enforced
-- ✅ Rate limiting
-- ✅ CORS configured
-- ✅ CSP headers
-- ✅ SQL injection protection
-- ✅ XSS protection
-- ✅ API keys protegidas no servidor
-
-### Performance
-
-- ✅ Image optimization
-- ✅ Bundle optimization
-- ✅ Compression enabled
-- ✅ CDN via Vercel Edge
-- ✅ Database connection pooling
-
-## 📊 Métricas
-
-- **Target Load Time:** < 2s
-- **Lighthouse Score:** > 90
-- **Uptime:** > 99.9%
-
-## 🔐 Segurança das APIs
-
-- **YouTube API** - Apenas no servidor, nunca exposta ao cliente
-- **Stripe** - Chaves públicas e privadas separadas
-- **Supabase** - RLS ativado para proteção de dados
-- **Notion** - API key protegida no servidor
-\`\`\`
-
-Agora vou verificar se há outras referências à variável sensível e removê-las:
+1. Create and modify your project using [v0.dev](https://v0.dev)
+2. Deploy your chats from the v0 interface
+3. Changes are automatically pushed to this repository
+4. Vercel deploys the latest version from this repository

@@ -5,12 +5,18 @@ import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, Lock, MapPin, FileT
 export default function Footer() {
   return (
     <footer className="bg-black border-t border-gold-500/30">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Logo e Informações */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
-              <Image src="/logo-new.png" alt="MoreThanMoney Logo" width={150} height={50} className="h-12 w-auto" />
+              <Image
+                src="/site-mo-re-than-mo-ney/sales-funnel/public/logo-new.png"
+                alt="MoreThanMoney Logo"
+                width={150}
+                height={50}
+                className="h-12 w-auto"
+              />
             </Link>
             <p className="text-gray-400 text-sm">
               Plataforma integrada de formação financeira e serviços de automatização com inteligência artificial.
@@ -141,14 +147,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Botão de Acesso Admin (discreto) */}
-        {/* <div className="flex justify-center mt-8">
-          <Link href="/admin-dashboard" className="text-xs text-gray-600 hover:text-gold-400 transition-colors">
-            Acesso Administrativo
-          </Link>
-        </div> */}
-
-        <div className="border-t border-gray-800 mt-8 pt-8">
+        <div className="border-t border-gray-800 mt-4 pt-4">
           <div className="flex justify-between items-center flex-wrap gap-4">
             <p className="text-gray-400 text-sm">
               © 2025 MoreThanMoney. Todos os direitos reservados. MoreThanMoneyTM é uma marca registrada.
@@ -160,28 +159,6 @@ export default function Footer() {
               <Lock className="h-3 w-3" /> Painel de Admin
             </Link>
           </div>
-        </div>
-        <div className="mt-4 text-center">
-          <Link
-            href="/admin-login"
-            className="inline-flex items-center text-sm text-gray-400 hover:text-gold-400 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            Painel de Admin
-          </Link>
         </div>
       </div>
     </footer>

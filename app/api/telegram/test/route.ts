@@ -1,42 +1,54 @@
 import { NextResponse } from "next/server"
+import { sendTelegramMessage } from "@/lib/telegram-service"
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN
+    const { message } = await request.json()
 
-    if (!botToken) {
-      return NextResponse.json({
-        connected: false,
-        error: "TELEGRAM_BOT_TOKEN não configurado",
-      })
+    if (!message) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Mensagem não fornecida",
+        },
+        { status: 400 },
+      )
     }
 
-    // Testar conexão com o bot
-    const botResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`)
-    const botData = await botResponse.json()
+    // Formatar a mensagem de teste
+    const formattedMessage = `
+<b>🧪 MENSAGEM DE TESTE</b>
 
-    if (!botData.ok) {
+${message}
+
+<i>Enviado via painel de administração</i>
+<code>${new Date().toLocaleString("pt-BR")}</code>
+`
+
+    const result = await sendTelegramMessage(formattedMessage)
+
+    if (result && result.ok) {
       return NextResponse.json({
-        connected: false,
-        error: "Token do bot inválido",
+        success: true,
+        message: "Mensagem enviada com sucesso",
       })
+    } else {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.description || "Erro ao enviar mensagem",
+        },
+        { status: 500 },
+      )
     }
-
-    // Testar acesso ao canal
-    const chatId = "-1002055149876" // ID do seu canal
-    const chatResponse = await fetch(`https://api.telegram.org/bot${botToken}/getChat?chat_id=${chatId}`)
-    const chatData = await chatResponse.json()
-
-    return NextResponse.json({
-      connected: true,
-      botInfo: botData.result,
-      chatInfo: chatData.ok ? chatData.result : null,
-      error: chatData.ok ? null : "Não foi possível acessar o canal",
-    })
-  } catch (error) {
-    return NextResponse.json({
-      connected: false,
-      error: "Erro na conexão com Telegram API",
-    })
+  } catch (error: any) {
+    console.error("Erro ao enviar mensagem de teste:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Erro ao enviar mensagem",
+      },
+      { status: 500 },
+    )
   }
 }

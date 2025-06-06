@@ -1,11 +1,33 @@
+"use client"
+
 import { AuthProvider } from "@/contexts/auth-context"
 import Breadcrumbs from "@/components/breadcrumbs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Lock, ArrowRight } from "lucide-react"
+import { Lock, ArrowRight, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import ScannerPricing from "@/components/scanner-pricing"
+import { useCart } from "@/components/shopping-cart"
+import { toast } from "sonner"
 
 export default function ScannerPage() {
+  const { addItem } = useCart()
+
+  const handleAddToCart = (productId: string, name: string, price: number, type: string) => {
+    addItem({
+      id: productId,
+      name: name,
+      price: price,
+      quantity: 1,
+      type: type,
+      details: {
+        duration: type.includes("annual") ? "12 meses" : "Vitalício",
+        packageId: productId,
+      },
+    })
+    toast.success(`${name} adicionado ao carrinho!`)
+  }
+
   return (
     <AuthProvider>
       <Breadcrumbs />
@@ -15,7 +37,7 @@ export default function ScannerPage() {
 
           {/* Prévia do Scanner - MTM Gold Killer V2.1 */}
           <div className="mb-12 bg-black/50 p-6 rounded-lg border border-gold-500/30">
-            <h2 className="text-2xl font-semibold text-gold-500 mb-4">Prévia do Scanner MTM Gold Killer - V2.1</h2>
+            <h2 className="text-2xl font-semibold text-gold-500 mb-4">Adquirir Scanner MTM Gold Killer - V2.1</h2>
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="w-full md:w-1/2">
                 <img
@@ -61,22 +83,50 @@ export default function ScannerPage() {
                   da empresa MoreThanMoney, estando protegido por direitos autorais.
                 </div>
 
-                <a
-                  href="https://www.tradingview.com/script/fhpIupC5-MTM-Gold-Killer-V2-1/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gold-500 hover:text-gold-400 underline inline-flex items-center"
-                >
-                  Ver no TradingView
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
+                <div className="flex flex-col sm:flex-row gap-3 items-start">
+                  <a
+                    href="https://www.tradingview.com/script/fhpIupC5-MTM-Gold-Killer-V2-1/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold-500 hover:text-gold-400 underline inline-flex items-center"
+                  >
+                    Ver no TradingView
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </a>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      onClick={() =>
+                        handleAddToCart("mtm-gold-killer-annual", "MTM Gold Killer V2.1 - Anual", 150, "scanner-annual")
+                      }
+                      className="bg-gold-600 hover:bg-gold-700 text-black text-sm px-4 py-2 flex items-center gap-2"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Adquirir Scanner - €150/ano
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        handleAddToCart(
+                          "mtm-gold-killer-lifetime",
+                          "MTM Gold Killer V2.1 - Vitalício",
+                          750,
+                          "scanner-lifetime",
+                        )
+                      }
+                      variant="outline"
+                      className="border-gold-500 text-gold-400 hover:bg-gold-500/10 text-sm px-4 py-2 flex items-center gap-2"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Vitalício - €750
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Prévia do Scanner MTM V3.4 */}
           <div className="mb-12 bg-black/50 p-6 rounded-lg border border-gold-500/30">
-            <h2 className="text-2xl font-semibold text-gold-500 mb-4">Prévia do Scanner MTM V3.4</h2>
+            <h2 className="text-2xl font-semibold text-gold-500 mb-4">Adquirir Scanner MTM V3.4</h2>
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="w-full md:w-1/2">
                 <img
@@ -101,21 +151,47 @@ export default function ScannerPage() {
                   <li>Compatível com múltiplos timeframes</li>
                   <li>Atualizações regulares e suporte dedicado</li>
                 </ul>
-                <a
-                  href="https://www.tradingview.com/script/BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gold-500 hover:text-gold-400 underline inline-flex items-center"
-                >
-                  Ver no TradingView
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
+                <div className="flex flex-col sm:flex-row gap-3 items-start">
+                  <a
+                    href="https://www.tradingview.com/script/BtIDtpBs-MoreThanMoney-Scanner-V3-4-Market-structures-and-ATR/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold-500 hover:text-gold-400 underline inline-flex items-center"
+                  >
+                    Ver no TradingView
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </a>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      onClick={() =>
+                        handleAddToCart("mtm-scanner-annual", "Scanner MTM V3.4 - Anual", 150, "scanner-annual")
+                      }
+                      className="bg-gold-600 hover:bg-gold-700 text-black text-sm px-4 py-2 flex items-center gap-2"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Adquirir Scanner - €150/ano
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        handleAddToCart("mtm-scanner-lifetime", "Scanner MTM V3.4 - Vitalício", 750, "scanner-lifetime")
+                      }
+                      variant="outline"
+                      className="border-gold-500 text-gold-400 hover:bg-gold-500/10 text-sm px-4 py-2 flex items-center gap-2"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Vitalício - €750
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Seção de Preços */}
+          <ScannerPricing />
+
           {/* Seção de acesso restrito */}
-          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
+          <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm mt-12">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4">
                 <Lock className="h-16 w-16 text-gold-500" />
@@ -135,9 +211,7 @@ export default function ScannerPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/member-area">
-                  <Button className="bg-gold-600 hover:bg-gold-700 text-black px-8 py-3">
-                    Fazer Login na Área de Membros
-                  </Button>
+                  <Button className="bg-gold-600 hover:bg-gold-700 text-black px-8 py-3">Abrir Scanner</Button>
                 </Link>
                 <Link href="/scanner-access">
                   <Button variant="outline" className="border-gold-500 text-gold-400 hover:bg-gold-500/10 px-8 py-3">

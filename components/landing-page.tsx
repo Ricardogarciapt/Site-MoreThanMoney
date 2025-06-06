@@ -5,9 +5,13 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import ParticleBackground from "@/components/particle-background"
 import Link from "next/link"
+import { useVideoManager } from "@/lib/videos-manager"
 
 export default function LandingPage() {
   const [videoPlaying, setVideoPlaying] = useState(false)
+
+  const videoManager = useVideoManager()
+  const landingVideo = videoManager.getVideoByLocation("landing-page-main")
 
   // Efeito para animar os botões
   useEffect(() => {
@@ -68,7 +72,7 @@ export default function LandingPage() {
                 <iframe
                   width="100%"
                   height="100%"
-                  src="https://www.youtube.com/embed/7Ip2w9bKxVw?autoplay=1"
+                  src={landingVideo?.embedUrl || "https://www.youtube.com/embed/dgd0-mLIrMw?autoplay=1"}
                   title="MoreThanMoney Presentation"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

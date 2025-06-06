@@ -1,50 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
-import { useTelegramMessages } from "@/hooks/use-telegram-messages"
 import Link from "next/link"
-import { MessageSquare, TrendingUp, Lock, Clock, BarChart3, RefreshCw, AlertCircle } from "lucide-react"
+import { MessageSquare, TrendingUp, Lock, Clock, BarChart3 } from "lucide-react"
 import TelegramWidget from "./telegram-widget"
+import { getIdeasByType, telegramIdeas, type TelegramIdea } from "@/lib/telegram-ideas"
 
-// Export for compatibility with other components
-export const sampleIdeas = [
-  {
-    id: "1",
-    title: "EUR/USD Analysis",
-    description: "Technical analysis showing bullish momentum on EUR/USD pair with key resistance levels...",
-    author: "Trading Expert",
-    authorRole: "Specialist",
-    dateCreated: new Date().toISOString(),
-    category: "forex" as const,
-    content: "EUR/USD showing strong bullish momentum. Key resistance at 1.0950. Target: 1.1000",
-  },
-  {
-    id: "2",
-    title: "Bitcoin Signal",
-    description: "BTC breaking above key resistance level with strong volume confirmation...",
-    author: "Crypto Analyst",
-    authorRole: "Specialist",
-    dateCreated: new Date().toISOString(),
-    category: "crypto" as const,
-    content: "BTC breaking above $45,000 resistance. Strong volume confirmation. Target: $48,000",
-  },
-]
+// Exportação temporária para compatibilidade com outros arquivos
+export const sampleIdeas = telegramIdeas.map((idea) => ({
+  id: idea.id,
+  title: idea.symbol || "Market Update",
+  description: idea.content.substring(0, 100) + "...",
+  author: idea.author,
+  authorRole: "Specialist",
+  dateCreated: idea.timestamp,
+  category: idea.category === "forex" ? ("forex" as const) : ("crypto" as const),
+  content: idea.content,
+}))
 
 export default function TradingIdeasCards() {
   const { isAuthenticated, user } = useAuth()
   const [activeTab, setActiveTab] = useState("all")
-
-  const { messages, loading, error, refresh, lastUpdated } = useTelegramMessages({
-    type: activeTab === "all" ? undefined : activeTab,
-    limit: 30,
-    autoRefresh: true,
-    refreshInterval: 2 * 60 * 1000, // 2 minutos
-  })
+  const [ideas, setIdeas] = useState<TelegramIdea[]>([])
 
   // Verificar se o usuário pode acessar o canal VIP
   const canAccessVIP =
@@ -63,6 +44,13 @@ export default function TradingIdeasCards() {
       "Diamond",
       "Presidential",
     ].includes(user.role)
+
+  // Carregar ideias do Telegram
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIdeas(getIdeasByType(activeTab))
+    }
+  }, [isAuthenticated, activeTab])
 
   const getIdeaIcon = (type: string) => {
     switch (type) {
@@ -87,30 +75,6 @@ export default function TradingIdeasCards() {
         return "Market Update"
       default:
         return "Ideia"
-    }
-  }
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "forex":
-        return "bg-blue-500/20 text-blue-400"
-      case "crypto":
-        return "bg-orange-500/20 text-orange-400"
-      case "commodities":
-        return "bg-yellow-500/20 text-yellow-400"
-      default:
-        return "bg-gray-500/20 text-gray-400"
-    }
-  }
-
-  const getDirectionColor = (direction?: string) => {
-    switch (direction) {
-      case "buy":
-        return "bg-green-500/20 text-green-400"
-      case "sell":
-        return "bg-red-500/20 text-red-400"
-      default:
-        return "bg-gray-500/20 text-gray-400"
     }
   }
 
@@ -148,13 +112,10 @@ export default function TradingIdeasCards() {
         <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-4">
           Análises e sinais em tempo real diretamente do nosso canal exclusivo do Telegram.
         </p>
-        <div className="flex items-center justify-center text-gold-400 mb-4">
+        <div className="flex items-center justify-center text-gold-400">
           <Clock className="h-5 w-5 mr-2" />
-          <span className="font-medium">Atualizado automaticamente</span>
+          <span className="font-medium">Novas análises diariamente</span>
         </div>
-        {lastUpdated && (
-          <p className="text-sm text-gray-500">Última atualização: {lastUpdated.toLocaleString("pt-PT")}</p>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -188,17 +149,12 @@ export default function TradingIdeasCards() {
         <div>
           <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Ideias Recentes
-                </CardTitle>
-                <Button size="sm" variant="outline" onClick={refresh} disabled={loading} className="border-gold-500/30">
-                  <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Ideias Recentes
+              </CardTitle>
               <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3 bg-black/50 border border-gold-500/30">
+                <TabsList className="grid w-full grid-cols-2 bg-black/50 border border-gold-500/30">
                   <TabsTrigger
                     value="all"
                     className="data-[state=active]:bg-gold-500 data-[state=active]:text-black text-xs"
@@ -211,65 +167,43 @@ export default function TradingIdeasCards() {
                   >
                     Sinais
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="analysis"
-                    className="data-[state=active]:bg-gold-500 data-[state=active]:text-black text-xs"
-                  >
-                    Análises
-                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </CardHeader>
             <CardContent>
-              {error && (
-                <div className="flex items-center justify-center p-4 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-                  <span className="text-red-400 text-sm">{error}</span>
-                </div>
-              )}
-
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {loading && messages.length === 0 ? (
-                  <div className="text-center py-8">
-                    <RefreshCw className="h-8 w-8 animate-spin text-gold-500 mx-auto mb-2" />
-                    <p className="text-gray-400">Carregando mensagens...</p>
-                  </div>
-                ) : messages.length > 0 ? (
-                  messages.map((message) => (
+                {ideas.length > 0 ? (
+                  ideas.map((idea) => (
                     <div
-                      key={message.id}
+                      key={idea.id}
                       className="p-4 border border-gray-700 rounded-lg hover:border-gold-500/50 hover:bg-gold-500/5 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center text-xs font-medium">
-                            <span className="mr-1">{getIdeaIcon(message.type)}</span>
-                            {getIdeaTypeLabel(message.type)}
-                          </span>
-                          <Badge className={getCategoryColor(message.category)}>{message.category.toUpperCase()}</Badge>
-                        </div>
+                        <span className="flex items-center text-xs font-medium">
+                          <span className="mr-1">{getIdeaIcon(idea.type)}</span>
+                          {getIdeaTypeLabel(idea.type)}
+                        </span>
                         <span className="text-xs text-gray-500">
-                          {new Date(message.timestamp).toLocaleDateString("pt-PT")}
+                          {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
                         </span>
                       </div>
 
-                      <div className="flex gap-2 mb-2">
-                        {message.symbol && <Badge className="bg-blue-500/20 text-blue-400">{message.symbol}</Badge>}
-                        {message.direction && (
-                          <Badge className={getDirectionColor(message.direction)}>
-                            {message.direction.toUpperCase()}
-                          </Badge>
-                        )}
-                      </div>
+                      {idea.symbol && (
+                        <div className="mb-2">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-400">
+                            {idea.symbol}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="text-sm text-gray-300 mb-3 whitespace-pre-line">
-                        {message.content.length > 200 ? message.content.substring(0, 200) + "..." : message.content}
+                        {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <div className="text-xs text-gold-500">{message.author}</div>
+                        <div className="text-xs text-gold-500">{idea.author}</div>
                         <div className="text-xs text-gray-500">
-                          {new Date(message.timestamp).toLocaleTimeString("pt-PT", {
+                          {new Date(idea.timestamp).toLocaleTimeString("pt-PT", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
@@ -278,9 +212,7 @@ export default function TradingIdeasCards() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    {error ? "Erro ao carregar mensagens" : "Nenhuma mensagem encontrada nesta categoria."}
-                  </div>
+                  <div className="text-center py-8 text-gray-400">Nenhuma ideia encontrada nesta categoria.</div>
                 )}
               </div>
             </CardContent>
@@ -288,7 +220,7 @@ export default function TradingIdeasCards() {
               <div className="w-full text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingUp className="h-5 w-5 text-gold-500 mr-2" />
-                  <span className="text-gold-400 font-medium">{messages.length} mensagens carregadas</span>
+                  <span className="text-gold-400 font-medium">Novas análises diariamente</span>
                 </div>
                 <p className="text-sm text-gray-400">Conteúdo atualizado automaticamente do canal VIP.</p>
               </div>
@@ -340,9 +272,9 @@ export default function TradingIdeasCards() {
                     <span className="text-gold-500 text-sm">4</span>
                   </div>
                   <div>
-                    <span className="font-medium">Dados em Tempo Real</span>
+                    <span className="font-medium">Webinars Exclusivos</span>
                     <p className="text-sm text-gray-400">
-                      Integração direta com o canal do Telegram para dados sempre atualizados.
+                      Participe de sessões ao vivo e webinars conduzidos por nossos especialistas.
                     </p>
                   </div>
                 </li>

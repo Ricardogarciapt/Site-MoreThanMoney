@@ -45,10 +45,8 @@ export default function MemberRegistration() {
     }
   }
 
-  const handleCheckboxChange = (checked: boolean | "indeterminate") => {
-    if (typeof checked === "boolean") {
-      setFormData((prev) => ({ ...prev, acceptTerms: checked }))
-    }
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, acceptTerms: checked }))
   }
 
   const handlePackageSelect = (value: string) => {
@@ -101,7 +99,7 @@ export default function MemberRegistration() {
     }
 
     try {
-      const registrationSuccess = await register({
+      const success = await register({
         username: formData.username,
         password: formData.password,
         name: formData.name,
@@ -112,19 +110,17 @@ export default function MemberRegistration() {
         package: `${formData.selectedPackage}${formData.selectedPackage === "scanner" ? `-${formData.paymentOption}` : ""}`,
       })
 
-      if (registrationSuccess) {
+      if (success) {
         setSuccess(true)
         // Redirecionar após 2 segundos
         setTimeout(() => {
           router.push("/member-area")
         }, 2000)
       } else {
-        setError(
-          "Nome de usuário já existe ou falha no registro. Por favor, escolha outro nome de usuário ou tente novamente.",
-        )
+        setError("Nome de usuário já existe. Por favor, escolha outro.")
       }
-    } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao processar seu registro. Por favor, tente novamente.")
+    } catch (err) {
+      setError("Ocorreu um erro ao processar seu registro. Por favor, tente novamente.")
     } finally {
       setIsSubmitting(false)
     }
@@ -202,28 +198,22 @@ export default function MemberRegistration() {
                 <Button
                   className={`w-full ${formData.selectedPackage === "basic" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
                   onClick={() => {
+                    // Adicionar ao carrinho e redirecionar para checkout
                     const cartItem = {
-                      id: "basic-monthly", // This should be a unique ID, perhaps a SKU or price_ID from Stripe
+                      id: "basic-monthly",
                       name: "Pacote Básico - Mensal",
                       price: 50,
                       quantity: 1,
-                      type: "subscription", // Important for Stripe if it's a recurring payment
-                      description: "Acesso mensal ao Pacote Básico MoreThanMoney.",
+                      type: "subscription",
                     }
 
-                    const existingCart = JSON.parse(localStorage.getItem("cartItems") || "[]")
-                    // Prevent duplicates, or update quantity if item already in cart
-                    const itemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-                    let updatedCart
-                    if (itemIndex > -1) {
-                      // Option: replace item or update quantity. For subscriptions, usually replace or disallow multiple.
-                      updatedCart = [...existingCart]
-                      updatedCart[itemIndex] = cartItem // Replace if re-selected
-                    } else {
-                      updatedCart = [...existingCart, cartItem]
-                    }
-                    localStorage.setItem("cartItems", JSON.stringify(updatedCart))
-                    router.push("/checkout")
+                    // Salvar no localStorage
+                    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]")
+                    const updatedCart = [...existingCart.filter((item: any) => item.id !== "basic-monthly"), cartItem]
+                    localStorage.setItem("cart", JSON.stringify(updatedCart))
+
+                    // Redirecionar para checkout
+                    window.location.href = "/checkout"
                   }}
                 >
                   Assinar por €50/mês
@@ -239,32 +229,34 @@ export default function MemberRegistration() {
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">Pacote Scanner</CardTitle>
                 <div className="text-center mt-4">
-                  {/* Logic to show payment options only when this package is selected for registration form */}
-                  {/* For direct purchase, this might be different */}
-                  <div className="flex justify-center gap-4 mb-4">
-                    <Button
-                      variant={formData.paymentOption === "annual" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePaymentOptionSelect("annual")}
-                      className={
-                        formData.paymentOption === "annual" ? "bg-gold-600 text-black" : "border-gold-500 text-gold-400"
-                      }
-                    >
-                      Anual - €200
-                    </Button>
-                    <Button
-                      variant={formData.paymentOption === "lifetime" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePaymentOptionSelect("lifetime")}
-                      className={
-                        formData.paymentOption === "lifetime"
-                          ? "bg-gold-600 text-black"
-                          : "border-gold-500 text-gold-400"
-                      }
-                    >
-                      Vitalício - €1000
-                    </Button>
-                  </div>
+                  {formData.selectedPackage === "scanner" && (
+                    <div className="flex justify-center gap-4 mb-4">
+                      <Button
+                        variant={formData.paymentOption === "annual" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePaymentOptionSelect("annual")}
+                        className={
+                          formData.paymentOption === "annual"
+                            ? "bg-gold-600 text-black"
+                            : "border-gold-500 text-gold-400"
+                        }
+                      >
+                        Anual - €200
+                      </Button>
+                      <Button
+                        variant={formData.paymentOption === "lifetime" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePaymentOptionSelect("lifetime")}
+                        className={
+                          formData.paymentOption === "lifetime"
+                            ? "bg-gold-600 text-black"
+                            : "border-gold-500 text-gold-400"
+                        }
+                      >
+                        Vitalício - €1000
+                      </Button>
+                    </div>
+                  )}
                   <span className="text-4xl font-bold text-gold-500">+</span>
                   <span className="text-gray-400 ml-2">Licença Scanner</span>
                 </div>
@@ -295,31 +287,9 @@ export default function MemberRegistration() {
               <CardFooter>
                 <Button
                   className={`w-full ${formData.selectedPackage === "scanner" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
-                  onClick={() => {
-                    const paymentOption = formData.paymentOption // Use the selected payment option
-                    const cartItem = {
-                      id: `scanner-${paymentOption}`, // e.g., scanner-annual or scanner-lifetime
-                      name: `Pacote Scanner - ${paymentOption === "annual" ? "Anual" : "Vitalício"}`,
-                      price: paymentOption === "annual" ? 200 : 1000,
-                      quantity: 1,
-                      type: paymentOption === "annual" ? "subscription" : "one_time", // Annual is subscription, lifetime is one-time
-                      description: `Acesso ${paymentOption === "annual" ? "anual" : "vitalício"} ao Pacote Scanner e benefícios.`,
-                    }
-
-                    const existingCart = JSON.parse(localStorage.getItem("cartItems") || "[]")
-                    const itemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-                    let updatedCart
-                    if (itemIndex > -1) {
-                      updatedCart = [...existingCart]
-                      updatedCart[itemIndex] = cartItem
-                    } else {
-                      updatedCart = [...existingCart, cartItem]
-                    }
-                    localStorage.setItem("cartItems", JSON.stringify(updatedCart))
-                    router.push("/checkout")
-                  }}
+                  onClick={() => handlePackageSelect("scanner")}
                 >
-                  {`Comprar Scanner ${formData.paymentOption === "annual" ? "Anual (€200)" : "Vitalício (€1000)"}`}
+                  {formData.selectedPackage === "scanner" ? "Selecionado" : "Selecionar Scanner"}
                 </Button>
               </CardFooter>
             </Card>
@@ -357,32 +327,9 @@ export default function MemberRegistration() {
               <CardFooter>
                 <Button
                   className={`w-full ${formData.selectedPackage === "premium" ? "bg-gold-600 text-black" : "bg-gray-800 text-white"}`}
-                  onClick={() => {
-                    // Premium package might require manual verification or a different flow
-                    // For now, let's assume it also adds to cart if it has a direct purchase path
-                    // Or it could just set the selectedPackage for the registration form below
-                    handlePackageSelect("premium")
-                    // If it's a purchasable item:
-                    /*
-                    const cartItem = {
-                      id: "premium-access",
-                      name: "Pacote Premium (Requer Verificação JIFU)",
-                      price: 0, // Or actual price if applicable before verification
-                      quantity: 1,
-                      type: "one_time", // Or "application"
-                      description: "Acesso completo Premium, sujeito a verificação JIFU."
-                    };
-                    const existingCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
-                    const updatedCart = [...existingCart.filter((item: any) => item.id !== cartItem.id), cartItem];
-                    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-                    router.push("/checkout"); // Or a specific verification page
-                    */
-                    // For now, this button primarily selects the package for the form below
-                  }}
+                  onClick={() => handlePackageSelect("premium")}
                 >
-                  {formData.selectedPackage === "premium"
-                    ? "Selecionado (Preencher Formulário)"
-                    : "Selecionar Premium (Verificar JIFU)"}
+                  {formData.selectedPackage === "premium" ? "Selecionado" : "Verificar JIFU"}
                 </Button>
               </CardFooter>
             </Card>
@@ -393,10 +340,7 @@ export default function MemberRegistration() {
           <Card className="max-w-3xl mx-auto mt-12 bg-black/50 border-gold-500/30 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-2xl font-bold">Informações de Registro</CardTitle>
-              <CardDescription>
-                Preencha seus dados para se tornar um membro MoreThanMoney. Se já selecionou um pacote pago acima, o
-                registro aqui é para associar sua conta.
-              </CardDescription>
+              <CardDescription>Preencha seus dados para se tornar um membro MoreThanMoney</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -513,7 +457,7 @@ export default function MemberRegistration() {
                 </div>
 
                 <div className="pt-4">
-                  <p className="font-medium mb-2">Pacote Selecionado para Registro:</p>
+                  <p className="font-medium mb-2">Pacote Selecionado:</p>
                   <div className="bg-gray-800/50 p-3 rounded-md">
                     <div className="flex items-center">
                       <div className="h-8 w-8 rounded-full bg-gold-500/20 flex items-center justify-center mr-3">
@@ -522,16 +466,13 @@ export default function MemberRegistration() {
                       <div>
                         <p className="font-medium">
                           {formData.selectedPackage === "basic" && "Pacote Básico"}
-                          {formData.selectedPackage === "scanner" && `Pacote Scanner (${formData.paymentOption})`}
+                          {formData.selectedPackage === "scanner" && "Pacote Scanner"}
                           {formData.selectedPackage === "premium" && "Pacote Premium"}
                         </p>
                         <p className="text-sm text-gray-400">{getPackagePrice()}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Se você já comprou um pacote, este registro associará a compra à sua nova conta.
-                  </p>
                 </div>
 
                 <div className="flex items-start space-x-2 pt-4">

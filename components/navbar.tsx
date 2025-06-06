@@ -22,14 +22,12 @@ export default function Navbar() {
 
   const navigation = [
     { name: "Início", href: "/" },
-    { name: "Educação JIFU", href: "/jifu-education" },
     {
       name: "Scanners",
       href: "/scanner",
       submenu: [
         { name: "Os nossos Scanners", href: "/scanner" },
-        { name: "Scanner MTM", href: "/scanner-access" },
-        { name: "MTM Gold Killer", href: "/scanner/mtm-gold-killer" },
+        { name: "Scanner ao Vivo", href: "/scanner-access" },
       ],
     },
     {

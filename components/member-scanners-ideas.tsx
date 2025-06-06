@@ -7,22 +7,15 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight, TrendingUp, BarChart3, LineChart, DollarSign } from "lucide-react"
 import TradingViewWidget from "./trading-view-widget"
-import { useTelegramMessages } from "@/hooks/use-telegram-messages"
+import { getRecentIdeas } from "@/lib/telegram-ideas"
 import { portfolioData } from "@/lib/portfolio-service"
 
 export function MemberScannersIdeas() {
   const [activeTab, setActiveTab] = useState("scanners")
-  const {
-    messages: recentIdeas,
-    loading,
-    error,
-  } = useTelegramMessages({
-    limit: 3,
-    refreshInterval: 300000, // 5 minutes
-  })
+  const recentIdeas = getRecentIdeas(3)
 
   return (
-    <div className="space-y-6 mt-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Scanners e Ideias</h2>
         <Link href="/scanners-and-ideas">
@@ -50,17 +43,49 @@ export function MemberScannersIdeas() {
 
         <TabsContent value="scanners" className="mt-0">
           {/* Scanner principal */}
-          <Card className="bg-black/30 border-gray-800 mb-8 relative z-0">
+          <Card className="bg-black/30 border-gray-800 mb-8">
             <CardContent className="p-0">
-              <div className="relative z-0">
-                <div className="aspect-video h-[600px] w-full overflow-hidden rounded-md pointer-events-auto relative z-0">
-                  <div className="w-full h-full overflow-auto relative z-0" style={{ pointerEvents: "auto" }}>
+              <div className="relative">
+                <div className="aspect-video h-[600px] w-full overflow-hidden rounded-md pointer-events-auto">
+                  <div className="w-full h-full overflow-auto" style={{ pointerEvents: "auto" }}>
                     <TradingViewWidget />
                   </div>
                 </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white border border-gold-500/30 z-10"
+                  style={{ pointerEvents: "auto" }}
+                  onClick={() => {
+                    const widget = document.querySelector(".tradingview-widget-container")
+                    if (widget) {
+                      if (widget.classList.contains("fullscreen")) {
+                        widget.classList.remove("fullscreen")
+                        widget.style.position = ""
+                        widget.style.top = ""
+                        widget.style.left = ""
+                        widget.style.width = ""
+                        widget.style.height = ""
+                        widget.style.zIndex = ""
+                        widget.style.backgroundColor = ""
+                      } else {
+                        widget.classList.add("fullscreen")
+                        widget.style.position = "fixed"
+                        widget.style.top = "0"
+                        widget.style.left = "0"
+                        widget.style.width = "100vw"
+                        widget.style.height = "100vh"
+                        widget.style.zIndex = "9999"
+                        widget.style.backgroundColor = "black"
+                      }
+                    }
+                  }}
+                >
+                  🔍
+                </Button>
               </div>
             </CardContent>
-            <CardFooter className="px-4 py-3 bg-black/50 flex justify-between relative z-10">
+            <CardFooter className="px-4 py-3 bg-black/50 flex justify-between">
               <div>
                 <h4 className="font-medium text-gold-500">Scanner MTM ao Vivo</h4>
                 <p className="text-xs text-gray-400">Estruturas de mercado em tempo real</p>
@@ -91,65 +116,44 @@ export function MemberScannersIdeas() {
               </Link>
             </div>
 
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="bg-black/30 border-gray-800 animate-pulse">
-                    <CardHeader className="pb-2">
-                      <div className="h-4 bg-gray-700 rounded w-1/3 mb-2"></div>
-                      <div className="h-5 bg-gray-700 rounded w-2/3"></div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-                      <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-400">Erro ao carregar ideias: {error}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {recentIdeas.map((idea) => (
-                  <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between mb-1">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            idea.category === "forex"
-                              ? "bg-blue-500/20 text-blue-400"
-                              : idea.category === "crypto"
-                                ? "bg-purple-500/20 text-purple-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                          }`}
-                        >
-                          {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
-                        </span>
-                      </div>
-                      <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-gray-400 line-clamp-2">
-                        {idea.content.length > 100 ? idea.content.substring(0, 100) + "..." : idea.content}
-                      </p>
-                    </CardContent>
-                    <CardFooter className="pt-0">
-                      <div className="w-full flex justify-between items-center">
-                        <div className="text-xs text-gold-500">{idea.author}</div>
-                        <span className="text-xs text-gray-500">
-                          {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
-                        </span>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {recentIdeas.map((idea) => (
+                <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between mb-1">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          idea.category === "forex"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : idea.category === "crypto"
+                              ? "bg-purple-500/20 text-purple-400"
+                              : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
+                      </span>
+                    </div>
+                    <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {idea.content.length > 100 ? idea.content.substring(0, 100) + "..." : idea.content}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <div className="w-full flex justify-between items-center">
+                      <div className="text-xs text-gold-500">{idea.author}</div>
+                      <span className="text-xs text-gray-500">
+                        {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                      </span>
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           </div>
 
           {/* Seção de Portfólios abaixo das Ideias */}
@@ -249,65 +253,44 @@ export function MemberScannersIdeas() {
         </TabsContent>
 
         <TabsContent value="ideas" className="mt-0">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i} className="bg-black/30 border-gray-800 animate-pulse">
-                  <CardHeader className="pb-2">
-                    <div className="h-4 bg-gray-700 rounded w-1/3 mb-2"></div>
-                    <div className="h-5 bg-gray-700 rounded w-2/3"></div>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-red-400">Erro ao carregar ideias: {error}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentIdeas.map((idea) => (
-                <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between mb-1">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          idea.category === "forex"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : idea.category === "crypto"
-                              ? "bg-purple-500/20 text-purple-400"
-                              : "bg-yellow-500/20 text-yellow-400"
-                        }`}
-                      >
-                        {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
-                      </span>
-                    </div>
-                    <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <p className="text-sm text-gray-400 line-clamp-2">
-                      {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="w-full flex justify-between items-center">
-                      <div className="text-xs text-gold-500">{idea.author}</div>
-                      <span className="text-xs text-gray-500">
-                        {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
-                      </span>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentIdeas.map((idea) => (
+              <Card key={idea.id} className="bg-black/30 border-gray-800 hover:border-gold-500/30 transition-all">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between mb-1">
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        idea.category === "forex"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : idea.category === "crypto"
+                            ? "bg-purple-500/20 text-purple-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
+                      {idea.category === "forex" ? "Forex" : idea.category === "crypto" ? "Cripto" : "Commodities"}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(idea.timestamp).toLocaleDateString("pt-PT")}
+                    </span>
+                  </div>
+                  <CardTitle className="text-base">{idea.symbol || "Market Update"}</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <p className="text-sm text-gray-400 line-clamp-2">
+                    {idea.content.length > 150 ? idea.content.substring(0, 150) + "..." : idea.content}
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-xs text-gold-500">{idea.author}</div>
+                    <span className="text-xs text-gray-500">
+                      {idea.type === "signal" ? "🚀 Sinal" : idea.type === "analysis" ? "📊 Análise" : "📰 News"}
+                    </span>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
           <div className="mt-4 text-center">
             <Link href="/trading-ideas">
               <Button className="bg-gold-600 hover:bg-gold-700 text-black">Ver Todas as Ideias</Button>

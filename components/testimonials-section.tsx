@@ -4,104 +4,19 @@ import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Star, Quote, TrendingUp } from "lucide-react"
 import Image from "next/image"
-
-interface Testimonial {
-  id: string
-  name: string
-  location: string
-  role: string
-  text: string
-  rating: number
-  profit?: string
-  timeframe?: string
-  avatar: string
-  verified: boolean
-}
-
-const testimonials: Testimonial[] = [
-  {
-    id: "1",
-    name: "Rafael Bastos",
-    location: "Leiria, Portugal",
-    role: "Pai Proffisional",
-    text: "Rising Star foi uma conquista 100%! Com dedicação ao máximo consegui resultados incríveis usando os scanners MTM.",
-    rating: 5,
-    profit: "+450 pips",
-    timeframe: "3 meses",
-    avatar: "/testimonials/rafael-bastos.jpg",
-    verified: true,
-  },
-  {
-    id: "2",
-    name: "Sandra Oliveira",
-    location: "Leiria, Portugal",
-    role: "Contabilista",
-    text: "Focada em criptomoedas, uso o método MoreThanMoney em dinâmica de cripto. Juntar-me à JIFU trouxe-me confiança e clareza sobre os meus objetivos financeiros.",
-    rating: 5,
-    profit: "+1,820 pips",
-    timeframe: "18 meses",
-    avatar: "/testimonials/sandra-oliveira.jpg",
-    verified: true,
-  },
-  {
-    id: "3",
-    name: "Liliana Faria",
-    location: "Alpiarça, Portugal",
-    role: "Gold Manager JIFU",
-    text: "A tua fundação para director foi criada! Estás a um passo de distância! Trabalhar contigo tem sido uma inspiração diária.",
-    rating: 5,
-    profit: "+3,200 pips",
-    timeframe: "18 meses",
-    avatar: "/testimonials/liliana-faria.jpg",
-    verified: true,
-  },
-  {
-    id: "4",
-    name: "Gonçalo & Vânia",
-    location: "Braga, Portugal",
-    role: "Casal Empreendedor",
-    text: "Mais uma recompensa pelo bom trabalho para este casal incrível da minha equipa. Parabéns, feliz por vocês! Withdraw Club conquistado!",
-    rating: 5,
-    profit: "+4,100 pips",
-    timeframe: "5 meses",
-    avatar: "/testimonials/goncalo-vania.jpg",
-    verified: true,
-  },
-  {
-    id: "5",
-    name: "Rui Rodrigues e Carla",
-    location: "Coimbra, Portugal",
-    role: "Casal Investidor",
-    text: "Somos um casal lindo. Estes quatro meses de JIFU têm sido intensos, loucos, mas muito prazerosos. Ser ensinável e grato por tudo predomina nos nossos dias.",
-    rating: 5,
-    profit: "+2,850 pips",
-    timeframe: "18 meses",
-    avatar: "/testimonials/rui-carla.jpg",
-    verified: true,
-  },
-  {
-    id: "6",
-    name: "André Dias",
-    location: "Suiça",
-    role: "Chefe de Equipa de Construção",
-    text: "Muito obrigado pelo vosso apoio, maltinha, principalmente ao Ricardo e Liliana que não me deixaram desistir nos momentos mais difíceis. Withdraw Club alcançado!",
-    rating: 5,
-    profit: "+3,650 pips",
-    timeframe: "6 meses",
-    avatar: "/testimonials/andre-dias.jpg",
-    verified: true,
-  },
-]
+import { getRandomTestimonials, type Testimonial } from "@/lib/testimonials-service"
 
 export default function TestimonialsSection() {
-  const [currentTestimonials, setCurrentTestimonials] = useState(testimonials.slice(0, 3))
+  const [currentTestimonials, setCurrentTestimonials] = useState<Testimonial[]>([])
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
+    // Inicializar com 3 testemunhos aleatórios
+    setCurrentTestimonials(getRandomTestimonials(3))
+
     const interval = setInterval(() => {
-      const shuffled = [...testimonials].sort(() => 0.5 - Math.random())
-      setCurrentTestimonials(shuffled.slice(0, 3))
+      setCurrentTestimonials(getRandomTestimonials(3))
     }, 8000)
 
     return () => clearInterval(interval)
@@ -141,12 +56,14 @@ export default function TestimonialsSection() {
               <CardContent className="p-6">
                 {/* Header com Avatar e Info */}
                 <div className="flex items-center mb-4">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden mr-4">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-gold-500">
                     <Image
-                      src={testimonial.avatar || "/placeholder.svg"}
+                      src={`/testimonials/${testimonial.image}` || "/placeholder.svg"}
                       alt={testimonial.name}
                       fill
                       className="object-cover"
+                      sizes="64px"
+                      priority
                     />
                   </div>
                   <div className="flex-1">
@@ -179,7 +96,7 @@ export default function TestimonialsSection() {
                 {/* Quote */}
                 <div className="relative mb-4">
                   <Quote className="absolute -top-2 -left-2 w-8 h-8 text-gold-500/30" />
-                  <p className="text-gray-300 italic pl-6">"{testimonial.text}"</p>
+                  <p className="text-gray-300 italic pl-6">"{testimonial.content}"</p>
                 </div>
 
                 {/* Profit Info */}
