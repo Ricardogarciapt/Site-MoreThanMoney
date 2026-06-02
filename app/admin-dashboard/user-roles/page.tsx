@@ -6,12 +6,48 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Search, Shield, User, Users } from "lucide-react"
+import { Check, Search, Shield, User, Users, Smartphone, Star, Globe } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Lista de roles disponíveis
+// Packs de acesso (subscription tiers)
+const MEMBERSHIP_PACKS = [
+  {
+    key: "member_skool",
+    label: "Skool Member",
+    price: "$65/mês",
+    icon: Globe,
+    color: "text-blue-400",
+    bg: "bg-blue-500/10 border-blue-500/30",
+    access: ["Stream Skool para membros", "Site MoreThanMoney", "Conteúdo educacional"],
+  },
+  {
+    key: "member_iqonic",
+    label: "Member IQonic",
+    price: "—",
+    icon: Star,
+    color: "text-gold-400",
+    bg: "bg-gold-500/10 border-gold-500/30",
+    access: ["Todos os streams", "Site MoreThanMoney", "App Mobile", "Copytrading", "Scanners Premium"],
+  },
+  {
+    key: "member_app",
+    label: "Member APP",
+    price: "—",
+    icon: Smartphone,
+    color: "text-green-400",
+    bg: "bg-green-500/10 border-green-500/30",
+    access: ["Acesso apenas à App Mobile", "Chat de sinais", "Canais Telegram MTM"],
+  },
+]
+
+// Lista completa de roles disponíveis
 const availableRoles = [
+  // Packs de acesso
+  "member_skool",
+  "member_iqonic",
+  "member_app",
+  // Roles de organização
   "Membro",
   "Membro VIP",
   "Distribuidor",
@@ -26,6 +62,12 @@ const availableRoles = [
   "Diamond",
   "Presidential",
 ]
+
+const ROLE_LABELS: Record<string, string> = {
+  member_skool: "Skool Member",
+  member_iqonic: "Member IQonic",
+  member_app: "Member APP",
+}
 
 interface UserData {
   username: string
@@ -128,8 +170,31 @@ export default function UserRolesPage() {
     <div className="min-h-screen bg-black py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Gerenciamento de Funções</h1>
-          <p className="text-gray-400">Atribua funções específicas aos membros da plataforma MoreThanMoney.</p>
+          <h1 className="text-3xl font-bold mb-2">Gestão de Funções & Packs</h1>
+          <p className="text-gray-400">Atribua packs de acesso e funções aos membros da plataforma MoreThanMoney.</p>
+        </div>
+
+        {/* Membership Packs Info */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {MEMBERSHIP_PACKS.map(({ key, label, price, icon: Icon, color, bg, access }) => (
+            <div key={key} className={`border rounded-xl p-4 ${bg}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Icon size={16} className={color} />
+                <span className={`font-bold text-sm ${color}`}>{label}</span>
+                {price !== "—" && (
+                  <span className="ml-auto text-xs text-gray-400">{price}</span>
+                )}
+              </div>
+              <ul className="space-y-1">
+                {access.map((item) => (
+                  <li key={item} className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <Check size={10} className="text-green-400 flex-none" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {successMessage && (
@@ -185,8 +250,16 @@ export default function UserRolesPage() {
                           </div>
                         </div>
                         <div>
-                          <span className="text-sm px-2 py-1 rounded-full bg-gold-500/20 text-gold-400">
-                            {user.role || "Membro"}
+                          <span className={`text-sm px-2 py-1 rounded-full ${
+                            user.role === "member_app"
+                              ? "bg-green-500/20 text-green-400"
+                              : user.role === "member_iqonic"
+                              ? "bg-gold-500/20 text-gold-400"
+                              : user.role === "member_skool"
+                              ? "bg-blue-500/20 text-blue-400"
+                              : "bg-gray-700 text-gray-300"
+                          }`}>
+                            {ROLE_LABELS[user.role || ""] || user.role || "Membro"}
                           </span>
                         </div>
                       </div>
@@ -231,11 +304,18 @@ export default function UserRolesPage() {
                         onChange={(e) => setSelectedRole(e.target.value)}
                         className="w-full mt-1 px-3 py-2 bg-gray-800/50 border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
                       >
-                        {availableRoles.map((role) => (
-                          <option key={role} value={role}>
-                            {role}
-                          </option>
-                        ))}
+                        <optgroup label="── Packs de Acesso ──">
+                            <option value="member_skool">Skool Member ($65/mês)</option>
+                            <option value="member_iqonic">Member IQonic (Todos os streams)</option>
+                            <option value="member_app">Member APP (Só App Mobile)</option>
+                          </optgroup>
+                          <optgroup label="── Roles de Organização ──">
+                            {availableRoles.filter(r => !r.startsWith("member_")).map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
+                          </optgroup>
                       </select>
                     </div>
 

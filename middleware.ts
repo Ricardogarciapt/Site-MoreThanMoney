@@ -56,9 +56,7 @@ export function middleware(request: NextRequest) {
     headers.set("x-skip-static", "1")
 
     return NextResponse.next({
-      request: {
-        headers,
-      },
+      request: { headers },
     })
   }
 
@@ -66,5 +64,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/admin/:path*", "/admin-dashboard/:path*"],
+  matcher: ["/api/:path*", "/admin/:path*", "/admin-dashboard/:path*", "/app-mobile/:path*"],
 }
