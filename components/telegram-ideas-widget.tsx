@@ -5,27 +5,12 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import { Lock, MessageSquare, ExternalLink, Clock } from "lucide-react"
 import TelegramWidget from "./telegram-widget"
+import { canAccessVIPContent } from "@/lib/permissions"
 
 export default function TelegramIdeasWidget() {
   const { user, isAuthenticated } = useAuth()
 
-  // Verificar se o usuário pode acessar ideias premium
-  const canAccessVIP =
-    isAuthenticated &&
-    user?.role &&
-    [
-      "Membro VIP",
-      "Distribuidor",
-      "Liderança",
-      "Rising Star",
-      "Silver Manager",
-      "Gold Manager",
-      "Platinum Manager",
-      "Elite",
-      "Director",
-      "Diamond",
-      "Presidential",
-    ].includes(user.role)
+  const canAccessVIP = canAccessVIPContent(user, isAuthenticated)
 
   if (!isAuthenticated) {
     return (

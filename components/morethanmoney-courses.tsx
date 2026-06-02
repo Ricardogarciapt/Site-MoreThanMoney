@@ -15,13 +15,16 @@ import {
 } from "@/components/ui/dialog"
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
+import { canAccessStreams, getUpgradeMessage } from "@/lib/permissions"
 
 export default function MoreThanMoneyCourses() {
   // URL da playlist
   const playlistUrl = "https://youtube.com/playlist?list=PL6XU0y2YUMZLpIsO63P_E6w4OCY8Y467m&si=Ok6-0Ast2Y8DYU5i"
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+
+  const hasStreamAccess = canAccessStreams(user, isAuthenticated)
 
   // Lista de vídeos da playlist com títulos reais
   const playlistVideos = [
@@ -127,15 +130,22 @@ export default function MoreThanMoneyCourses() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-black/50 border-gold-500/30 backdrop-blur-sm">
               <CardHeader>
-                <div className="rounded-lg overflow-hidden mb-4 aspect-video relative">
-                  <iframe
-                    src="https://www.youtube.com/embed/videoseries?list=PL6XU0y2YUMZLpIsO63P_E6w4OCY8Y467m"
-                    title="Bootcamp MoreThanMoney"
-                    className="absolute inset-0 w-full h-full"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
+                <div className="rounded-lg overflow-hidden mb-4 aspect-video relative bg-gray-900 flex items-center justify-center">
+                  {hasStreamAccess ? (
+                    <iframe
+                      src="https://www.youtube.com/embed/videoseries?list=PL6XU0y2YUMZLpIsO63P_E6w4OCY8Y467m"
+                      title="Bootcamp MoreThanMoney"
+                      className="absolute inset-0 w-full h-full"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+                      <span className="text-4xl">🔒</span>
+                      <p className="text-sm text-gray-400">{getUpgradeMessage("streams")}</p>
+                    </div>
+                  )}
                 </div>
                 <CardTitle>Bootcamp MoreThanMoney: Do Iniciante ao Experiente</CardTitle>
                 <CardDescription>
