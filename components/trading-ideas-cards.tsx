@@ -9,6 +9,7 @@ import Link from "next/link"
 import { MessageSquare, TrendingUp, Lock, Clock, BarChart3 } from "lucide-react"
 import TelegramWidget from "./telegram-widget"
 import { getIdeasByType, telegramIdeas, type TelegramIdea } from "@/lib/telegram-ideas"
+import { canAccessVIPContent } from "@/lib/permissions"
 
 // Exportação temporária para compatibilidade com outros arquivos
 export const sampleIdeas = telegramIdeas.map((idea) => ({
@@ -27,23 +28,7 @@ export default function TradingIdeasCards() {
   const [activeTab, setActiveTab] = useState("all")
   const [ideas, setIdeas] = useState<TelegramIdea[]>([])
 
-  // Verificar se o usuário pode acessar o canal VIP
-  const canAccessVIP =
-    isAuthenticated &&
-    user?.role &&
-    [
-      "Membro VIP",
-      "Distribuidor",
-      "Liderança",
-      "Rising Star",
-      "Silver Manager",
-      "Gold Manager",
-      "Platinum Manager",
-      "Elite",
-      "Director",
-      "Diamond",
-      "Presidential",
-    ].includes(user.role)
+  const canAccessVIP = canAccessVIPContent(user, isAuthenticated)
 
   // Carregar ideias do Telegram
   useEffect(() => {

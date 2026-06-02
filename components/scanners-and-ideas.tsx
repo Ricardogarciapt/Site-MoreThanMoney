@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import { ArrowRight, CandlestickChart, DollarSign, TrendingUp, Lock } from "lucide-react"
 import TradingViewWidget from "./trading-view-widget"
+import { canAccessVIPContent } from "@/lib/permissions"
 
 // Importar dados de portfólios e ideias de trading
 import { sampleIdeas } from "./trading-ideas-cards"
@@ -17,24 +18,7 @@ export default function ScannersAndIdeas() {
   const { isAuthenticated, user } = useAuth()
   const [activeTab, setActiveTab] = useState("scanner")
 
-  // Verificar se o usuário pode acessar conteúdo premium
-  const canAccessPremium =
-    isAuthenticated &&
-    user?.role &&
-    [
-      "Membro VIP",
-      "Distribuidor",
-      "Educador",
-      "Liderança",
-      "Rising Star",
-      "Silver Manager",
-      "Gold Manager",
-      "Platinum Manager",
-      "Elite",
-      "Director",
-      "Diamond",
-      "Presidential",
-    ].includes(user.role)
+  const canAccessPremium = canAccessVIPContent(user, isAuthenticated)
 
   return (
     <div className="container mx-auto px-4 py-12">

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import MembershipRequired from "./membership-required"
+import { canAccessStreams, getUpgradeMessage } from "@/lib/permissions"
 import { Loader2, Play, Lock, RefreshCw, Clock, Users, BookOpen, Star } from "lucide-react"
 import { fetchPlaylistData, fetchPlaylistThumbnail } from "@/app/actions/youtube-actions"
 import type { Module, VideoItem } from "@/lib/youtube-service"
@@ -22,8 +23,8 @@ export default function BootcampMoreThanMoney() {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ [key: string]: boolean }>({})
 
-  // Verificar se o usuário tem acesso ao bootcamp
-  const hasAccess = isAuthenticated && user?.package && ["Pro Trader", "VIP Trader"].includes(user.package)
+  // Verificar se o usuário tem acesso ao bootcamp (streams)
+  const hasAccess = canAccessStreams(user, isAuthenticated)
 
   // Função para carregar os dados da playlist
   const loadPlaylistData = async (forceRefresh = false) => {
@@ -229,7 +230,7 @@ export default function BootcampMoreThanMoney() {
                     <Lock className="h-16 w-16 text-gold-500 mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">Conteúdo Exclusivo</h3>
                     <p className="text-gray-400 mb-4 text-center max-w-md px-4">
-                      Faça upgrade para o pacote Pro Trader ou VIP Trader para acessar este conteúdo.
+                      {getUpgradeMessage("streams")}
                     </p>
                     <Button className="bg-gold-500 hover:bg-gold-600 text-black">Fazer Upgrade</Button>
                   </div>
