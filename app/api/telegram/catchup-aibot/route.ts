@@ -8,6 +8,11 @@ const WEBHOOK_URL = "https://morethanmoney.pt/api/telegram/webhook-aibot"
 const TRADE_IDEAS_ID = process.env.TELEGRAM_CHANNEL_TRADE_IDEAS || ""
 const PREMIUM_ID    = process.env.TELEGRAM_CHANNEL_PREMIUM_SIGNALS || ""
 
+const CHANNEL_SLUG: Record<string, string> = {
+  trade_ideas:     "trade-ideas-setup",
+  premium_signals: "premium-ideas",
+}
+
 function resolveChannelKey(chatId: number | string, username?: string): string | null {
   const id = String(chatId)
   const uname = username ? `@${username.replace(/^@/, "")}` : ""
@@ -70,29 +75,52 @@ export async function POST(request: NextRequest) {
       if (post.date < todayTs) { stats.skipped++; continue }
 
       const channelKey = resolveChannelKey(post.chat?.id, post.chat?.username)
-
-      const messageData = {
-        message_id: post.message_id,
-        channel_id: String(post.chat?.id),
-        channel_key: channelKey || "unknown",
-        channel_name: post.chat?.title || channelKey || "MTM",
-        text,
-        author: post.from?.first_name || post.chat?.title || "MTM",
-        timestamp: post.date,
-        created_at: new Date().toISOString(),
-      }
+      const sender = post.from?.first_name || post.chat?.title || "MTM"
+      const slug   = channelKey ? CHANNEL_SLUG[channelKey] : null
 
       if (supabase) {
-        const { error } = await supabase
-          .from("telegram_messages")
-          .upsert(messageData, { onConflict: "message_id,channel_id" })
+        let saved = false
 
-        if (error) {
-          console.error("[catchup] Supabase error:", error.message)
-          stats.errors++
-        } else {
-          stats.saved++
+        // Insere em chat_messages (tabela principal da app)
+        if (slug) {
+          const { error } = await supabase
+            .from("chat_messages")
+            .upsert(
+              {
+                channel_slug:        slug,
+                content:             text,
+                message_type:        "telegram",
+                telegram_sender:     sender,
+                telegram_message_id: post.message_id,
+                user_id:             null,
+                created_at:          new Date(post.date * 1000).toISOString(),
+              },
+              { onConflict: "telegram_message_id,channel_slug" }
+            )
+          if (error) { console.error("[catchup] chat_messages:", error.message); stats.errors++ }
+          else { saved = true }
         }
+
+        // Backup em telegram_messages
+        const { error: tmErr } = await supabase
+          .from("telegram_messages")
+          .upsert(
+            {
+              message_id:   post.message_id,
+              channel_id:   String(post.chat?.id),
+              channel_key:  channelKey || "unknown",
+              channel_name: post.chat?.title || channelKey || "MTM",
+              text,
+              author:       sender,
+              timestamp:    post.date,
+              created_at:   new Date().toISOString(),
+            },
+            { onConflict: "message_id,channel_id" }
+          )
+        if (tmErr) console.error("[catchup] telegram_messages:", tmErr.message)
+
+        if (saved) stats.saved++
+        else stats.skipped++
       } else {
         stats.skipped++
       }
