@@ -1,15 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-// Channel key mapping — configured via env vars
-const CHANNEL_MAP: Record<string, string> = {
-  [process.env.TELEGRAM_CHANNEL_TRADE_IDEAS || "trade_ideas_placeholder"]: "trade_ideas",
-  [process.env.TELEGRAM_CHANNEL_PREMIUM_SIGNALS || "premium_signals_placeholder"]: "premium_signals",
-}
+// IDs/usernames dos canais configurados em env
+const TRADE_IDEAS_ID = process.env.TELEGRAM_CHANNEL_TRADE_IDEAS || ""    // ex: -3716578747
+const PREMIUM_ID    = process.env.TELEGRAM_CHANNEL_PREMIUM_SIGNALS || "" // ex: @MTMgold
 
-function resolveChannelKey(chatId: number | string): string | null {
+// Resolve channel key por ID numérico OU por username (@...)
+function resolveChannelKey(chatId: number | string, username?: string): string | null {
   const id = String(chatId)
-  return CHANNEL_MAP[id] || null
+  const uname = username ? `@${username.replace(/^@/, "")}` : ""
+
+  if (TRADE_IDEAS_ID && (id === TRADE_IDEAS_ID || uname === TRADE_IDEAS_ID)) return "trade_ideas"
+  if (PREMIUM_ID    && (id === PREMIUM_ID    || uname === PREMIUM_ID))    return "premium_signals"
+
+  // Fallback: tenta também com prefixo -100 (supergroups)
+  const withPrefix = id.startsWith("-100") ? id : `-100${id.replace(/^-/, "")}`
+  if (TRADE_IDEAS_ID && withPrefix === TRADE_IDEAS_ID) return "trade_ideas"
+  if (PREMIUM_ID    && withPrefix === PREMIUM_ID)    return "premium_signals"
+
+  return null
 }
 
 function getSupabase() {
@@ -29,7 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     const chatId = post.chat?.id
-    const channelKey = resolveChannelKey(chatId)
+    const chatUsername = post.chat?.username
+    const channelKey = resolveChannelKey(chatId, chatUsername)
 
     const text = post.text || post.caption || ""
     if (!text) {
