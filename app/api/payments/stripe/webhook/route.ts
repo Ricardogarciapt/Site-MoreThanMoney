@@ -18,7 +18,6 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar se o Stripe está configurado
     if (!stripe) {
       console.error("Stripe não configurado para webhook")
       return NextResponse.json({ error: "Webhook não disponível" }, { status: 503 })
@@ -39,7 +38,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Webhook não configurado" }, { status: 503 })
     }
 
-    // Verificar assinatura do webhook
     let event
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
@@ -48,18 +46,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Webhook inválido" }, { status: 400 })
     }
 
-    // Processar eventos do Stripe
     switch (event.type) {
       case "checkout.session.completed":
         const session = event.data.object
         console.log("Pagamento concluído:", session.id)
-
-        // Aqui você pode:
-        // 1. Atualizar banco de dados
-        // 2. Enviar email de confirmação
-        // 3. Liberar acesso ao produto
-        // 4. Atualizar membership do usuário
-
         await handlePaymentSuccess(session)
         break
 
@@ -84,13 +74,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Função para processar pagamento bem-sucedido
 async function handlePaymentSuccess(session: any) {
   try {
-    // Extrair informações do pagamento
     const customerEmail = session.customer_email
     const customerName = session.metadata?.customerName
-    const amount = session.amount_total / 100 // Converter de centavos
+    const amount = session.amount_total / 100
 
     console.log("Processando pagamento:", {
       email: customerEmail,
@@ -99,21 +87,29 @@ async function handlePaymentSuccess(session: any) {
       sessionId: session.id,
     })
 
-    // TODO: Integrar com banco de dados
-    // - Criar/atualizar usuário
-    // - Registrar pagamento
-    // - Atualizar membership
-    // - Enviar email de confirmação
+    // Convidar membro para o grupo Skool
+    if (customerEmail && process.env.SKOOL_WEBHOOK_URL) {
+      try {
+        const skoolUrl = `${process.env.SKOOL_WEBHOOK_URL}?email=${encodeURIComponent(customerEmail)}`
+        const skoolRes = await fetch(skoolUrl, { method: "GET" })
+        console.log("Skool invite enviado para", customerEmail, "- status:", skoolRes.status)
+      } catch (skoolErr) {
+        console.error("Erro ao convidar para Skool:", skoolErr)
+      }
+    } else {
+      console.warn("SKOOL_WEBHOOK_URL não configurado ou email ausente")
+    }
+
   } catch (error) {
     console.error("Erro ao processar pagamento:", error)
   }
 }
 
-// Health check
 export async function GET() {
   return NextResponse.json({
     status: "webhook_ready",
     stripe_configured: !!process.env.STRIPE_SECRET_KEY,
     webhook_secret_configured: !!process.env.STRIPE_WEBHOOK_SECRET,
+    skool_webhook_configured: !!process.env.SKOOL_WEBHOOK_URL,
   })
 }
