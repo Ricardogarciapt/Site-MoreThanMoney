@@ -1,0 +1,1237 @@
+// Este software e código faz parte integrante da propriedade intelectual de RicardoGarciaPT e sua Empresa MoreThanMoney
+
+//@version=5
+indicator("MoreThanMoney - Sensei V5.0 DEFY", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// =====================================================================
+// FUNÇÕES AUXILIARES
+// =====================================================================
+dema(src, length) =>
+    ema1 = ta.ema(src, length)
+    ema2 = ta.ema(ema1, length)
+    2 * ema1 - ema2
+
+round_price(x) =>
+    xx = int(x / syminfo.mintick)
+    xx * syminfo.mintick
+
+// =====================================================================
+// ██████╗ ███████╗███████╗██╗   ██╗
+// ██╔══██╗██╔════╝██╔════╝╚██╗ ██╔╝
+// ██║  ██║█████╗  █████╗   ╚████╔╝
+// ██║  ██║██╔══╝  ██╔══╝    ╚██╔╝
+// ██████╔╝███████╗██║        ██║
+// ╚═════╝ ╚══════╝╚═╝        ╚═╝
+// DEFY INPUTS
+// =====================================================================
+defy_theme_gr    = "DEFY • THEME"
+defy_theme_mode  = input.string("Light", "Theme Mode", options=["Classic","Dark","Light","Ladies"], group=defy_theme_gr)
+
+// Classic theme colors
+defy_cl_bull = input.color(color.new(#1565C0, 0), "Classic Bull", inline="cl", group=defy_theme_gr)
+defy_cl_bear = input.color(color.new(#7B1C1C, 0), "Classic Bear", inline="cl", group=defy_theme_gr)
+// Dark theme colors
+defy_dk_bull = input.color(color.new(#E0E0E0, 0), "Dark Bull",    inline="dk", group=defy_theme_gr)
+defy_dk_bear = input.color(color.new(#7C3AED, 0), "Dark Bear",    inline="dk", group=defy_theme_gr)
+// Light theme colors
+defy_lt_bull = input.color(color.new(#7C3AED, 0), "Light Bull",   inline="lt", group=defy_theme_gr)
+defy_lt_bear = input.color(color.new(#374151, 0), "Light Bear",   inline="lt", group=defy_theme_gr)
+// Ladies theme colors
+defy_ld_bull = input.color(color.new(#EC4899, 0), "Ladies Bull",  inline="ld", group=defy_theme_gr)
+defy_ld_bear = input.color(color.new(#7C3AED, 0), "Ladies Bear",  inline="ld", group=defy_theme_gr)
+
+defy_bull_col = defy_theme_mode == "Classic" ? defy_cl_bull :
+                defy_theme_mode == "Dark"    ? defy_dk_bull :
+                defy_theme_mode == "Light"   ? defy_lt_bull :
+                defy_ld_bull
+
+defy_bear_col = defy_theme_mode == "Classic" ? defy_cl_bear :
+                defy_theme_mode == "Dark"    ? defy_dk_bear :
+                defy_theme_mode == "Light"   ? defy_lt_bear :
+                defy_ld_bear
+
+defy_lvl_gr      = "DEFY • LEVELS"
+defy_show_levels = input.bool(false, "Show DEFY Levels", group=defy_lvl_gr)
+defy_num_levels  = input.int(10,     "Number of Levels", minval=2, maxval=20, group=defy_lvl_gr)
+defy_lvl_col     = input.color(color.new(color.gray, 70), "Level Color", group=defy_lvl_gr)
+defy_lvl_style   = input.string("Dashed", "Level Style", options=["Solid","Dashed","Dotted"], group=defy_lvl_gr)
+defy_lvl_width   = input.int(1, "Level Width", group=defy_lvl_gr)
+defy_zone_hi     = input.int(90, "Zone High %", minval=50, maxval=99, group=defy_lvl_gr)
+defy_zone_lo     = input.int(10, "Zone Low  %", minval=1,  maxval=49, group=defy_lvl_gr)
+
+defy_vc_gr       = "DEFY • VALID CANDLE"
+defy_vc_profile  = input.string("Strict", "Profile",   options=["Strict","Normal"], group=defy_vc_gr)
+defy_vc_expand   = input.string("Soft",   "Expansion", options=["Soft","Hard"],     group=defy_vc_gr)
+defy_vc_color    = input.color(color.green, "Strong Candle Color", group=defy_vc_gr)
+
+defy_core_gr     = "DEFY • CORE"
+defy_band_len    = input.int(89, "Band Length", minval=10, group=defy_core_gr)
+
+defy_band_gr        = "DEFY • BANDS"
+defy_show_inner     = input.bool(true, "Show Inner Band",   group=defy_band_gr)
+defy_show_mid       = input.bool(true, "Show Mid Band",     group=defy_band_gr)
+defy_show_outer     = input.bool(true, "Show Outer Band",   group=defy_band_gr)
+defy_show_center    = input.bool(true, "Show Center Line",  group=defy_band_gr)
+defy_show_fill      = input.bool(true, "Show Band Fill",    group=defy_band_gr)
+defy_band_width     = input.int(1,  "Band Width",           minval=1, maxval=4, group=defy_band_gr)
+defy_band_transp    = input.int(0,  "Band Transparency",    minval=0, maxval=100, group=defy_band_gr)
+defy_fill_transp    = input.int(20, "Fill Transparency",    minval=0, maxval=100, group=defy_band_gr)
+
+defy_proj_gr        = "DEFY • PROJECTION"
+defy_show_proj      = input.bool(true,  "Dashed Projection",    group=defy_proj_gr)
+defy_proj_gradient  = input.bool(true,  "Projection Gradient",  group=defy_proj_gr)
+defy_proj_bars      = input.int(30, "Projection Bars Ahead", minval=5, maxval=100, group=defy_proj_gr)
+
+defy_ma_gr       = "DEFY • MOVING AVERAGES"
+defy_show_ma1    = input.bool(false, "Show MA 1", inline="ma1", group=defy_ma_gr)
+defy_ma1_len     = input.int(34,     "Length",    inline="ma1", group=defy_ma_gr)
+defy_show_ma2    = input.bool(false, "Show MA 2", inline="ma2", group=defy_ma_gr)
+defy_ma2_len     = input.int(55,     "Length",    inline="ma2", group=defy_ma_gr)
+defy_show_ma3    = input.bool(false, "Show MA 3", inline="ma3", group=defy_ma_gr)
+defy_ma3_len     = input.int(233,    "Length",    inline="ma3", group=defy_ma_gr)
+
+defy_tf_gr          = "DEFY • TREND FILTER"
+defy_arrow_tuning   = input.int(5,    "Arrow Tuning",         minval=1, maxval=20, group=defy_tf_gr)
+defy_show_arrows    = input.bool(true, "Show Directional Arrows", group=defy_tf_gr)
+defy_arrow_transp   = input.int(0,    "Arrow Transparency",   minval=0, maxval=100, group=defy_tf_gr)
+defy_max_arrow_lbl  = input.int(250,  "Max Arrow Labels",     minval=1, group=defy_tf_gr)
+defy_arrow_mode     = input.string("Track", "Arrow Mode", options=["Track","Signal"], group=defy_tf_gr)
+defy_arrow_size     = input.string("Small", "Arrow Size", options=["Tiny","Small","Normal","Large"], group=defy_tf_gr)
+
+defy_cloud_gr       = "DEFY • CLOUD"
+defy_perf_type      = input.string("Active", "Performance Type", options=["Active","Passive"], group=defy_cloud_gr)
+defy_show_cloud     = input.bool(true, "Show Cloud",           group=defy_cloud_gr)
+defy_show_candle_col= input.bool(true, "Show Candle Coloring", group=defy_cloud_gr)
+
+defy_vol_gr         = "DEFY • VOLUME BREAKS"
+defy_show_vol       = input.bool(true, "Show Volume Data",  group=defy_vol_gr)
+defy_max_vol_lbl    = input.int(1,     "Max Labels",        options=[1,2,3,5], group=defy_vol_gr)
+defy_vol_lbl_size   = input.string("Normal", "Label Size",  options=["Small","Normal","Large"], group=defy_vol_gr)
+defy_vol_col        = input.color(color.new(#B8860B, 0), "Volume Text Color", group=defy_vol_gr)
+
+// =====================================================================
+// DEFY CALCULATIONS
+// =====================================================================
+
+// ── Basis + Triple Bollinger Bands ──────────────────────────────────
+defy_basis  = ta.sma(close, defy_band_len)
+defy_stdev  = ta.stdev(close, defy_band_len)
+
+// Inner (BB1)
+defy_upper1 = defy_basis + 1.0 * defy_stdev
+defy_lower1 = defy_basis - 1.0 * defy_stdev
+// Mid (BB2)
+defy_upper2 = defy_basis + 2.0 * defy_stdev
+defy_lower2 = defy_basis - 2.0 * defy_stdev
+// Outer (BB3)
+defy_upper3 = defy_basis + 3.0 * defy_stdev
+defy_lower3 = defy_basis - 3.0 * defy_stdev
+
+// ── Cloud ────────────────────────────────────────────────────────────
+defy_fast_len = defy_perf_type == "Active" ? math.round(defy_band_len * 0.382) : math.round(defy_band_len * 0.5)
+defy_slow_len = defy_band_len
+
+defy_cloud_fast = ta.ema(close, defy_fast_len)
+defy_cloud_slow = ta.ema(close, defy_slow_len)
+defy_cloud_bull = defy_cloud_fast >= defy_cloud_slow
+
+// ── Valid Candle ─────────────────────────────────────────────────────
+vc_body       = math.abs(close - open)
+vc_range      = high - low
+vc_body_ratio = vc_range > 0 ? vc_body / vc_range : 0.0
+vc_strict_thr = defy_vc_profile == "Strict" ? 0.5 : 0.3
+vc_vol_thr    = defy_vc_profile == "Strict" ? 1.0 : 0.8
+vc_vol20      = ta.sma(volume, 20)
+
+vc_body_ok    = vc_body_ratio >= vc_strict_thr
+vc_vol_ok     = volume >= vc_vol20 * vc_vol_thr
+vc_atr_ok     = defy_vc_expand == "Soft" ? true : ta.atr(14) > ta.atr(14)[1]
+defy_valid_candle = vc_body_ok and vc_vol_ok and vc_atr_ok
+
+// ── Trend Direction (Arrows) ─────────────────────────────────────────
+defy_trend_fast = ta.ema(close, defy_arrow_tuning)
+defy_trend_slow = ta.ema(close, defy_arrow_tuning * 3)
+defy_trend_bull = defy_trend_fast > defy_trend_slow
+defy_trend_flip_bull = defy_trend_bull and not defy_trend_bull[1]
+defy_trend_flip_bear = not defy_trend_bull and defy_trend_bull[1]
+
+defy_arrow_sz = defy_arrow_size == "Tiny"   ? size.tiny   :
+                defy_arrow_size == "Small"   ? size.small  :
+                defy_arrow_size == "Normal"  ? size.normal : size.large
+
+// ── Moving Averages ──────────────────────────────────────────────────
+defy_ma1 = ta.ema(close, defy_ma1_len)
+defy_ma2 = ta.ema(close, defy_ma2_len)
+defy_ma3 = ta.ema(close, defy_ma3_len)
+
+// ── Volume Breaks ────────────────────────────────────────────────────
+defy_vol90     = ta.percentile_nearest_rank(volume, 20, 90)
+defy_vol_break = volume >= defy_vol90
+
+// ── DEFY Levels (percentile-based horizontal lines) ───────────────────
+// Calculated over the last 200 bars between highest/lowest
+defy_lvl_high = ta.highest(high, 200)
+defy_lvl_low  = ta.lowest(low,  200)
+defy_lvl_range = defy_lvl_high - defy_lvl_low
+
+// ── Band line style helper ───────────────────────────────────────────
+defy_lvl_line_style = defy_lvl_style == "Dashed" ? line.style_dashed :
+                      defy_lvl_style == "Dotted"  ? line.style_dotted :
+                      line.style_solid
+
+// =====================================================================
+// DEFY PLOTS — BANDS
+// =====================================================================
+
+// Center Line
+plot(defy_show_center ? defy_basis : na,
+     title="Centerline",
+     color=color.new(defy_bull_col, defy_band_transp),
+     linewidth=defy_band_width,
+     style=plot.style_line)
+
+// Inner Band (BB1)
+p_upper1 = plot(defy_show_inner ? defy_upper1 : na,
+     title="Upper BB1",
+     color=color.new(defy_bull_col, defy_band_transp),
+     linewidth=defy_band_width)
+p_lower1 = plot(defy_show_inner ? defy_lower1 : na,
+     title="Lower BB1",
+     color=color.new(defy_bull_col, defy_band_transp),
+     linewidth=defy_band_width)
+
+// Mid Band (BB2)
+p_upper2 = plot(defy_show_mid ? defy_upper2 : na,
+     title="Upper BB2",
+     color=color.new(defy_bear_col, defy_band_transp),
+     linewidth=defy_band_width)
+p_lower2 = plot(defy_show_mid ? defy_lower2 : na,
+     title="Lower BB2",
+     color=color.new(defy_bear_col, defy_band_transp),
+     linewidth=defy_band_width)
+
+// Outer Band (BB3)
+p_upper3 = plot(defy_show_outer ? defy_upper3 : na,
+     title="Upper BB3",
+     color=color.new(defy_bear_col, defy_band_transp),
+     linewidth=defy_band_width,
+     style=plot.style_line)
+p_lower3 = plot(defy_show_outer ? defy_lower3 : na,
+     title="Lower BB3",
+     color=color.new(defy_bear_col, defy_band_transp),
+     linewidth=defy_band_width,
+     style=plot.style_line)
+
+// Band Fills
+fill(p_upper1, p_lower1, color=defy_show_fill ? color.new(defy_bull_col, 100 - (100 - defy_fill_transp) / 2) : na, title="Inner Fill")
+fill(p_upper2, p_upper1, color=defy_show_fill ? color.new(defy_bear_col, defy_fill_transp + 10) : na, title="Mid Fill Up")
+fill(p_lower1, p_lower2, color=defy_show_fill ? color.new(defy_bear_col, defy_fill_transp + 10) : na, title="Mid Fill Dn")
+fill(p_upper3, p_upper2, color=defy_show_fill ? color.new(defy_bear_col, defy_fill_transp + 20) : na, title="Outer Fill Up")
+fill(p_lower2, p_lower3, color=defy_show_fill ? color.new(defy_bear_col, defy_fill_transp + 20) : na, title="Outer Fill Dn")
+
+// =====================================================================
+// DEFY PLOTS — CLOUD
+// =====================================================================
+p_cloud_fast = plot(defy_show_cloud ? defy_cloud_fast : na,
+     title="Cloud Fast",
+     color=color.new(defy_bull_col, 80),
+     linewidth=1)
+p_cloud_slow = plot(defy_show_cloud ? defy_cloud_slow : na,
+     title="Cloud Slow",
+     color=color.new(defy_bear_col, 80),
+     linewidth=1)
+
+fill(p_cloud_fast, p_cloud_slow,
+     color=defy_show_cloud ? (defy_cloud_bull ? color.new(defy_bull_col, 75) : color.new(defy_bear_col, 75)) : na,
+     title="Cloud Fill")
+
+// =====================================================================
+// DEFY PLOTS — MOVING AVERAGES
+// =====================================================================
+plot(defy_show_ma1 ? defy_ma1 : na, title="MA 1", color=color.new(color.orange, 0), linewidth=1)
+plot(defy_show_ma2 ? defy_ma2 : na, title="MA 2", color=color.new(color.fuchsia, 0), linewidth=1)
+plot(defy_show_ma3 ? defy_ma3 : na, title="MA 3", color=color.new(color.yellow, 0), linewidth=1)
+
+// =====================================================================
+// DEFY — DIRECTIONAL ARROWS
+// =====================================================================
+defy_arrow_bull_col = color.new(defy_bull_col, defy_arrow_transp)
+defy_arrow_bear_col = color.new(defy_bear_col, defy_arrow_transp)
+
+if defy_show_arrows
+    if defy_arrow_mode == "Signal"
+        if defy_trend_flip_bull
+            label.new(bar_index, low - ta.atr(14), "▲",
+                 color=color(na), textcolor=defy_arrow_bull_col,
+                 style=label.style_label_up, size=defy_arrow_sz)
+        if defy_trend_flip_bear
+            label.new(bar_index, high + ta.atr(14), "▼",
+                 color=color(na), textcolor=defy_arrow_bear_col,
+                 style=label.style_label_down, size=defy_arrow_sz)
+    else // Track mode — arrow every bar
+        _arrow_sym  = defy_trend_bull ? "▲" : "▼"
+        _arrow_col  = defy_trend_bull ? defy_arrow_bull_col : defy_arrow_bear_col
+        _arrow_y    = defy_trend_bull ? low  - ta.atr(14) * 0.5 : high + ta.atr(14) * 0.5
+        _arrow_sty  = defy_trend_bull ? label.style_label_up : label.style_label_down
+        label.new(bar_index, _arrow_y, _arrow_sym,
+             color=color(na), textcolor=_arrow_col,
+             style=_arrow_sty, size=defy_arrow_sz)
+
+// =====================================================================
+// DEFY — CANDLE COLORING
+// =====================================================================
+barcolor(defy_show_candle_col ?
+     (defy_cloud_bull ? color.new(defy_bull_col, 50) : color.new(defy_bear_col, 50))
+     : na, title="DEFY Candle Color")
+
+// =====================================================================
+// DEFY — STRONG CANDLE HIGHLIGHT
+// =====================================================================
+barcolor(defy_valid_candle and close > open ? defy_vc_color : na, title="Strong Candle")
+
+// =====================================================================
+// DEFY — VOLUME BREAKS
+// =====================================================================
+// defy_max_vol_lbl controls how many consecutive vol-break bars get a label.
+// We reset the counter whenever volume drops below threshold.
+var int defy_vol_seq = 0
+defy_vol_seq := defy_vol_break ? defy_vol_seq + 1 : 0
+
+if defy_show_vol and defy_vol_break and defy_vol_seq <= defy_max_vol_lbl
+    _vol_size = defy_vol_lbl_size == "Small"  ? size.small  :
+                defy_vol_lbl_size == "Large"   ? size.large  : size.normal
+    label.new(bar_index, high + ta.atr(14) * 1.5,
+         text="V", color=color(na),
+         textcolor=defy_vol_col, style=label.style_label_down,
+         size=_vol_size)
+
+// =====================================================================
+// DEFY — LEVELS (horizontal lines drawn at barstate.islast)
+// =====================================================================
+var line[] defy_level_lines = array.new_line()
+
+if barstate.islast and defy_show_levels
+    for _l in defy_level_lines
+        line.delete(_l)
+    array.clear(defy_level_lines)
+
+    for i = 0 to defy_num_levels
+        _pct  = i / defy_num_levels
+        _price = defy_lvl_low + _pct * defy_lvl_range
+        _col   = _pct * 100 >= defy_zone_hi ? color.new(defy_bull_col, 60) :
+                 _pct * 100 <= defy_zone_lo  ? color.new(defy_bear_col, 60) :
+                 defy_lvl_col
+        _ln = line.new(bar_index - 200, _price, bar_index, _price,
+             color=_col, style=defy_lvl_line_style,
+             width=defy_lvl_width, extend=extend.right)
+        array.push(defy_level_lines, _ln)
+
+// =====================================================================
+// DEFY — PROJECTION (extending bands into the future)
+// =====================================================================
+var line[] defy_proj_lines = array.new_line()
+
+if barstate.islast and defy_show_proj
+    for _l in defy_proj_lines
+        line.delete(_l)
+    array.clear(defy_proj_lines)
+
+    _ahead = bar_index + defy_proj_bars
+    _pstyle = line.style_dashed
+
+    _proj_lines_data = array.from(
+         defy_upper3, defy_upper2, defy_upper1,
+         defy_basis,
+         defy_lower1, defy_lower2, defy_lower3)
+
+    _proj_colors = array.from(
+         color.new(defy_bear_col, defy_proj_gradient ? 80 : defy_band_transp),
+         color.new(defy_bear_col, defy_proj_gradient ? 70 : defy_band_transp),
+         color.new(defy_bull_col, defy_proj_gradient ? 60 : defy_band_transp),
+         color.new(defy_bull_col, defy_proj_gradient ? 50 : defy_band_transp),
+         color.new(defy_bull_col, defy_proj_gradient ? 60 : defy_band_transp),
+         color.new(defy_bear_col, defy_proj_gradient ? 70 : defy_band_transp),
+         color.new(defy_bear_col, defy_proj_gradient ? 80 : defy_band_transp))
+
+    for i = 0 to array.size(_proj_lines_data) - 1
+        _pv = array.get(_proj_lines_data, i)
+        _pc = array.get(_proj_colors,     i)
+        _ln = line.new(bar_index, _pv, _ahead, _pv,
+             color=_pc, style=_pstyle,
+             width=defy_band_width, xloc=xloc.bar_index)
+        array.push(defy_proj_lines, _ln)
+
+// =====================================================================
+// DEMA (Sensei Core)
+// =====================================================================
+dema15  = dema(close, 15)
+dema50  = dema(close, 50)
+dema238 = dema(close, 238)
+
+plot(dema15,  color=color.blue,  title="DEMA 15",  linewidth=1)
+plot(dema50,  color=color.green, title="DEMA 50",  linewidth=1)
+plot(dema238, color=#ffce2b,     title="DEMA 238", linewidth=1)
+
+// =====================================================================
+// POC
+// =====================================================================
+lengthPOC = input.int(14, "Período do POC", group="Market Structure")
+var float highestVolPrice = na
+var float highestVol      = 0.0
+
+if bar_index % lengthPOC == 0
+    highestVol      := 0.0
+    highestVolPrice := na
+
+for i = 0 to lengthPOC - 1
+    if volume[i] > highestVol
+        highestVol      := volume[i]
+        highestVolPrice := close[i]
+
+plot(highestVolPrice, color=color.orange, linewidth=1, title="Linha do POC")
+
+// =====================================================================
+// SINAIS BASE
+// =====================================================================
+isBuySignal_raw  = ta.crossover(close,  highestVolPrice)
+isSellSignal_raw = ta.crossunder(close, highestVolPrice)
+
+// =====================================================================
+// INPUTS — ESTILO DE TRADING
+// =====================================================================
+tradeStyleGR     = "===== ESTILO DE TRADING ====="
+tradingStyle     = input.string("TrendScalper", "Estilo de Trading",
+     options=["TrendScalper", "Momentum", "Trend Regression"],
+     tooltip="🔥 Momentum: acompanha momentum com volume ativo e tendência a favor\n⚡ TrendScalper: sinal de continuação após pullback com tendência confirmada\n📈 Trend Regression: regressão após exaustão de volume — novo momentum com volume elevado",
+     group=tradeStyleGR)
+showStyleBox     = input.bool(true, "Mostrar caixa de Estilo Ativo",     group=tradeStyleGR)
+minConfirmations = input.int(4,     "Mínimo de Confirmações para Sinal", minval=1, maxval=5, group=tradeStyleGR)
+useDefyVC        = input.bool(true,  "Usar DEFY Valid Candle no filtro", group=tradeStyleGR,
+     tooltip="Integra o filtro de vela válida do DEFY como confirmação adicional dos sinais")
+
+sigGR          = "===== SINAIS ====="
+maxSignals     = input.int(3,     "Máximo de sinais históricos exibidos", minval=1, maxval=10, group=sigGR)
+dynamicLevels  = input.bool(true, "Níveis Dinâmicos (ON) / Fixos (OFF)",  group=sigGR, tooltip="ON = atualiza Entry/SL/TP a cada barra. OFF = fixa os níveis do último sinal gerado.")
+showHistLabels = input.bool(true, "Mostrar Labels de Sinais Históricos",   group=sigGR)
+signalBarColor = input.color(color.new(color.lime, 60), "Cor da Vela de Ativação", group=sigGR)
+showConfBox    = input.bool(true, "Mostrar Caixa de Confiança do Sinal",   group=sigGR)
+showWarning    = input.bool(true, "Mostrar Nível WARNING",                 group=sigGR,
+     tooltip="Mostra nível de aviso entre Entry e SL (baseado na Inner Band DEFY)")
+
+atrGroup        = "==== CONFIGURAÇÃO ATR ===="
+useATR          = input.bool(true,  "Usar ATR para Risk-Reward",        group=atrGroup)
+atrPeriod       = input.int(14,     "Período do ATR",   minval=1,        group=atrGroup)
+atrMultiplierSL = input.float(1.0,  "Multiplicador ATR para Stop Loss", step=0.1, group=atrGroup)
+tp1RR           = input.float(2.0,  "Exit 1 Ratio (1:X)", minval=0.1, step=0.1, group=atrGroup)
+tp2RR           = input.float(3.0,  "Exit 2 Ratio (1:X)", minval=0.1, step=0.1, group=atrGroup)
+tp3RR           = input.float(5.0,  "Exit 3 Ratio (1:X)", minval=0.1, step=0.1, group=atrGroup)
+tp4RR           = input.float(8.0,  "Exit 4 Ratio (1:X)", minval=0.1, step=0.1, group=atrGroup)
+showTP1         = input.bool(true,  "Exibir Exit 1", group=atrGroup)
+showTP2         = input.bool(true,  "Exibir Exit 2", group=atrGroup)
+showTP3         = input.bool(true,  "Exibir Exit 3", group=atrGroup)
+showTP4         = input.bool(true,  "Exibir Exit 4", group=atrGroup)
+
+defGR          = "===== DEFINIÇÕES ====="
+entry_source   = input.source(close, "Fonte das Entradas",                 group=defGR)
+box_length     = input.int(4,        "Distância posição Esquerda", minval=1, group=defGR)
+box_length2    = input.int(1,        "Distância posição Direita",  minval=1, group=defGR)
+use_cstm_entry = input.bool(false,   "Usa entrada customizada?",            group=defGR)
+custom_entry   = input.price(0.0,    "Preço de Entrada",                    group=defGR, confirm=false)
+
+tpGR    = "=== TAKEPROFIT ==="
+use_TPs = input.bool(true,  "Usa níveis de TP %?", group=tpGR, tooltip="Ativo quando 'Usar ATR' está OFF.")
+slx     = input.float(0.3,  "Percentagem para SL",    step=0.1, group=tpGR)
+tp1x    = input.float(0.4,  "Percentagem para Exit 1", step=0.1, group=tpGR)
+tp2x    = input.float(0.8,  "Percentagem para Exit 2", step=0.1, group=tpGR)
+tp3x    = input.float(1.2,  "Percentagem para Exit 3", step=0.1, group=tpGR)
+tp4x    = input.float(2.0,  "Percentagem para Exit 4", step=0.1, group=tpGR)
+
+beGR       = "=== BREAKEVEN ==="
+beMoveMode = input.string("Exit 1", "Mover SL para BE em:", options=["Exit 1","Exit 2","Exit 3","Pontos"], group=beGR)
+bePoints   = input.float(10.0, "Pontos para BE (se modo Pontos)", step=1.0, group=beGR)
+
+altGR       = "====== ALERTAS ======"
+long_alert  = input.bool(true,       "Permite Alertas de COMPRA",  group=altGR)
+short_alert = input.bool(true,       "Permite Alertas de VENDA",   group=altGR)
+order_type  = input.string("MARKET", "Tipo de ordem", options=["LIMIT","MARKET"], group=altGR)
+
+len         = input.int(50, "CHoCH Detection Period", group="Market Structure")
+shortLen    = input.int(3,  "IDM Detection Period",   group="Market Structure")
+bullCss     = input.color(#089981, "Bullish Elements",  group="Style")
+bearCss     = input.color(#ff5252, "Bearish Elements",  group="Style")
+showChoch   = input.bool(true,        "Show CHoCH",       group="Style")
+showBos     = input.bool(true,        "Show BOS",         group="Style")
+showIdm     = input.bool(true,        "Show Inducements", inline="idm",    group="Style")
+idmCss      = input.color(color.gray, "",                 inline="idm",    group="Style")
+showSweeps  = input.bool(true,        "Show Sweeps",      inline="sweeps", group="Style")
+sweepsCss   = input.color(color.gray, "",                 inline="sweeps", group="Style")
+showCircles = input.bool(true,        "Show Swings",      group="Style")
+
+// =====================================================================
+// ATR / VOLUME
+// =====================================================================
+atrValue = ta.atr(atrPeriod)
+volMA    = ta.sma(volume, 20)
+volMA90  = ta.percentile_nearest_rank(volume, 20, 90)
+
+// =====================================================================
+// FILTROS DE QUALIDADE GLOBAL
+// =====================================================================
+rsi14       = ta.rsi(close, 14)
+rsi_ok_buy  = rsi14 < 70
+rsi_ok_sell = rsi14 > 30
+
+adxLen    = 14
+trueRange = math.max(high - low, math.abs(high - close[1]), math.abs(low - close[1]))
+dmPlus    = high - high[1] > low[1] - low   ? math.max(high - high[1], 0.0) : 0.0
+dmMinus   = low[1] - low   > high - high[1] ? math.max(low[1] - low,   0.0) : 0.0
+atrAdx    = ta.rma(trueRange, adxLen)
+diPlus    = ta.rma(dmPlus,  adxLen) / atrAdx * 100
+diMinus   = ta.rma(dmMinus, adxLen) / atrAdx * 100
+dx        = math.abs(diPlus - diMinus) / (diPlus + diMinus) * 100
+adxValue  = ta.rma(dx, adxLen)
+adx_trend = adxValue > 20
+
+candle_body    = math.abs(close - open)
+candle_range   = high - low
+body_ratio     = candle_range > 0 ? candle_body / candle_range : 0.0
+quality_candle = body_ratio > 0.35
+atr_not_spike  = atrValue < atrValue[1] * 2.5
+
+// DEFY Valid Candle integration
+defy_vc_gate   = useDefyVC ? defy_valid_candle : true
+
+// =====================================================================
+// CONFIRMAÇÕES
+// =====================================================================
+bull_conf1 = dema15   > dema50
+bull_conf2 = dema50   > dema238
+bull_conf3 = close    > highestVolPrice
+bull_conf4 = volume   > volMA
+bull_conf5 = atrValue > atrValue[5]
+
+bear_conf1 = dema15   < dema50
+bear_conf2 = dema50   < dema238
+bear_conf3 = close    < highestVolPrice
+bear_conf4 = volume   > volMA
+bear_conf5 = atrValue > atrValue[5]
+
+bull_score = (bull_conf1 ? 1 : 0) + (bull_conf2 ? 1 : 0) + (bull_conf3 ? 1 : 0) + (bull_conf4 ? 1 : 0) + (bull_conf5 ? 1 : 0)
+bear_score = (bear_conf1 ? 1 : 0) + (bear_conf2 ? 1 : 0) + (bear_conf3 ? 1 : 0) + (bear_conf4 ? 1 : 0) + (bear_conf5 ? 1 : 0)
+
+conf_emoji(score) =>
+    score >= 5 ? "👑" : score >= 4 ? "💎" : score >= 3 ? "👌" : "⚠️"
+
+// =====================================================================
+// FILTROS DE TENDÊNCIA
+// =====================================================================
+trend_up_strong   = dema15 > dema50 and dema50 > dema238
+trend_down_strong = dema15 < dema50 and dema50 < dema238
+dema15_rising     = dema15 > dema15[2] and dema15 > dema15[1]
+dema15_falling    = dema15 < dema15[2] and dema15 < dema15[1]
+dema50_rising     = dema50 > dema50[3]
+dema50_falling    = dema50 < dema50[3]
+price_above_poc   = close > highestVolPrice and low  > highestVolPrice * 0.999
+price_below_poc   = close < highestVolPrice and high < highestVolPrice * 1.001
+vol_sustained     = volume > volMA and volume[1] > volMA * 0.9
+
+// ── DEFY alignment filter ──────────────────────────────────────────
+// Signal must agree with DEFY cloud direction
+defy_cloud_align_buy  = defy_cloud_bull
+defy_cloud_align_sell = not defy_cloud_bull
+
+// Signal must be within DEFY outer bands (not overextended)
+defy_band_ok_buy  = close > defy_lower3 and close < defy_upper3
+defy_band_ok_sell = close > defy_lower3 and close < defy_upper3
+
+// =====================================================================
+// ESTILO 1 — MOMENTUM
+// =====================================================================
+mom_structure_buy  = trend_up_strong   and dema15_rising  and dema50_rising
+mom_structure_sell = trend_down_strong and dema15_falling and dema50_falling
+mom_vol_buy        = vol_sustained and atrValue > atrValue[3]
+mom_vol_sell       = vol_sustained and atrValue > atrValue[3]
+mom_price_buy      = close > dema15 and price_above_poc
+mom_price_sell     = close < dema15 and price_below_poc
+
+momentum_buy  = mom_structure_buy  and mom_vol_buy  and mom_price_buy  and adx_trend and rsi_ok_buy  and quality_candle and atr_not_spike and defy_cloud_align_buy  and defy_band_ok_buy  and defy_vc_gate
+momentum_sell = mom_structure_sell and mom_vol_sell and mom_price_sell and adx_trend and rsi_ok_sell and quality_candle and atr_not_spike and defy_cloud_align_sell and defy_band_ok_sell and defy_vc_gate
+
+// =====================================================================
+// ESTILO 2 — TRENDSCALPER
+// =====================================================================
+pb_1bar_buy    = close[1] < open[1] and close > open and close > close[1]
+pb_2bar_buy    = close[2] < open[2] and close[1] < open[1] and close > open and close > close[1]
+pb_candle_buy  = pb_1bar_buy or pb_2bar_buy
+pb_1bar_sell   = close[1] > open[1] and close < open and close < close[1]
+pb_2bar_sell   = close[2] > open[2] and close[1] > open[1] and close < open and close < close[1]
+pb_candle_sell = pb_1bar_sell or pb_2bar_sell
+pb_shallow_buy  = low  >= dema50 * 0.997 and low[1]  >= dema50 * 0.997
+pb_shallow_sell = high <= dema50 * 1.003 and high[1] <= dema50 * 1.003
+pb_vol_buy      = volume > volume[1] and volume > volMA * 0.85
+pb_vol_sell     = volume > volume[1] and volume > volMA * 0.85
+pb_return_buy   = close > dema15 and close > open * 1.001
+pb_return_sell  = close < dema15 and close < open * 0.999
+
+trendscalper_buy  = trend_up_strong   and pb_candle_buy  and pb_shallow_buy  and pb_vol_buy  and pb_return_buy  and rsi_ok_buy  and quality_candle and atr_not_spike and defy_cloud_align_buy  and defy_vc_gate
+trendscalper_sell = trend_down_strong and pb_candle_sell and pb_shallow_sell and pb_vol_sell and pb_return_sell and rsi_ok_sell and quality_candle and atr_not_spike and defy_cloud_align_sell and defy_vc_gate
+
+// =====================================================================
+// ESTILO 3 — TREND REGRESSION
+// =====================================================================
+vol_spike_up         = volume[3] > volMA * 1.8 or volume[2] > volMA * 1.8
+vol_collapse         = volume[1] < volMA * 0.75 and volume[1] < volume[2] and volume[1] < volume[3]
+price_exhausted_up   = high[2] > high[3] or high[1] > high[3]
+price_exhausted_down = low[2]  < low[3]  or low[1]  < low[3]
+vol_exhaustion_up    = vol_spike_up and vol_collapse and price_exhausted_up
+vol_exhaustion_down  = vol_spike_up and vol_collapse and price_exhausted_down
+dema15_turn_up       = dema15 > dema15[1] and dema15[1] <= dema15[2] and dema15[2] <= dema15[3]
+dema15_turn_down     = dema15 < dema15[1] and dema15[1] >= dema15[2] and dema15[2] >= dema15[3]
+vol_institutional    = volume >= volMA90
+reg_candle_buy       = close > open and close > close[1] and close > close[2]
+reg_candle_sell      = close < open and close < close[1] and close < close[2]
+reg_struct_buy       = dema50 < dema238 or (dema50 > dema238 and dema50_rising  and dema15_turn_up)
+reg_struct_sell      = dema50 > dema238 or (dema50 < dema238 and dema50_falling and dema15_turn_down)
+rsi_reversal_buy     = rsi14 > 40 and rsi14 < 65
+rsi_reversal_sell    = rsi14 > 35 and rsi14 < 60
+
+regression_buy  = vol_exhaustion_down and dema15_turn_up   and vol_institutional and reg_candle_buy  and reg_struct_buy  and rsi_reversal_buy  and quality_candle and atr_not_spike and defy_vc_gate
+regression_sell = vol_exhaustion_up   and dema15_turn_down and vol_institutional and reg_candle_sell and reg_struct_sell and rsi_reversal_sell and quality_candle and atr_not_spike and defy_vc_gate
+
+// =====================================================================
+// FILTRO FINAL
+// =====================================================================
+styleFilter_buy  = tradingStyle == "Momentum"        ? momentum_buy      :
+                   tradingStyle == "TrendScalper"     ? trendscalper_buy  :
+                   tradingStyle == "Trend Regression" ? regression_buy    : true
+
+styleFilter_sell = tradingStyle == "Momentum"        ? momentum_sell      :
+                   tradingStyle == "TrendScalper"     ? trendscalper_sell  :
+                   tradingStyle == "Trend Regression" ? regression_sell    : true
+
+isBuySignal_styled  = isBuySignal_raw  and styleFilter_buy  and bull_score >= minConfirmations
+isSellSignal_styled = isSellSignal_raw and styleFilter_sell and bear_score >= minConfirmations
+
+// =====================================================================
+// MOMENTUM PHASES
+// =====================================================================
+type bar_t
+    float o = open
+    float h = high
+    float l = low
+    float c = close
+    int   i = bar_index
+
+type trb
+    int   bSC
+    float bSH
+    float bSL
+    int   sSC
+    float sSH
+    float sSL
+
+bar_t b = bar_t.new()
+var trb S = trb.new()
+
+con = b.c < b.c[4]
+if con
+    S.bSC := S.bSC == 9 ? 1 : S.bSC + 1
+    S.sSC := 0
+else
+    S.sSC := S.sSC == 9 ? 1 : S.sSC + 1
+    S.bSC := 0
+
+// =====================================================================
+// GESTÃO DOS SINAIS
+// =====================================================================
+var int    sig_count  = 0
+var int[]  sig_bar    = array.new_int(0)
+var bool[] sig_is_buy = array.new_bool(0)
+
+new_signal = isBuySignal_styled or isSellSignal_styled
+
+if new_signal
+    array.push(sig_bar,    bar_index)
+    array.push(sig_is_buy, isBuySignal_styled)
+    sig_count := sig_count + 1
+    while array.size(sig_bar) > maxSignals
+        array.shift(sig_bar)
+        array.shift(sig_is_buy)
+
+var string position = na
+if isBuySignal_styled
+    position := "BUY"
+else if isSellSignal_styled
+    position := "SELL"
+
+// =====================================================================
+// SHAPES
+// =====================================================================
+is_reversal_buy  = isBuySignal_styled  and dema15 < dema50
+is_reversal_sell = isSellSignal_styled and dema15 > dema50
+is_cont_buy      = isBuySignal_styled  and not is_reversal_buy
+is_cont_sell     = isSellSignal_styled and not is_reversal_sell
+
+plotshape(is_reversal_buy,  title="Reversão Buy",     style=shape.xcross,    location=location.belowbar, color=color.red,   size=size.tiny)
+plotshape(is_reversal_sell, title="Reversão Sell",    style=shape.xcross,    location=location.abovebar, color=color.red,   size=size.tiny)
+plotshape(is_cont_buy,      title="Continuação Buy",  style=shape.labelup,   location=location.belowbar, color=color.green, size=size.tiny)
+plotshape(is_cont_sell,     title="Continuação Sell", style=shape.labeldown, location=location.abovebar, color=color.green, size=size.tiny)
+
+barcolor(new_signal ? signalBarColor : na, title="Cor da vela de sinal")
+
+// =====================================================================
+// SCORE LABEL (DEFY-style "+N" badge)
+// =====================================================================
+if new_signal
+    _sc    = isBuySignal_styled ? bull_score : bear_score
+    _sc_y  = isBuySignal_styled ? low - atrValue * 1.8 : high + atrValue * 1.8
+    _sc_st = isBuySignal_styled ? label.style_label_up : label.style_label_down
+    _sc_col = _sc >= 5 ? #FFD700 : _sc >= 4 ? #00BCD4 : #607D8B
+    label.new(bar_index, _sc_y,
+         text="+" + str.tostring(_sc),
+         color=color.new(_sc_col, 10),
+         textcolor=color.white,
+         style=_sc_st,
+         size=size.small)
+
+// =====================================================================
+// CÁLCULO DE NÍVEIS
+// =====================================================================
+Price_in = use_cstm_entry ? custom_entry : entry_source
+
+var float  fixed_entry = na
+var float  fixed_sl    = na
+var float  fixed_tp1   = na
+var float  fixed_tp2   = na
+var float  fixed_tp3   = na
+var float  fixed_tp4   = na
+var string fixed_pos   = na
+
+calc_levels(pos, src) =>
+    _entry = round_price(src)
+    _sl    = float(na)
+    _tp1   = float(na)
+    _tp2   = float(na)
+    _tp3   = float(na)
+    _tp4   = float(na)
+    if useATR
+        _d = atrValue * atrMultiplierSL
+        if pos == "BUY"
+            _sl  := round_price(_entry - _d)
+            _tp1 := round_price(_entry + _d * tp1RR)
+            _tp2 := round_price(_entry + _d * tp2RR)
+            _tp3 := round_price(_entry + _d * tp3RR)
+            _tp4 := round_price(_entry + _d * tp4RR)
+        else
+            _sl  := round_price(_entry + _d)
+            _tp1 := round_price(_entry - _d * tp1RR)
+            _tp2 := round_price(_entry - _d * tp2RR)
+            _tp3 := round_price(_entry - _d * tp3RR)
+            _tp4 := round_price(_entry - _d * tp4RR)
+    else if use_TPs
+        if pos == "BUY"
+            _sl  := round_price(_entry * (1 - slx  / 100))
+            _tp1 := round_price(_entry * (1 + tp1x / 100))
+            _tp2 := round_price(_entry * (1 + tp2x / 100))
+            _tp3 := round_price(_entry * (1 + tp3x / 100))
+            _tp4 := round_price(_entry * (1 + tp4x / 100))
+        else
+            _sl  := round_price(_entry * (1 + slx  / 100))
+            _tp1 := round_price(_entry * (1 - tp1x / 100))
+            _tp2 := round_price(_entry * (1 - tp2x / 100))
+            _tp3 := round_price(_entry * (1 - tp3x / 100))
+            _tp4 := round_price(_entry * (1 - tp4x / 100))
+    [_entry, _sl, _tp1, _tp2, _tp3, _tp4]
+
+if new_signal
+    [e, s, t1, t2, t3, t4] = calc_levels(position, Price_in)
+    fixed_entry := e
+    fixed_sl    := s
+    fixed_tp1   := t1
+    fixed_tp2   := t2
+    fixed_tp3   := t3
+    fixed_tp4   := t4
+    fixed_pos   := position
+
+entry_lvl = dynamicLevels ? round_price(Price_in) : fixed_entry
+sl_lvl    = float(na)
+tp1_lvl   = float(na)
+tp2_lvl   = float(na)
+tp3_lvl   = float(na)
+tp4_lvl   = float(na)
+
+cur_pos = dynamicLevels ? position : fixed_pos
+
+if dynamicLevels and not na(cur_pos)
+    [e, s, t1, t2, t3, t4] = calc_levels(cur_pos, Price_in)
+    sl_lvl  := s
+    tp1_lvl := t1
+    tp2_lvl := t2
+    tp3_lvl := t3
+    tp4_lvl := t4
+else
+    sl_lvl  := fixed_sl
+    tp1_lvl := fixed_tp1
+    tp2_lvl := fixed_tp2
+    tp3_lvl := fixed_tp3
+    tp4_lvl := fixed_tp4
+
+// ── WARNING Level (DEFY-style: inner band nearest to entry) ──────────
+warning_lvl = float(na)
+if not na(cur_pos) and not na(entry_lvl) and not na(sl_lvl)
+    if cur_pos == "BUY"
+        // Warning = closest DEFY inner band above SL, below entry
+        warning_lvl := round_price(sl_lvl + (entry_lvl - sl_lvl) * 0.5)
+    else
+        warning_lvl := round_price(entry_lvl + (sl_lvl - entry_lvl) * 0.5)
+
+// =====================================================================
+// BREAKEVEN
+// =====================================================================
+var bool  be_triggered  = false
+var float be_level      = na
+var bool  be_alert_sent = false
+
+be_target = na(tp1_lvl) ? float(na) :
+     beMoveMode == "Exit 1" ? tp1_lvl :
+     beMoveMode == "Exit 2" ? tp2_lvl :
+     beMoveMode == "Exit 3" ? tp3_lvl :
+     cur_pos == "BUY"  ? entry_lvl + bePoints * syminfo.mintick :
+     cur_pos == "SELL" ? entry_lvl - bePoints * syminfo.mintick : float(na)
+
+be_hit = not na(be_target) and not be_triggered and
+         ((cur_pos == "BUY"  and high >= be_target) or
+          (cur_pos == "SELL" and low  <= be_target))
+
+if new_signal
+    be_triggered  := false
+    be_level      := na
+    be_alert_sent := false
+
+if be_hit and not be_triggered
+    be_triggered  := true
+    be_level      := entry_lvl
+    be_alert_sent := false
+
+effective_sl = be_triggered ? be_level : sl_lvl
+
+// =====================================================================
+// HIT DETECTION
+// =====================================================================
+var bool tp1_hit = false
+var bool tp2_hit = false
+var bool tp3_hit = false
+var bool tp4_hit = false
+
+if new_signal
+    tp1_hit := false
+    tp2_hit := false
+    tp3_hit := false
+    tp4_hit := false
+
+tp1_hit_now = not tp1_hit and not na(tp1_lvl) and ((cur_pos == "BUY" and high >= tp1_lvl) or (cur_pos == "SELL" and low <= tp1_lvl))
+tp2_hit_now = not tp2_hit and not na(tp2_lvl) and ((cur_pos == "BUY" and high >= tp2_lvl) or (cur_pos == "SELL" and low <= tp2_lvl))
+tp3_hit_now = not tp3_hit and not na(tp3_lvl) and ((cur_pos == "BUY" and high >= tp3_lvl) or (cur_pos == "SELL" and low <= tp3_lvl))
+tp4_hit_now = not tp4_hit and not na(tp4_lvl) and ((cur_pos == "BUY" and high >= tp4_lvl) or (cur_pos == "SELL" and low <= tp4_lvl))
+
+if tp1_hit_now
+    tp1_hit := true
+if tp2_hit_now
+    tp2_hit := true
+if tp3_hit_now
+    tp3_hit := true
+if tp4_hit_now
+    tp4_hit := true
+
+active_score = cur_pos == "BUY" ? bull_score : cur_pos == "SELL" ? bear_score : 0
+
+// =====================================================================
+// LABELS HISTÓRICAS
+// =====================================================================
+if showHistLabels and barstate.islast
+    n_hist = array.size(sig_bar)
+    if n_hist >= 2
+        for hi = 0 to n_hist - 2
+            sig_b   = array.get(sig_bar,    hi)
+            sig_buy = array.get(sig_is_buy, hi)
+            sig_pos = sig_buy ? "BUY" : "SELL"
+            bb_raw  = bar_index - sig_b
+            bb_safe = math.min(math.max(bb_raw, 0), 4999)
+            if bb_raw >= 0 and bb_raw <= 4999
+                sig_close = close[bb_safe]
+                sig_atr   = atrValue[bb_safe]
+                sig_entry = round_price(sig_close)
+                sig_sl_d  = sig_atr * atrMultiplierSL
+                sig_sl  = sig_pos == "BUY" ? round_price(sig_entry - sig_sl_d)         : round_price(sig_entry + sig_sl_d)
+                sig_tp1 = sig_pos == "BUY" ? round_price(sig_entry + sig_sl_d * tp1RR) : round_price(sig_entry - sig_sl_d * tp1RR)
+                sig_tp2 = sig_pos == "BUY" ? round_price(sig_entry + sig_sl_d * tp2RR) : round_price(sig_entry - sig_sl_d * tp2RR)
+                sig_tp3 = sig_pos == "BUY" ? round_price(sig_entry + sig_sl_d * tp3RR) : round_price(sig_entry - sig_sl_d * tp3RR)
+                next_b  = array.get(sig_bar, hi + 1)
+                span    = math.max(math.min(next_b - sig_b, 500), 1)
+                hit_sl  = false
+                hit_tp1 = false
+                hit_tp2 = false
+                hit_tp3 = false
+                hit_be  = false
+                sl_bar  = sig_b
+                tp1_bar = sig_b
+                tp2_bar = sig_b
+                tp3_bar = sig_b
+                be_bar  = sig_b
+                for j = 1 to span
+                    bb = bar_index - (sig_b + j)
+                    if bb >= 0 and bb <= 4999
+                        h_j = high[bb]
+                        l_j = low[bb]
+                        if sig_pos == "BUY"
+                            if not hit_sl and not hit_tp1 and l_j <= sig_sl
+                                hit_sl := true
+                                sl_bar := sig_b + j
+                            if not hit_tp1 and not hit_sl and h_j >= sig_tp1
+                                hit_tp1 := true
+                                tp1_bar := sig_b + j
+                                hit_be  := true
+                                be_bar  := sig_b + j
+                            if hit_tp1 and not hit_tp2 and h_j >= sig_tp2
+                                hit_tp2 := true
+                                tp2_bar := sig_b + j
+                            if hit_tp2 and not hit_tp3 and h_j >= sig_tp3
+                                hit_tp3 := true
+                                tp3_bar := sig_b + j
+                        else
+                            if not hit_sl and not hit_tp1 and h_j >= sig_sl
+                                hit_sl := true
+                                sl_bar := sig_b + j
+                            if not hit_tp1 and not hit_sl and l_j <= sig_tp1
+                                hit_tp1 := true
+                                tp1_bar := sig_b + j
+                                hit_be  := true
+                                be_bar  := sig_b + j
+                            if hit_tp1 and not hit_tp2 and l_j <= sig_tp2
+                                hit_tp2 := true
+                                tp2_bar := sig_b + j
+                            if hit_tp2 and not hit_tp3 and l_j <= sig_tp3
+                                hit_tp3 := true
+                                tp3_bar := sig_b + j
+                lbl_col   = sig_pos == "BUY" ? color.new(#1565C0, 15) : color.new(#E65100, 15)
+                lbl_style = sig_pos == "BUY" ? label.style_label_up   : label.style_label_down
+                lbl_y     = sig_pos == "BUY" ? sig_entry - sig_sl_d   : sig_entry + sig_sl_d
+                label.new(sig_b, lbl_y, text=sig_pos + "\n" + str.tostring(sig_entry), color=lbl_col, textcolor=color.white, style=lbl_style, size=size.tiny, xloc=xloc.bar_index)
+                if hit_sl
+                    label.new(sl_bar, sig_sl, text="SL ❌", color=color.new(#B71C1C, 10), textcolor=color.white, style=label.style_label_left, size=size.tiny, xloc=xloc.bar_index)
+                if hit_be and not hit_sl
+                    label.new(be_bar, sig_entry, text="BE ⭕", color=color.new(#E65100, 10), textcolor=color.white, style=label.style_label_left, size=size.tiny, xloc=xloc.bar_index)
+                if hit_tp1 and showTP1
+                    label.new(tp1_bar, sig_tp1, text="Exit 1 ✔", color=color.new(#1B5E20, 10), textcolor=color.white, style=label.style_label_left, size=size.tiny, xloc=xloc.bar_index)
+                if hit_tp2 and showTP2
+                    label.new(tp2_bar, sig_tp2, text="Exit 2 ✔", color=color.new(#004D40, 10), textcolor=color.white, style=label.style_label_left, size=size.tiny, xloc=xloc.bar_index)
+                if hit_tp3 and showTP3
+                    label.new(tp3_bar, sig_tp3, text="Exit 3 ✔", color=color.new(#33691E, 10), textcolor=color.white, style=label.style_label_left, size=size.tiny, xloc=xloc.bar_index)
+
+// =====================================================================
+// DESENHO SINAL ATIVO
+// =====================================================================
+var line  l_entry   = na
+var line  l_sl      = na
+var line  l_warning = na
+var line  l_tp1     = na
+var line  l_tp2     = na
+var line  l_tp3     = na
+var line  l_tp4     = na
+var label lb_entry  = na
+var label lb_sl     = na
+var label lb_warn   = na
+var label lb_tp1    = na
+var label lb_tp2    = na
+var label lb_tp3    = na
+var label lb_tp4    = na
+var linefill lf_entry_tp1 = na
+var linefill lf_entry_tp2 = na
+var linefill lf_entry_tp3 = na
+var linefill lf_entry_tp4 = na
+var linefill lf_sl_entry  = na
+var linefill lf_warn_entry = na
+var label lb_conf_box  = na
+var label lb_watermark = na
+
+if barstate.islast and not na(cur_pos) and not na(entry_lvl)
+    line.delete(l_entry)
+    line.delete(l_sl)
+    line.delete(l_warning)
+    line.delete(l_tp1)
+    line.delete(l_tp2)
+    line.delete(l_tp3)
+    line.delete(l_tp4)
+    label.delete(lb_entry)
+    label.delete(lb_sl)
+    label.delete(lb_warn)
+    label.delete(lb_tp1)
+    label.delete(lb_tp2)
+    label.delete(lb_tp3)
+    label.delete(lb_tp4)
+    linefill.delete(lf_entry_tp1)
+    linefill.delete(lf_entry_tp2)
+    linefill.delete(lf_entry_tp3)
+    linefill.delete(lf_entry_tp4)
+    linefill.delete(lf_sl_entry)
+    linefill.delete(lf_warn_entry)
+
+    dt   = time - time[box_length]
+    et   = time[box_length2]
+    t_r  = time + dt * 2
+    t_lb = time + dt * 4
+    sc   = conf_emoji(active_score)
+    ctxt = " [" + str.tostring(active_score) + "/5 " + sc + "]"
+
+    // Entry line + label
+    l_entry  := line.new(et, entry_lvl, t_r, entry_lvl, color=color.purple, style=line.style_solid, xloc=xloc.bar_time)
+    lb_entry := label.new(t_lb, entry_lvl, text="ENTRY: " + str.tostring(entry_lvl) + ctxt, color=color.purple, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+
+    // WARNING level (DEFY-style)
+    if showWarning and not na(warning_lvl)
+        l_warning  := line.new(et, warning_lvl, t_r, warning_lvl, color=color.new(#FF8F00, 0), style=line.style_dashed, xloc=xloc.bar_time)
+        lb_warn    := label.new(t_lb, warning_lvl, text="WARNING: " + str.tostring(warning_lvl), color=color.new(#FF8F00, 10), textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+        lf_warn_entry := linefill.new(l_entry, l_warning, color=color.new(#FF8F00, 92))
+
+    // SL / BE line + label
+    be_txt = be_triggered ? "BE: " : "SL: "
+    sl_dist = math.abs(entry_lvl - effective_sl) / syminfo.mintick * syminfo.mintick
+    be_col = be_triggered ? color.orange : color.red
+    l_sl   := line.new(et, effective_sl, t_r, effective_sl, color=be_col, style=line.style_solid, xloc=xloc.bar_time)
+    lb_sl  := label.new(t_lb, effective_sl, text=be_txt + str.tostring(math.round(math.abs(entry_lvl - effective_sl) / syminfo.mintick, 1)) + " - " + str.tostring(effective_sl), color=be_col, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+
+    // TP lines
+    if showTP1 and not na(tp1_lvl)
+        tp1c = tp1_hit ? color.new(color.green, 40) : color.green
+        tp1_dist = math.round(math.abs(entry_lvl - tp1_lvl) / syminfo.mintick, 1)
+        l_tp1   := line.new(et, tp1_lvl, t_r, tp1_lvl, color=tp1c, style=line.style_solid, xloc=xloc.bar_time)
+        lb_tp1  := label.new(t_lb, tp1_lvl, text="TP 1: " + str.tostring(tp1_dist) + " - " + str.tostring(tp1_lvl) + (tp1_hit ? " ✔" : ""), color=tp1c, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+        lf_entry_tp1 := linefill.new(l_entry, l_tp1, color=color.new(color.green, 88))
+
+    if showTP2 and not na(tp2_lvl)
+        tp2c = tp2_hit ? color.new(color.green, 40) : color.green
+        tp2_dist = math.round(math.abs(entry_lvl - tp2_lvl) / syminfo.mintick, 1)
+        l_tp2   := line.new(et, tp2_lvl, t_r, tp2_lvl, color=tp2c, style=line.style_solid, xloc=xloc.bar_time)
+        lb_tp2  := label.new(t_lb, tp2_lvl, text="TP 2: " + str.tostring(tp2_dist) + " - " + str.tostring(tp2_lvl) + (tp2_hit ? " ✔" : ""), color=tp2c, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+        lf_entry_tp2 := linefill.new(l_entry, l_tp2, color=color.new(color.green, 92))
+
+    if showTP3 and not na(tp3_lvl)
+        tp3c = tp3_hit ? color.new(color.green, 40) : color.green
+        tp3_dist = math.round(math.abs(entry_lvl - tp3_lvl) / syminfo.mintick, 1)
+        l_tp3   := line.new(et, tp3_lvl, t_r, tp3_lvl, color=tp3c, style=line.style_solid, xloc=xloc.bar_time)
+        lb_tp3  := label.new(t_lb, tp3_lvl, text="TP 3: " + str.tostring(tp3_dist) + " - " + str.tostring(tp3_lvl) + (tp3_hit ? " ✔" : ""), color=tp3c, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+        lf_entry_tp3 := linefill.new(l_entry, l_tp3, color=color.new(color.green, 95))
+
+    if showTP4 and not na(tp4_lvl)
+        tp4c = tp4_hit ? color.new(color.teal, 40) : color.new(color.teal, 0)
+        tp4_dist = math.round(math.abs(entry_lvl - tp4_lvl) / syminfo.mintick, 1)
+        l_tp4   := line.new(et, tp4_lvl, t_r, tp4_lvl, color=tp4c, style=line.style_dashed, xloc=xloc.bar_time)
+        lb_tp4  := label.new(t_lb, tp4_lvl, text="Exit 4 (1:" + str.tostring(tp4RR, "#.#") + "): " + str.tostring(tp4_lvl) + (tp4_hit ? " ✔" : ""), color=tp4c, textcolor=color.white, style=label.style_label_left, xloc=xloc.bar_time, size=size.normal)
+        lf_entry_tp4 := linefill.new(l_entry, l_tp4, color=color.new(color.teal, 95))
+
+    lf_sl_entry := linefill.new(l_sl, l_entry, color=color.new(color.red, 88))
+
+if barstate.islast and not na(cur_pos)
+    label.delete(lb_conf_box)
+    if showConfBox
+        c1    = cur_pos == "BUY" ? bull_conf1 : bear_conf1
+        c2    = cur_pos == "BUY" ? bull_conf2 : bear_conf2
+        c3    = cur_pos == "BUY" ? bull_conf3 : bear_conf3
+        c4    = cur_pos == "BUY" ? bull_conf4 : bear_conf4
+        c5    = cur_pos == "BUY" ? bull_conf5 : bear_conf5
+        dir_e = cur_pos == "BUY" ? "🟢" : "🔴"
+        sc_e  = conf_emoji(active_score)
+        hdr   = dir_e + " " + cur_pos + " | " + str.tostring(active_score) + "/5 " + sc_e + " | " + tradingStyle
+        ln1   = (c1 ? "✅" : "❌") + " DEMA15 " + (cur_pos == "BUY" ? ">" : "<") + " DEMA50"
+        ln2   = (c2 ? "✅" : "❌") + " DEMA50 " + (cur_pos == "BUY" ? ">" : "<") + " DEMA238"
+        ln3   = (c3 ? "✅" : "❌") + " Preço "  + (cur_pos == "BUY" ? ">" : "<") + " POC"
+        ln4   = (c4 ? "✅" : "❌") + " Volume > Média"
+        ln5   = (c5 ? "✅" : "❌") + " ATR em Expansão"
+        // DEFY status lines
+        ln6   = (defy_cloud_bull  ? "✅" : "❌") + " DEFY Cloud " + (cur_pos == "BUY" ? "Bullish" : "Bearish")
+        ln7   = (defy_valid_candle ? "✅" : "❌") + " DEFY Valid Candle"
+        btxt  = hdr + "\n" + ln1 + "\n" + ln2 + "\n" + ln3 + "\n" + ln4 + "\n" + ln5 + "\n" + ln6 + "\n" + ln7
+        bcol  = active_score >= 4 ? color.new(#1B2A1B, 10) : color.new(#2A1B1B, 10)
+        lb_conf_box := label.new(bar_index + 500, ta.highest(high, 30), text=btxt, color=bcol, textcolor=color.white, style=label.style_label_lower_left, size=size.small, xloc=xloc.bar_index)
+    else if showStyleBox
+        stxt = tradingStyle == "TrendScalper" ? "⚡ TrendScalper" : tradingStyle == "Momentum" ? "🔥 Momentum" : "📈 Trend Regression"
+        scol = tradingStyle == "TrendScalper" ? color.new(#1565C0, 10) : tradingStyle == "Momentum" ? color.new(#B71C1C, 10) : color.new(#4A148C, 10)
+        lb_conf_box := label.new(bar_index + 500, ta.highest(high, 20), text=stxt, color=scol, textcolor=color.white, style=label.style_label_lower_left, size=size.small, xloc=xloc.bar_index)
+
+if barstate.islast
+    label.delete(lb_watermark)
+    lb_watermark := label.new(bar_index + 500, ta.lowest(low, 300), text="SENSEI by IQONIC", color=color(na), textcolor=color.new(#8B2FC9, 20), style=label.style_label_upper_left, size=size.small, xloc=xloc.bar_index)
+
+// =====================================================================
+// ESTRUTURA DE MERCADO (CHoCH / BOS / IDM / Sweeps)
+// =====================================================================
+swings(slen) =>
+    var os2    = 0
+    var int  topx2 = na
+    var int  btmx2 = na
+    upper2 = ta.highest(slen)
+    lower2 = ta.lowest(slen)
+    os2   := high[slen] > upper2 ? 0 : low[slen] < lower2 ? 1 : os2[1]
+    top2   = os2 == 0 and os2[1] != 0 ? high[slen] : na
+    topx2 := os2 == 0 and os2[1] != 0 ? bar_index[slen] : topx2
+    btm2   = os2 == 1 and os2[1] != 1 ? low[slen]  : na
+    btmx2 := os2 == 1 and os2[1] != 1 ? bar_index[slen] : btmx2
+    [top2, topx2, btm2, btmx2]
+
+n = bar_index
+[top, topx, btm, btmx]     = swings(len)
+[stop, stopx, sbtm, sbtmx] = swings(shortLen)
+
+var os_ms        = 0
+var top_crossed  = false
+var btm_crossed  = false
+var float max_ms = na
+var float min_ms = na
+var int   max_x1 = na
+var int   min_x1 = na
+var float topy   = na
+var float btmy   = na
+var stop_crossed = false
+var sbtm_crossed = false
+
+if top
+    topy        := top
+    top_crossed := false
+if btm
+    btmy        := btm
+    btm_crossed := false
+if close > topy and not top_crossed
+    os_ms       := 1
+    top_crossed := true
+if close < btmy and not btm_crossed
+    os_ms       := 0
+    btm_crossed := true
+
+if os_ms != os_ms[1]
+    max_ms       := high
+    min_ms       := low
+    max_x1       := n
+    min_x1       := n
+    stop_crossed := false
+    sbtm_crossed := false
+    if os_ms == 1 and showChoch
+        line.new(topx, topy, n, topy, color=bullCss, style=line.style_dashed)
+        label.new(int(math.avg(n, topx)), topy, "CHoCH", color=color(na), style=label.style_label_down, textcolor=bullCss, size=size.tiny)
+    else if showChoch
+        line.new(btmx, btmy, n, btmy, color=bearCss, style=line.style_dashed)
+        label.new(int(math.avg(n, btmx)), btmy, "CHoCH", color=color(na), style=label.style_label_up, textcolor=bearCss, size=size.tiny)
+
+stopy = fixnan(stop)
+sbtmy = fixnan(sbtm)
+
+if low < sbtmy and not sbtm_crossed and os_ms == 1 and sbtmy != btmy
+    if showIdm
+        line.new(sbtmx, sbtmy, n, sbtmy, color=idmCss, style=line.style_dotted)
+        label.new(int(math.avg(n, sbtmx)), sbtmy, "IDM", color=color(na), style=label.style_label_up, textcolor=idmCss, size=size.tiny)
+    sbtm_crossed := true
+
+if close > max_ms and sbtm_crossed and os_ms == 1
+    if showBos
+        line.new(max_x1, max_ms, n, max_ms, color=bullCss)
+        label.new(int(math.avg(n, max_x1)), max_ms, "BOS", color=color(na), style=label.style_label_down, textcolor=bullCss, size=size.tiny)
+    sbtm_crossed := false
+
+if high > stopy and not stop_crossed and os_ms == 0 and stopy != topy
+    if showIdm
+        line.new(stopx, stopy, n, stopy, color=idmCss, style=line.style_dotted)
+        label.new(int(math.avg(n, stopx)), stopy, "IDM", color=color(na), style=label.style_label_down, textcolor=idmCss, size=size.tiny)
+    stop_crossed := true
+
+if close < min_ms and stop_crossed and os_ms == 0
+    if showBos
+        line.new(min_x1, min_ms, n, min_ms, color=bearCss)
+        label.new(int(math.avg(n, min_x1)), min_ms, "BOS", color=color(na), style=label.style_label_up, textcolor=bearCss, size=size.tiny)
+    stop_crossed := false
+
+if high > max_ms and close < max_ms and os_ms == 1 and n - max_x1 > 1 and showSweeps
+    line.new(max_x1, max_ms, n, max_ms, color=sweepsCss, style=line.style_dotted)
+    label.new(int(math.avg(n, max_x1)), max_ms, "x", color=color(na), style=label.style_label_down, textcolor=sweepsCss)
+if low < min_ms and close > min_ms and os_ms == 0 and n - min_x1 > 1 and showSweeps
+    line.new(min_x1, min_ms, n, min_ms, color=sweepsCss, style=line.style_dotted)
+    label.new(int(math.avg(n, min_x1)), min_ms, "x", color=color(na), style=label.style_label_up, textcolor=sweepsCss)
+
+max_ms := math.max(high, max_ms)
+min_ms := math.min(low,  min_ms)
+if max_ms > max_ms[1]
+    max_x1 := n
+if min_ms < min_ms[1]
+    min_x1 := n
+
+var ext_choch     = line.new(na, na, na, na, style=line.style_dashed)
+var ext_bos       = line.new(na, na, na, na)
+var ext_idm       = line.new(na, na, na, na, style=line.style_dotted, color=idmCss)
+var ext_choch_lbl = label.new(na, na, "CHoCH", color=color(na), size=size.tiny)
+var ext_bos_lbl   = label.new(na, na, "BOS",   color=color(na), size=size.tiny)
+var ext_idm_lbl   = label.new(na, na, "IDM",   color=color(na), size=size.tiny, textcolor=idmCss)
+
+if barstate.islast
+    if os_ms == 1
+        if showChoch
+            ext_choch.set_xy1(btmx, btmy)
+            ext_choch.set_xy2(n, btmy)
+            ext_choch.set_color(bearCss)
+            ext_choch_lbl.set_xy(n, btmy)
+            ext_choch_lbl.set_style(label.style_label_up)
+            ext_choch_lbl.set_textcolor(bearCss)
+        if showBos
+            ext_bos.set_xy1(max_x1, max_ms)
+            ext_bos.set_xy2(n, max_ms)
+            ext_bos.set_color(bullCss)
+            ext_bos_lbl.set_xy(n, max_ms)
+            ext_bos_lbl.set_style(label.style_label_down)
+            ext_bos_lbl.set_textcolor(bullCss)
+        if not sbtm_crossed and showIdm
+            ext_idm.set_xy1(sbtmx, sbtmy)
+            ext_idm.set_xy2(n + 15, sbtmy)
+            ext_idm_lbl.set_xy(n + 15, sbtmy)
+            ext_idm_lbl.set_style(label.style_label_up)
+            ext_idm.set_color(idmCss)
+            ext_idm_lbl.set_textcolor(idmCss)
+        else
+            ext_idm.set_color(na)
+            ext_idm_lbl.set_textcolor(na)
+    else
+        if showChoch
+            ext_choch.set_xy1(topx, topy)
+            ext_choch.set_xy2(n, topy)
+            ext_choch.set_color(bullCss)
+            ext_choch_lbl.set_xy(n, topy)
+            ext_choch_lbl.set_style(label.style_label_down)
+            ext_choch_lbl.set_textcolor(bullCss)
+        if showBos
+            ext_bos.set_xy1(min_x1, min_ms)
+            ext_bos.set_xy2(n, min_ms)
+            ext_bos.set_color(bearCss)
+            ext_bos_lbl.set_xy(n, min_ms)
+            ext_bos_lbl.set_style(label.style_label_up)
+            ext_bos_lbl.set_textcolor(bearCss)
+        if not stop_crossed and showIdm
+            ext_idm.set_xy1(stopx, stopy)
+            ext_idm.set_xy2(n + 15, stopy)
+            ext_idm_lbl.set_xy(n + 15, stopy)
+            ext_idm_lbl.set_style(label.style_label_down)
+            ext_idm.set_color(idmCss)
+            ext_idm_lbl.set_textcolor(idmCss)
+        else
+            ext_idm.set_color(na)
+            ext_idm_lbl.set_textcolor(na)
+
+plot(showCircles ? top : na, "Swing High", color.new(bearCss, 50), 5, plot.style_circles, offset=-len)
+plot(showCircles ? btm : na, "Swing Low",  color.new(bullCss, 50), 5, plot.style_circles, offset=-len)
+
+// =====================================================================
+// ALERTAS
+// =====================================================================
+alertcondition(long_alert and isBuySignal_styled,   title="🟢 SENSEI — Sinal BUY",  message="🟢 SENSEI SIGNAL — LONG\n———————————————\n📌 Par: {{ticker}}\n⏱ TF: {{interval}}\n———————————————\n🎯 Entry: {{close}}\n🛑 Stop Loss: abaixo da vela\n———————————————\n✅ Exit 1: parcial 25%  ➜ BE\n✅ Exit 2: parcial 25%\n✅ Exit 3: parcial 25%\n🏆 Exit 4: fechar tudo\n———————————————\n⚠️ BE ativo após Exit 1\n📡 SENSEI by IQONIC")
+alertcondition(short_alert and isSellSignal_styled, title="🔴 SENSEI — Sinal SELL", message="🔴 SENSEI SIGNAL — SHORT\n———————————————\n📌 Par: {{ticker}}\n⏱ TF: {{interval}}\n———————————————\n🎯 Entry: {{close}}\n🛑 Stop Loss: acima da vela\n———————————————\n✅ Exit 1: parcial 25%  ➜ BE\n✅ Exit 2: parcial 25%\n✅ Exit 3: parcial 25%\n🏆 Exit 4: fechar tudo\n———————————————\n⚠️ BE ativo após Exit 1\n📡 SENSEI by IQONIC")
+alertcondition(be_hit,      title="⚠️ SENSEI — BreakEven Ativo", message="⚠️ BREAKEVEN ATIVO\n———————————————\n📌 {{ticker}} | ⏱ {{interval}}\n🔁 Mover SL para Entry: {{close}}\n📡 SENSEI by IQONIC")
+alertcondition(tp1_hit_now, title="✅ SENSEI — Exit 1 Hit", message="✅ EXIT 1 ATINGIDO\n———————————————\n📌 {{ticker}} | ⏱ {{interval}}\n💰 Fechar 25% da posição\n🎯 @ {{close}}\n⚠️ Mover SL para BE (Entry)\n📡 SENSEI by IQONIC")
+alertcondition(tp2_hit_now, title="✅ SENSEI — Exit 2 Hit", message="✅ EXIT 2 ATINGIDO\n———————————————\n📌 {{ticker}} | ⏱ {{interval}}\n💰 Fechar 25% adicional\n🎯 @ {{close}}\n🔒 SL mantido em BE\n📡 SENSEI by IQONIC")
+alertcondition(tp3_hit_now, title="✅ SENSEI — Exit 3 Hit", message="✅ EXIT 3 ATINGIDO\n———————————————\n📌 {{ticker}} | ⏱ {{interval}}\n💰 Fechar 25% adicional\n🎯 @ {{close}}\n🚀 Deixar correr para Exit 4\n📡 SENSEI by IQONIC")
+alertcondition(tp4_hit_now, title="🏆 SENSEI — Exit 4 Hit", message="🏆 EXIT 4 — TRADE COMPLETO\n———————————————\n📌 {{ticker}} | ⏱ {{interval}}\n💰 Fechar posição restante (25%)\n🎯 @ {{close}}\n🎉 Trade finalizado!\n📡 SENSEI by IQONIC")
+alertcondition((long_alert and isBuySignal_styled) or (short_alert and isSellSignal_styled), title="📡 SENSEI Scanner — Novo Sinal", message="📡 SENSEI SCANNER\n———————————————\n{{ticker}} — {{interval}}\nNovo Sinal @ {{close}}\n📡 SENSEI by IQONIC")
